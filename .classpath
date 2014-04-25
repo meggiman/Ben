@@ -2,11 +2,11 @@
 <classpath>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.7"/>
-	<classpathentry kind="lib" path="C:/Users/Manuel/SkyDrive/Dokumente/Studium/Informatik 2/Reversi Turnier/reversi.jar">
+	<classpathentry kind="lib" path="lib/reversi.jar">
 		<attributes>
-			<attribute name="javadoc_location" value="jar:file:/C:/Users/Manuel/SkyDrive/Dokumente/Studium/Informatik%202/Reversi%20Turnier/reversi-doc.zip!/javadoc"/>
+			<attribute name="javadoc_location" value="jar:platform:/resource/Reversi/lib/reversi-doc.zip!/javadoc"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="lib" path="C:/Users/Manuel/workspace/Reversi/stax-utils.jar"/>
+	<classpathentry kind="lib" path="lib/stax-utils.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
