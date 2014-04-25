@@ -5,16 +5,48 @@ import reversi.GameBoard;
 import evaluate.IEvaluator;
 import evaluate.strategicevaluator;
 
-public class alphabetanocloneing {
+public class alphabetanocloneing extends Searchalgorithm{
 	public static IEvaluator evaluator = new strategicevaluator();
 	//private static TranspositionTable table = new TranspositionTable(2000000, replaceStrategy);
-	public static long deadline;
-	public static boolean cancel = false;
-	public static long searchednodes = 0;
-	public static long evaluatednodes = 0;
-	public static long TTHits = 0;
+	private static boolean cancel = false;
+	public long nextmove(Bitboard gb) {
+		cancel = false;
+		evaluatednodes = 0;
+		searchednodes = 0;
+		TTHits = 0;
+		long[] possiblemoves = Bitboard.bitboardserialize(gb.possiblemoves(true));
+		if (possiblemoves.length == 0) {
+			return 0;
+		}
+		Bitboard nextboard;
+		int bestvalue;
+		int value;
+		long bestmove  = 0;
+		//Schleife bricht durch verstreichen des Zeitlimits intern ab.
+		for (int i = 1; true ; i++) {
+			bestvalue = -10065;
+			for (int j = 0; j < possiblemoves.length;j++) {
+				long coord = possiblemoves[j];
+				nextboard = (Bitboard) gb.clone();
+				nextboard.makeMove(true, coord);
+				value = min(nextboard, -10065, 10065, i-1);
+				if (value > bestvalue) {
+					bestvalue = value;
+					bestmove = coord;
+				}
+				if (cancel) {
+					reacheddepth = i;
+					movenr = j;
+					return bestmove;
+				}
+			}
+			if (cancel) {
+				return bestmove;
+			}
+		}
+	}
 	
-	public static int max(Bitboard gb, int alpha, int beta, int depth){
+	public int max(Bitboard gb, int alpha, int beta, int depth){
 		if (cancel) {
 			return beta;
 		}
@@ -85,7 +117,7 @@ public class alphabetanocloneing {
 		return maxvalue;
 	}
 	
-	public static int min(Bitboard gb, int alpha, int beta, int depth) {
+	public int min(Bitboard gb, int alpha, int beta, int depth) {
 		if (cancel) {
 			return alpha;
 		}
