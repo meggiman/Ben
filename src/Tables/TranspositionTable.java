@@ -65,28 +65,28 @@ public class TranspositionTable {
 		/**
 		 * Der Wert der Spielposition.
 		 */
-		public int value;
+		public short value;
 		
 		/**
 		 * Tiefe, aus welcher {@code value} stammt.
 		 */
-		public int depth;
+		public byte depth;
 		
 		/**
 		 * Dieses Flag gibt an, ob {@code value} exakt ist oder nur eine obere oder untere Schranke.
 		 */
-		public boolean isexact;
+		public boolean isExact;
 		
 		/**
 		 * Wenn {@code true} ist {@code value} eine obere Schranke, wenn {@code false} eine untere Schranke.
 		 * Dieses Flag ist bei gesetzem {@code isexact} Flag bedeutungslos.
 		 */
-		public boolean isCutnode;
+		public boolean isPvnode;
 		
 		/**
 		 * Gibt den besten jemals gefundenen nächsten Zug in {@code long} Repräsentation an.
 		 */
-		public long bestmove;
+		public byte countofmoves;
 	}
 	
 	/**
@@ -155,6 +155,7 @@ public class TranspositionTable {
 			}
 			return null;
 		}
+		
 		
 		public long getmove(){
 			return possiblemoves[count];
