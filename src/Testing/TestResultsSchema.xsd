@@ -1,0 +1,245 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schema targetNamespace="http://n.ethz.ch/student/meggiman" elementFormDefault="qualified" xmlns="http://www.w3.org/2001/XMLSchema" xmlns:tns="http://n.ethz.ch/student/meggiman">
+
+
+
+
+
+
+    <complexType name="GameType">
+    	<sequence>
+    		<element name="finalBoard" type="tns:GameboardType"
+    			minOccurs="1" maxOccurs="1">
+    		</element>
+    		<element name="player1" type="tns:PlayerAttributesType"
+    			minOccurs="1" maxOccurs="1">
+    		</element>
+    		<element name="player2" type="tns:PlayerAttributesType"
+    			maxOccurs="1" minOccurs="1">
+    		</element>
+    		<element name="moves" minOccurs="1" maxOccurs="1"
+    			type="tns:movesType">
+    		</element>
+    		<element name="resultcode" maxOccurs="1" minOccurs="1">
+    			<simpleType>
+    				<restriction base="string">
+    					<enumeration value="REGULARRESULT"></enumeration>
+    					<enumeration value="TIMEEXCEEDED"></enumeration>
+    					<enumeration value="ILLEGALMOVE"></enumeration>
+    					<enumeration value="EXCEPTION"></enumeration>
+    				</restriction>
+    			</simpleType>
+    		</element>
+    		<element name="winner" maxOccurs="1" minOccurs="1">
+    			<simpleType>
+    				<restriction base="string">
+    					<enumeration value="Player1"></enumeration>
+    					<enumeration value="Player2"></enumeration>
+    					<enumeration value="draw"></enumeration>
+    				</restriction>
+    			</simpleType>
+    		</element>
+    	</sequence>
+    	<attribute name="GameNr" type="int" use="required"></attribute>
+    </complexType>
+
+    <complexType name="MoveType">
+    	<all>
+    		<element name="move" type="tns:CoordinatesType"
+    			minOccurs="1" maxOccurs="1">
+    		</element>
+    		<element name="gameboard" type="tns:GameboardType"
+    			minOccurs="1" maxOccurs="1">
+    		</element>
+    		<element name="NrofsearchedNodes" type="long" maxOccurs="1"
+    			minOccurs="1">
+    		</element>
+    		<element name="NrofevaluatedNodes" type="long" maxOccurs="1"
+    			minOccurs="1">
+    		</element>
+    		<element name="NrofTTHits" type="long" maxOccurs="1"
+    			minOccurs="1">
+    		</element>
+    		<element name="depth" type="float" maxOccurs="1"
+    			minOccurs="1">
+    		</element>
+    		<element name="value" type="int" maxOccurs="1"
+    			minOccurs="1">
+    		</element>
+    		<element name="movenr" type="int" maxOccurs="1"
+    			minOccurs="1">
+    		</element>
+    	</all>
+    	<attribute name="playernr" use="required">
+    		<simpleType>
+    			<restriction base="string">
+    				<enumeration value="Player1"></enumeration>
+    				<enumeration value="Player2"></enumeration>
+    			</restriction>
+    		</simpleType>
+    	</attribute>
+    	<attribute name="moveNr" type="int" use="required"></attribute>
+    </complexType>
+
+
+
+    <complexType name="CoordinatesType">
+    	<sequence>
+    		<element name="Row" maxOccurs="1" minOccurs="1">
+    			<simpleType>
+    				<restriction base="int">
+    					<minInclusive value="1"></minInclusive>
+    					<maxInclusive value="8"></maxInclusive>
+    				</restriction>
+    			</simpleType>
+    		</element>
+    		<element name="Column" maxOccurs="1" minOccurs="1">
+    			<simpleType>
+    				<restriction base="int">
+    					<minInclusive value="1"></minInclusive>
+    					<maxInclusive value="8"></maxInclusive>
+    				</restriction>
+    			</simpleType>
+    		</element>
+    	</sequence>
+    </complexType>
+
+    <complexType name="GameboardType">
+    	<sequence>
+    		<element name="red" type="long" maxOccurs="1" minOccurs="1"></element>
+    		<element name="green" type="long" maxOccurs="1" minOccurs="1"></element>
+    	</sequence>
+    </complexType>
+
+
+    <complexType name="PlayerAttributesType">
+    	<sequence>
+    		<element name="totalNrofsearchedNodes" type="long"
+    			maxOccurs="1" minOccurs="1">
+    		</element>
+    		<element name="averageNrofsearchedNodes" type="long"
+    			maxOccurs="1" minOccurs="1">
+    		</element>
+    		<element name="totalNrofevaluatedNodes" type="long"
+    			maxOccurs="1" minOccurs="1">
+    		</element>
+    		<element name="averageNrofevaluatedNodes" type="long"
+    			maxOccurs="1" minOccurs="1">
+    		</element>
+    		<element name="totalNrofTTHits" type="long" maxOccurs="1"
+    			minOccurs="1">
+    		</element>
+    		<element name="averageNrofTTHits" type="long" maxOccurs="1"
+    			minOccurs="1">
+    		</element>
+    		<element name="averagedepth" type="float" maxOccurs="1"
+    			minOccurs="1">
+    		</element>
+    		<element name="averagevaluechange" type="float" maxOccurs="1" minOccurs="1"></element>
+    		<element name="standarddeviationvaluechange" type="double"
+    			maxOccurs="1" minOccurs="1">
+    		</element>
+    		<element name="moveorderingpercentage"
+    			type="tns:moveorderingpercentageType" minOccurs="1"
+    			maxOccurs="1">
+    		</element>
+    		<element name="NrofmadeMoves" type="int" maxOccurs="1"
+    			minOccurs="1">
+    		</element>
+    		<element name="result" type="int" maxOccurs="1"
+    			minOccurs="1">
+    		</element>
+    		<element name="disqualified" type="boolean" maxOccurs="1"
+    			minOccurs="1">
+    		</element>
+    	</sequence>
+    	
+    </complexType>
+
+    <complexType name="moveorderingpercentageType">
+    	<sequence>
+    		<element name="value" type="tns:moveorderingvalueType" minOccurs="1" maxOccurs="unbounded"></element>
+    	</sequence>
+    </complexType>
+
+    <complexType name="moveorderingvalueType">
+    	<sequence>
+    		<element name="nr" type="int" maxOccurs="1" minOccurs="1"></element>
+    		<element name="value" type="float" maxOccurs="1" minOccurs="1"></element>
+    	</sequence>
+    </complexType>
+
+
+    <complexType name="movesType">
+    	<sequence>
+    		<element name="move" type="tns:MoveType" minOccurs="1" maxOccurs="unbounded"></element>
+    	</sequence>
+    </complexType>
+
+    <complexType name="PlayerAttributes2Type">
+    	<sequence>
+    		<element name="name" type="string" maxOccurs="1"
+    			minOccurs="1">
+    		</element>
+    		<element name="timelimit" type="long" maxOccurs="1"
+    			minOccurs="1">
+    		</element>
+    		<element name="averagevaluechange" type="float" maxOccurs="1" minOccurs="1"></element>
+    		<element name="standarddeviationvaluechange" type="double"
+    			maxOccurs="1" minOccurs="1">
+    		</element>
+    		<element name="moveorderingpercentage"
+    			type="tns:moveorderingpercentageType" maxOccurs="1"
+    			minOccurs="1">
+    		</element>
+    		<element name="totalNrofsearchedNodes" type="long"
+    			maxOccurs="1" minOccurs="1">
+    		</element>
+    		<element name="averageNrofsearchedNodes" type="long"
+    			maxOccurs="1" minOccurs="1">
+    		</element>
+    		<element name="totalNrofevaluatedNodes" type="long"
+    			maxOccurs="1" minOccurs="1">
+    		</element>
+    		<element name="averageNrofevaluatedNodes" type="long"
+    			maxOccurs="1" minOccurs="1">
+    		</element>
+    		<element name="totalNrofTTHits" type="long" maxOccurs="1"
+    			minOccurs="1">
+    		</element>
+    		<element name="averageNrofTTHits" type="long" maxOccurs="1"
+    			minOccurs="1">
+    		</element>
+    		<element name="averagedepth" type="float" maxOccurs="1"
+    			minOccurs="1">
+    		</element>
+    		<element name="averageNrofmademoves" type="int"
+    			maxOccurs="1" minOccurs="1">
+    		</element>
+    		<element name="wongames" type="int" maxOccurs="1"
+    			minOccurs="1">
+    		</element>
+    	</sequence>
+    	
+    </complexType>
+    
+
+
+
+
+    <complexType name="TestresultType">
+    	<sequence>
+    		<element name="player1" type="tns:PlayerAttributes2Type"
+    			maxOccurs="1" minOccurs="1">
+    		</element>
+            <element name="player2" type="tns:PlayerAttributes2Type" maxOccurs="1" minOccurs="1"></element>
+            <element name="nrofgames" type="int" maxOccurs="1" minOccurs="1"></element>
+    		<element name="Game" type="tns:GameType"
+    			maxOccurs="unbounded" minOccurs="1">
+    		</element>
+    	</sequence>
+
+    </complexType>
+    
+    <element name="Result" type="tns:TestresultType"></element>
+</schema>
