@@ -200,6 +200,7 @@ public class Bitboard implements GameBoard {
 		else {
 			green ^= coord;
 		}
+		refreshZobristhash(changedfields, coord, player);
 	}
 	
 	/**
@@ -366,7 +367,7 @@ public class Bitboard implements GameBoard {
 	
 	/**
 	 * Diese Methode setzt einen Stein für den angegebenen Spieler auf dem angegebenen Feld, und dreht Steine des Gegners gemäss den Regeln um.
-	 * Es wird nicht überprüft, ob der angegeben Zug legal ist. Der Zobrist-Hash wird durch den Aufruf dieser Methode <B>nicht</B> aktualisiert.
+	 * Es wird nicht überprüft, ob der angegeben Zug legal ist. Der Zobrist-Hash wird durch den Aufruf dieser Methode aktualisiert.
 	 * @param player der ziehende Spieler. Verwende {@code true} für rot oder {@code false} für grün.
 	 * @param coord die Bitboard-Repräsentation des Zuges.
 	 * @return die Bitmaske aller umgedrehter Steine. Kann verwendet werden um den Zug rückgängig zu machen oder um inkrementelle Hashes zu berechnen.
@@ -493,6 +494,7 @@ public class Bitboard implements GameBoard {
 			green = playerfields;
 			red = otherplayerfields;
 		}
+		refreshZobristhash(changedfields, changedfields, player);
 		return changedfields;
 	}
 	
