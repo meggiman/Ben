@@ -5,23 +5,22 @@ import reversi.GameBoard;
 import reversi.OutOfBoundsException;
 
 /**
- * Die Klasse {@code Bitboard} ist eine effiziente Implementierung eines 8x8 Spielbrettes für Reversi und stellt verschiedenste Methoden zur Zugberechnung  und
- * Konvertierung von {@link GameBoard} bereit.
+ * The Class {@code Bitboard} is an efficient implementation of 8x8 Gameboard for reversi.
  *
  */
 public class Bitboard implements GameBoard {
 	/**
-	 * Bitmaske um Bits die durch einen Leftshift des Bitboards die Zeile wechseln zu löschen.
+	 * Bitmask used for Leftshifts of the Bitboard.
 	 */
 	private static final long leftshiftmask = 0xFEFEFEFEFEFEFEFEL;
 	
 	/**
-	 * Bitmaske um Bits die durch einen Rightshift des Bitboards die Zeile wechseln zu löschen.
+	 * Bitmask used for Rightshifts of the whole Bitboard.
 	 */
 	private static final long rightshiftmask = 0x7F7F7F7F7F7F7F7FL;
 	
 	/**
-	 * 64 zufällige {@code long} Konstanten für die Generierung des Zobrist-Hash.
+	 * 64 random {@code long} constants used to generate zobrist-hashes.
 	 */
 	private static long[] zobristrandomred = {	0xfbf185c26c378076L, 0x14fc57c338f4f1a5L, 0x925f95f86089b91dL, 0xf7532bd039d1a1f4L, 
 												0xecfbaddab0d6fce0L, 0x2a8ca0dd2626b862L, 0x23d47c43ff36ce38L, 0x3e6baf923c28f448L, 
@@ -41,7 +40,7 @@ public class Bitboard implements GameBoard {
 												0x8485961d728f09b5L, 0xcc1281bbe4c0cc6aL, 0x4d16571ec4e48e15L, 0x957c6ae1831d84faL};
 
 	/**
-	 * 64 zufällige {@code long} Konstanten für die Generierung des Zobrist-Hash.
+	 * 64 random {@code long} constants used to generate zobrist-hashes.
 	 */
 	private static long[] zobristrandomgreen = {0xc5bb837cfc908843L, 0xfe69cb281253ce62L, 0x683f782b737295f4L, 0xfa35ce4ae312051eL, 
 												0x42c73b38abd54779L, 0xa6bcc139d081d3ecL, 0x15ba9b28ba7956b0L, 0x6283347aa7b70f62L, 
@@ -61,18 +60,17 @@ public class Bitboard implements GameBoard {
 												0xc7cfaac0a8ac0dcbL, 0xbc4e99466f54709aL, 0x5ac95c64d48d5682L, 0x455000a14de5437L};
 
 	/**
-	 * Diese Variable wird von {@code hashCode()} verwendet um den Hash inkrementell berrechnen zu können. 
-	 * Ist das Flag {@link usehash} gesetzt, wird der Wert von {@code hash} von {@link hashCode()} als Hash zurückgegeben.  
+	 * This variable is used by {@code hashCode()} to incrementally calculate zobrist-hashes.   
 	 */
 	public long hash;
 	/**
-	 * Repräsentation aller roten Steine des Spielfeldes in einer Longvariable. Das MSB entspricht der linken oberen Ecke des Spielfeldes.
-	 * Bit Nr. 55 liegt eine Zeile unter der linken oberen Ecke.
+	 * Representation of all the red stones on the board. the MSB represents upper left corner.
+	 * Bit nr. 55 lies one row below upper left corner.
 	 */
 	public long red = 0;
 	/**
-	 * Repräsentation aller grünen Steine des Spielfeldes in einer Longvariable. Das MSB entspricht der linken oberen Ecke des Spielfeldes.
-	 * Bit Nr. 55 liegt eine Zeile unter der linken oberen Ecke.
+	 * Representation of all the red stones on the board. the MSB represents upper left corner.
+	 * Bit nr. 55 lies one row below upper left corner.
 	 */
 	public long green = 0;
 	
@@ -83,9 +81,9 @@ public class Bitboard implements GameBoard {
 	}
 	
 	/**
-	 * Erzeugt ein Bitboard mit {@code red} und {@code green} als Bitboard Repräsentation der Spielsituation.
-	 * Die Parameter werden nicht auf Gültigkeit geprüft.
-	 * @param red alle roten Steine
+	 * Creates a new Bitboard with parameters {@code red} and {@code green} representing the red and green stones.
+	 * parameters aren't checked for validity.
+	 * @param red all the red stones roten Steine
 	 * @param green alle grünen Steine
 	 */
 	public Bitboard(long red, long green){
@@ -117,10 +115,9 @@ public class Bitboard implements GameBoard {
 		return value;
 	}
 	/**
-	 * Diese Methode erzeugt aus einem Bitboard ein Array aus Bitboards mit je einem entsprechendem Bit von {@code bitboard}.
-	 * Wird hauptsächlich verwendet um aus der Bitmaske aller möglichen Züge ein Array aller Züge zu bekommen.
-	 * @param bitboard das Bitboard, welches serialisiert werden soll
-	 * @return das Array mit den einzelnen Bits. Gibt {@code null} zurück, wenn {@code bitboard == 0}.
+	 * Creates an Array of long values with one single bit set each.
+	 * @param bitboard the bitboard to serialize.
+	 * @return the serialized long variable. {@code null} if bitboard == 0
 	 */
 	public static long[] bitboardserialize(long bitboard){
 		int bitcount = Long.bitCount(bitboard);
