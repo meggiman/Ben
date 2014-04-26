@@ -22,8 +22,7 @@ public class alphabetanocloneing extends Searchalgorithm{
 		int bestvalue;
 		int value;
 		long bestmove  = 0;
-		//Schleife bricht durch verstreichen des Zeitlimits intern ab.
-		for (int i = 1; true ; i++) {
+		for (int i = 1; !cancel ; i++) {
 			bestvalue = -10065;
 			for (int j = 0; j < possiblemoves.length;j++) {
 				long coord = possiblemoves[j];
@@ -40,10 +39,8 @@ public class alphabetanocloneing extends Searchalgorithm{
 					return bestmove;
 				}
 			}
-			if (cancel) {
-				return bestmove;
-			}
 		}
+		return bestmove;
 	}
 	
 	public int max(Bitboard gb, int alpha, int beta, int depth){
@@ -106,9 +103,9 @@ public class alphabetanocloneing extends Searchalgorithm{
 			gb.undomove(changedfields, nextmove, true);
 			if (value > maxvalue) {
 				maxvalue = value;
-			}
-			if (value>= beta) {
-				return beta;
+				if (value>= beta) {
+					return beta;
+				}
 			}
 			if (cancel) {
 				return maxvalue;
@@ -177,9 +174,9 @@ public class alphabetanocloneing extends Searchalgorithm{
 			gb.undomove(changedfields, nextmove, false);
 			if (value < minvalue) {
 				minvalue = value;
-			}
-			if (value<= alpha) {
-				return alpha;
+				if (value<= alpha) {
+					return alpha;
+				}
 			}
 			if (cancel) {
 				return minvalue;

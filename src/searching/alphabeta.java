@@ -20,8 +20,7 @@ public class alphabeta extends Searchalgorithm {
 		int bestvalue;
 		int value;
 		long bestmove  = 0;
-		//Schleife bricht durch verstreichen des Zeitlimits intern ab.
-		for (int i = 1; true ; i++) {
+		for (int i = 1; !cancel ; i++) {
 			bestvalue = -10065;
 			for (int j = 0; j < possiblemoves.length;j++) {
 				long coord = possiblemoves[j];
@@ -38,10 +37,8 @@ public class alphabeta extends Searchalgorithm {
 					return bestmove;
 				}
 			}
-			if (cancel) {
-				return bestmove;
-			}
 		}
+		return bestmove;
 	}
 	
 	private int max(Bitboard gb, int alpha, int beta, int depth){
@@ -102,9 +99,9 @@ public class alphabeta extends Searchalgorithm {
 			value = min(nextposition, maxvalue, beta, depth-1);
 			if (value > maxvalue) {
 				maxvalue = value;
-			}
-			if (value>= beta) {
-				return beta;
+				if (value>= beta) {
+					return beta;
+				}
 			}
 			if (cancel) {
 				return maxvalue;
@@ -170,9 +167,9 @@ public class alphabeta extends Searchalgorithm {
 			value = max(nextposition, alpha, minvalue, depth-1);
 			if (value < minvalue) {
 				minvalue = value;
-			}
-			if (value<= alpha) {
-				return alpha;
+				if (value<= alpha) {
+					return alpha;
+				}
 			}
 			if (cancel) {
 				return minvalue;
