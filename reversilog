@@ -3736,3 +3736,11 @@ id=TestGame time=1397997234080 Redmove=8,6
 id=TestGame time=1397997234107 Greenmove=8,7
 id=TestGame time=1397997234134 finished reds=14 greens=50
 id=TestGame time=1397997264131 quit button pressed
+id=TestGame time=1398454736277 new game
+id=TestGame time=1398454736278 red=Players.Minmaxplayer green=Players.Minmaxwithoutcloningplayer
+id=TestGame time=1398454737327 initialized
+id=TestGame time=1398454760633 quit button pressed
+id=TestGame time=1398454816198 new game
+id=TestGame time=1398454816198 red=Players.Minmaxplayer green=Players.Minmaxwithoutcloningplayer
+id=TestGame time=1398454816996 initialized
+id=TestGame time=1398454824310 quit button pressed
