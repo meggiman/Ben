@@ -22,7 +22,7 @@ public class Bitboard implements GameBoard {
 	/**
 	 * 64 random {@code long} constants used to generate zobrist-hashes.
 	 */
-	private static long[] zobristrandomred = {	0xfbf185c26c378076L, 0x14fc57c338f4f1a5L, 0x925f95f86089b91dL, 0xf7532bd039d1a1f4L, 
+	private static final long[] zobristrandomred = {	0xfbf185c26c378076L, 0x14fc57c338f4f1a5L, 0x925f95f86089b91dL, 0xf7532bd039d1a1f4L, 
 												0xecfbaddab0d6fce0L, 0x2a8ca0dd2626b862L, 0x23d47c43ff36ce38L, 0x3e6baf923c28f448L, 
 												0x20d9010265a3f40fL, 0x6388d91cddc1c1cL, 0xafa8e8696ed1738bL, 0x90bc3d08fc1ec9a2L, 
 												0x36c017d07c49546bL, 0xf2ef8f4cac6794f1L, 0xf56bb2fcbdc8d2b1L, 0x7fa139f336fc98feL, 
@@ -42,7 +42,7 @@ public class Bitboard implements GameBoard {
 	/**
 	 * 64 random {@code long} constants used to generate zobrist-hashes.
 	 */
-	private static long[] zobristrandomgreen = {0xc5bb837cfc908843L, 0xfe69cb281253ce62L, 0x683f782b737295f4L, 0xfa35ce4ae312051eL, 
+	private static final long[] zobristrandomgreen = {0xc5bb837cfc908843L, 0xfe69cb281253ce62L, 0x683f782b737295f4L, 0xfa35ce4ae312051eL, 
 												0x42c73b38abd54779L, 0xa6bcc139d081d3ecL, 0x15ba9b28ba7956b0L, 0x6283347aa7b70f62L, 
 												0x2fe227cbe0394798L, 0xf9e9f51b8c1bcd62L, 0xa499cfb3401dae88L, 0xaf44f6d6cc626537L, 
 												0xdd8b04996dc30640L, 0xc8eff63264fb72e4L, 0x73167782e4db58eaL, 0x7d92bad68f07579eL, 
@@ -97,7 +97,9 @@ public class Bitboard implements GameBoard {
 
 	public void refreshZobristhash(long flippeddisks, long moovecord, boolean player){
 		int index;
-		for (long bit : bitboardserialize(flippeddisks)) {
+		while (flippeddisks!=0) {
+			long bit = Long.highestOneBit(flippeddisks);
+			flippeddisks ^= bit;
 			index = Long.numberOfTrailingZeros(bit);
 			hash ^= zobristrandomred[index];
 			hash ^= zobristrandomgreen[index];
