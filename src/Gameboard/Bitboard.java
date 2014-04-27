@@ -89,6 +89,7 @@ public class Bitboard implements GameBoard {
 	public Bitboard(long red, long green){
 		this.red = red;
 		this.green = green;
+		hash = generateZobristhash();
 	}
 	
 	
