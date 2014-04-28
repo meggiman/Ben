@@ -17,7 +17,7 @@ public class alphabeta extends Searchalgorithm {
 			return 0;
 		}
 		Bitboard nextboard;
-		int bestvalue;
+		int bestvalue = 0;
 		int value;
 		long bestmove  = 0;
 		for (int i = 1; !cancel ; i++) {
@@ -31,13 +31,15 @@ public class alphabeta extends Searchalgorithm {
 					bestvalue = value;
 					bestmove = coord;
 				}
-				if (cancel) {
+				if (cancel||bestvalue<-10000||bestvalue>10000) {
 					reacheddepth = i;
 					movenr = j;
+					valueoflastmove = bestvalue;
 					return bestmove;
 				}
 			}
 		}
+		valueoflastmove = bestvalue;
 		return bestmove;
 	}
 	
@@ -73,25 +75,11 @@ public class alphabeta extends Searchalgorithm {
 			return evaluator.evaluate(gb,possiblemoves,true);
 		}
 		searchednodes++;
-		Bitboard[] movelist = sortmovesred(gb, possiblemoves);
 		int value;
-		for (int i = 0; i < movelist.length; i++) {
-			value = min(movelist[i], maxvalue, beta, depth-1);
-			if (value > maxvalue) {
-				maxvalue = value;
-				if (value>= beta) {
-					return beta;
-				}
-			}
-			if (cancel) {
-				return maxvalue;
-				
-			}
-		}
 		long nextmove;
 		Bitboard nextposition;
 		int count = Long.bitCount(possiblemoves);
-		for (int i = movelist.length; i < count; i++) {
+		for (int i = 0; i < count; i++) {
 			nextmove = Long.lowestOneBit(possiblemoves);
 			possiblemoves ^= nextmove;
 			nextposition = (Bitboard)gb.clone();
@@ -142,24 +130,11 @@ public class alphabeta extends Searchalgorithm {
 			return evaluator.evaluate(gb,possiblemoves,true);
 		}
 		searchednodes++;
-		Bitboard[] movelist = sortmovesgreen(gb, possiblemoves);
 		int value;
-		for (int i = 0; i < movelist.length; i++) {
-			value = max(movelist[i], alpha, minvalue, depth-1);
-			if (value < minvalue) {
-				minvalue = value;
-				if (value <= alpha) {
-					return alpha;
-				}
-			}
-			if (cancel) {
-				return minvalue;
-			}
-		}
 		long nextmove;
 		Bitboard nextposition;
 		int count = Long.bitCount(possiblemoves);
-		for (int i = movelist.length; i < count; i++) {
+		for (int i = 0; i < count; i++) {
 			nextmove = Long.lowestOneBit(possiblemoves);
 			possiblemoves ^= nextmove;
 			nextposition = (Bitboard)gb.clone();
@@ -176,18 +151,6 @@ public class alphabeta extends Searchalgorithm {
 			}
 		}
 		return minvalue;
-	}
-		
-	private static Bitboard[] sortmovesred(Bitboard gb, long possiblemoves){
-		Bitboard[] move = new Bitboard[]{(Bitboard)gb.clone()};
-		move[0].makeMove(true, Long.highestOneBit(possiblemoves));
-		return move;
-	}
-	
-	private static Bitboard[] sortmovesgreen(Bitboard gb, long possiblemoves){
-		Bitboard[] move = new Bitboard[]{(Bitboard)gb.clone()};
-		move[0].makeMove(false, Long.highestOneBit(possiblemoves));
-		return move;
 	}
 }
 
