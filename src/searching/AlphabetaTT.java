@@ -1,15 +1,20 @@
 package searching;
 
-import Gameboard.Bitboard;
-import reversi.GameBoard;
 import evaluate.IEvaluator;
 import evaluate.strategicevaluator;
+import reversi.GameBoard;
+import Gameboard.Bitboard;
+import Tables.TranspositionTable;
+import Tables.TranspositionTable.TableEntry;
 
-public class alphabetanocloneing extends Searchalgorithm{
+public class AlphabetaTT extends Searchalgorithm {
+	private static TranspositionTable tt = new TranspositionTable(8000000, new TranspositionTable.pvnodepriority());
+	private static TableEntry newEntry = new TableEntry();
 	public static IEvaluator evaluator = new strategicevaluator();
-	//private static TranspositionTable table = new TranspositionTable(2000000, replaceStrategy);
 	private static boolean cancel = false;
+	private static byte countofmoves = 0;
 	public long nextmove(Bitboard gb) {
+		countofmoves++;
 		cancel = false;
 		evaluatednodes = 0;
 		searchednodes = 0;
@@ -19,16 +24,16 @@ public class alphabetanocloneing extends Searchalgorithm{
 			return 0;
 		}
 		Bitboard nextboard;
-		int bestvalue;
+		int bestvalue = 0;
 		int value;
 		long bestmove  = 0;
 		for (int i = 1; !cancel ; i++) {
-			bestvalue = -20065;
+			bestvalue = -10065;
 			for (int j = 0; j < possiblemoves.length;j++) {
 				long coord = possiblemoves[j];
 				nextboard = (Bitboard) gb.clone();
 				nextboard.makeMove(true, coord);
-				value = min(nextboard, -20065, 20065, i-1);
+				value = min(nextboard, -10065, 10065, i-1);
 				if (value > bestvalue) {
 					bestvalue = value;
 					bestmove = coord;
@@ -41,6 +46,7 @@ public class alphabetanocloneing extends Searchalgorithm{
 				}
 			}
 		}
+		valueoflastmove = bestvalue;
 		return bestmove;
 	}
 	
@@ -70,14 +76,27 @@ public class alphabetanocloneing extends Searchalgorithm{
 				return 0;
 			}
 		}
+		//Look for transposition in transposition table
+		TranspositionTable.TableEntry entry = tt.get(gb.hash);
+//		if (entry!=null) {
+//			if (entry.isExact && entry.depth>=depth) {
+//				TTHits++;
+//				return entry.value;
+//			}
+//		}
+		
 		if (depth<=0) {
 			searchednodes++;
 			evaluatednodes++;
-			return evaluator.evaluate(gb,possiblemoves,true);
+			int value = evaluator.evaluate(gb, possiblemoves, true);
+			TableEntry.recycleEntry(newEntry, (short)value, (byte)depth, true, false, countofmoves);
+			tt.put(gb.hash, newEntry);
+			return value;
 		}
 		searchednodes++;
 		long changedfields = 0;
 		int value;
+		long pvnodekey = 0;
 		long nextmove;
 		int count = Long.bitCount(possiblemoves);
 		for (int i = 0; i < count; i++) {
@@ -89,12 +108,21 @@ public class alphabetanocloneing extends Searchalgorithm{
 			if (value > maxvalue) {
 				maxvalue = value;
 				if (value>= beta) {
+					TableEntry.recycleEntry(newEntry,(short)beta, (byte)depth, false, false, countofmoves);
+					tt.put(gb.hash, newEntry);
 					return beta;
 				}
+				TableEntry.recycleEntry(newEntry,(short)value, (byte)depth, true, false, countofmoves);
+				pvnodekey = gb.hash;
+				tt.put(pvnodekey, newEntry);
 			}
 			if (cancel) {
 				return maxvalue;
 			}
+		}
+		if (maxvalue!=alpha) {
+			TableEntry.recycleEntry(newEntry,(short)maxvalue, (byte)depth, true, true, countofmoves);
+			tt.put(pvnodekey, newEntry);			
 		}
 		return maxvalue;
 	}
@@ -125,14 +153,26 @@ public class alphabetanocloneing extends Searchalgorithm{
 				return 0;
 			}
 		}
+		//Look for transpositions in transposition table
+		TranspositionTable.TableEntry entry = tt.get(gb.hash);
+//		if (entry!=null) {
+//			if (entry.isExact && entry.depth>=depth) {
+//				TTHits++;
+//				return entry.value;
+//			}
+//		}
+			
 		if (depth<=0) {
 			searchednodes++;
 			evaluatednodes++;
-			return evaluator.evaluate(gb,possiblemoves,true);
+			int value = evaluator.evaluate(gb, possiblemoves, true);
+			TableEntry.recycleEntry(newEntry, (short)value, (byte)depth, true, false, countofmoves);
+			tt.put(gb.hash, newEntry);
 		}
 		searchednodes++;
 		int value;
 		long changedfields = 0;
+		long pvnodekey=0;
 		long nextmove;
 		int count = Long.bitCount(possiblemoves);
 		for (int i = 0; i < count; i++) {
@@ -144,13 +184,22 @@ public class alphabetanocloneing extends Searchalgorithm{
 			if (value < minvalue) {
 				minvalue = value;
 				if (value<= alpha) {
+					TableEntry.recycleEntry(newEntry,(short)alpha, (byte)depth, false, false, countofmoves);
+					tt.put(gb.hash, newEntry);
 					return alpha;
 				}
+				TableEntry.recycleEntry(newEntry,(short)value, (byte)depth, true, false, countofmoves);
+				pvnodekey = gb.hash;
+				tt.put(pvnodekey, newEntry);
 			}
 			if (cancel) {
 				return minvalue;
 			}
 		}
+		if (minvalue!=beta) {
+			TableEntry.recycleEntry(newEntry,(short)minvalue, (byte)depth, true, true, countofmoves);
+			tt.put(pvnodekey, newEntry);
+			}
 		return minvalue;
 	}
 }

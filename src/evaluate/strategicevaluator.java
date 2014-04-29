@@ -6,8 +6,11 @@ private final long xfieldsmask = 0x42000000004200L;
 private final long cfieldsmask = 0x4281000000008142L;
 
 
-
+	
 	@Override
+	/**
+	 * Evaluates the current game situation with human player strategic based aspects.
+	 */
 	public int evaluate(Bitboard gb, long possiblemoves, boolean player) {
 		long movingplayer = (player)?gb.red:gb.green;
 		long otherplayer = (player)?gb.green:gb.red;

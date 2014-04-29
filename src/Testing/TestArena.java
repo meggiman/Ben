@@ -98,12 +98,15 @@ public class TestArena {
 				} catch (TimeLimitExceededException e) {
 					game.disqualified1 = true;
 					game.resultcode = GameResult.TIMEEXCEEDED;
+					System.out.println("Player 1 Timeexceeded");
+					System.out.println(e.getMessage());
 					break;
 				} catch (IllegalMoveException e) {
 					game.disqualified1 = true;
 					game.resultcode = GameResult.ILLEGALMOVE;
 					break;
-				} catch (PlayerException e) {
+				} 
+				catch (PlayerException e) {
 					game.disqualified1 = true;
 					game.resultcode = GameResult.EXCEPTION;
 					game.exception = e;
@@ -118,6 +121,8 @@ public class TestArena {
 				} catch (TimeLimitExceededException e) {
 					game.disqualified2 = true;
 					game.resultcode = GameResult.TIMEEXCEEDED;
+					System.out.println("Player 2 Time exceeded.");
+					System.out.println(e.getMessage());
 					break;
 				} catch (IllegalMoveException e) {
 					game.disqualified2 = true;
@@ -148,13 +153,16 @@ public class TestArena {
 		int playercode = (player == player1)?PLAYER1:PLAYER2;
 		Coordinates coord = null;
 		long time = System.currentTimeMillis();
-		try {
-			coord = player.nextMove(gb);
-		} catch (Exception e) {
-			throw new PlayerException(e, playercode, gb);
-		}
-		if (System.currentTimeMillis() - time > ((playercode==PLAYER1)?timelimitplayer1:timelimitplayer2)) {
-			throw new TimeLimitExceededException("Die Zeit ist abgelaufen.");
+		coord = player.nextMove(gb);
+//		try {
+//			coord = player.nextMove(gb);
+//		} 
+//		catch (Exception e) {
+//			throw new PlayerException(e, playercode, gb);
+//		}
+		time = System.currentTimeMillis() -time;
+		if (time > ((playercode==PLAYER1)?timelimitplayer1:timelimitplayer2)) {
+			throw new TimeLimitExceededException("Die Zeit wurde um "+time+"ms überschritten.");
 		}		
 		if (coord == null) {
 			return null;
@@ -168,7 +176,7 @@ public class TestArena {
 		move.player = playercode;
 		move.depth = player.getdepthoflatestsearch();
 		gb.makeMove(playercolour, coord);
-		move.gameboard = gb;
+		move.gameboard = gb.clone();
 		move.move = coord;
 		move.movenr = player.getmoveNroflatestSearch();
 		move.NrofevaluatedNodes = player.getevaluatednodes();
