@@ -11,12 +11,12 @@ private final long cfieldsmask = 0x4281000000008142L;
 	public int evaluate(Bitboard gb, long possiblemoves, boolean player) {
 		long movingplayer = (player)?gb.red:gb.green;
 		long otherplayer = (player)?gb.green:gb.red;
-		long possiblemovesenemy = gb.possiblemoves(!player);
+		long possiblemovesenemy = gb.getPossibleMoves(!player);
 		long emptyfields = ~(movingplayer|otherplayer);
 		
 		int possiblemovescount = Long.bitCount(possiblemoves);
 		int possiblemovescountenemy = Long.bitCount(possiblemovesenemy);
-		int potentialmobility = Long.bitCount(Bitboard.filladjacent(otherplayer)&emptyfields^possiblemoves);
+		int potentialmobility = Long.bitCount(Bitboard.fillAdjacent(otherplayer)&emptyfields^possiblemoves);
 		int corners = Long.bitCount(movingplayer&cornersmask);
 		int cornersenemy = Long.bitCount(otherplayer&cornersmask);
 		int xfields = Long.bitCount(movingplayer&xfieldsmask);

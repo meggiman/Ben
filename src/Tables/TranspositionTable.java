@@ -149,10 +149,19 @@ public class TranspositionTable{
 
         @Override
         public boolean replace(TableEntry oldEntry, TableEntry newEntry){
-            if(oldEntry.depth < newEntry.depth){
+            if(oldEntry.countofmoves < newEntry.countofmoves
+                    || !oldEntry.isExact){
                 return true;
             }
-
+            if(newEntry.isPvnode){
+                return true;
+            }
+            if(!oldEntry.isPvnode && newEntry.isExact){
+                return true;
+            }
+            else{
+                return false;
+            }
         }
 
     }
@@ -179,7 +188,7 @@ public class TranspositionTable{
             this.map = map;
             this.player = player;
             this.maxNode = maxNode;
-            this.possibleMoves = Bitboard.bitboardserialize(possiblemoves);
+            this.possibleMoves = Bitboard.serializeBitboard(possiblemoves);
             sortedMoves = new TableEntry[possibleMoves.length - 1];
             sortedReferences = new byte[possibleMoves.length - 1];
         }
@@ -205,7 +214,7 @@ public class TranspositionTable{
             this.map = map;
             this.player = player;
             this.maxNode = maxNode;
-            this.possibleMoves = Bitboard.bitboardserialize(possiblemoves);
+            this.possibleMoves = Bitboard.serializeBitboard(possiblemoves);
             sortedMoves = new TableEntry[possibleMoves.length - 1];
             sortedReferences = new byte[possibleMoves.length - 1];
         }

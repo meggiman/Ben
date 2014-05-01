@@ -3,16 +3,16 @@ package searching;
 import reversi.GameBoard;
 import Gameboard.Bitboard;
 
-public class alphabetainterface extends Searchalgorithm {
+public class alphabetainterface extends SearchAlgorithm {
 	private boolean cancel = false;
 
 	@Override
-	public long nextmove(Bitboard gb) {
+	public long nextMove(Bitboard gb) {
 		cancel = false;
-		evaluatednodes = 0;
-		searchednodes = 0;
+		evaluatedNodesCount = 0;
+		searchedNodesCount = 0;
 		TTHits = 0;
-		long[] possiblemoves = Bitboard.bitboardserialize(gb.possiblemoves(true));
+		long[] possiblemoves = Bitboard.serializeBitboard(gb.getPossibleMoves(true));
 		if (possiblemoves.length == 0) {
 			return 0;
 		}
@@ -33,8 +33,8 @@ public class alphabetainterface extends Searchalgorithm {
 					bestmove = coord;
 				}
 				if (cancel) {
-					reacheddepth = i;
-					movenr = j;
+					reachedDepth = i;
+					moveNr = j;
 					return bestmove;
 				}
 			}
@@ -53,29 +53,29 @@ public class alphabetainterface extends Searchalgorithm {
 			return beta;
 		}
 		int maxvalue = alpha;
-		long possiblemoves = gb.possiblemoves(true);
-		if (possiblemoves==0 && gb.possiblemoves(false)==0) {
+		long possiblemoves = gb.getPossibleMoves(true);
+		if (possiblemoves==0 && gb.getPossibleMoves(false)==0) {
 			int stonesred = gb.countStones(GameBoard.RED);
 			int stonesgreen = gb.countStones(GameBoard.GREEN);
 			if (stonesred>stonesgreen) {
-				searchednodes++;
+				searchedNodesCount++;
 				return 10000+stonesred-stonesgreen;
 			}
 			else if (stonesred<stonesgreen){
-				searchednodes++;
+				searchedNodesCount++;
 				return -10000-stonesgreen+stonesred;
 			}
 			else {
-				searchednodes++;
+				searchedNodesCount++;
 				return 0;
 			}
 		}
 		if (depth<=0) {
-			searchednodes++;
-			evaluatednodes++;
+			searchedNodesCount++;
+			evaluatedNodesCount++;
 			return evaluator.evaluate(gb,possiblemoves,true);
 		}
-		searchednodes++;
+		searchedNodesCount++;
 		Bitboard[] movelist = sortmovesred(gb, possiblemoves);
 		int value;
 		for (int i = 0; i < movelist.length; i++) {
@@ -122,29 +122,29 @@ public class alphabetainterface extends Searchalgorithm {
 			return alpha;
 		}
 		int minvalue = beta;
-		long possiblemoves = gb.possiblemoves(false);
-		if (possiblemoves==0 && gb.possiblemoves(true)==0) {
+		long possiblemoves = gb.getPossibleMoves(false);
+		if (possiblemoves==0 && gb.getPossibleMoves(true)==0) {
 			int stonesred = gb.countStones(GameBoard.RED);
 			int stonesgreen = gb.countStones(GameBoard.GREEN);
 			if (stonesred>stonesgreen) {
-				searchednodes++;
+				searchedNodesCount++;
 				return 10000+stonesred;
 			}
 			else if (stonesred<stonesgreen){
-				searchednodes++;
+				searchedNodesCount++;
 				return -10000-stonesgreen;
 			}
 			else {
-				searchednodes++;
+				searchedNodesCount++;
 				return 0;
 			}
 		}
 		if (depth<=0) {
-			searchednodes++;
-			evaluatednodes++;
+			searchedNodesCount++;
+			evaluatedNodesCount++;
 			return evaluator.evaluate(gb,possiblemoves,true);
 		}
-		searchednodes++;
+		searchedNodesCount++;
 		Bitboard[] movelist = sortmovesgreen(gb, possiblemoves);
 		int value;
 		for (int i = 0; i < movelist.length; i++) {

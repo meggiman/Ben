@@ -3744,3 +3744,196 @@ id=TestGame time=1398454816198 new game
 id=TestGame time=1398454816198 red=Players.Minmaxplayer green=Players.Minmaxwithoutcloningplayer
 id=TestGame time=1398454816996 initialized
 id=TestGame time=1398454824310 quit button pressed
+id=TestGame time=1398957307491 new game
+id=TestGame time=1398957307493 red=TestablePlayers.PlayerNoah green=Players.Minmaxplayer
+id=TestGame time=1398957308419 initialized
+id=TestGame time=1398957308564 Redmove=6,6
+id=TestGame time=1398957324374 quit button pressed
+id=TestGame time=1398957349782 new game
+id=TestGame time=1398957349782 red=TestablePlayers.PlayerNoah green=TestablePlayers.PlayerNoah
+id=TestGame time=1398957350787 initialized
+id=TestGame time=1398957350953 Redmove=6,6
+id=TestGame time=1398957353319 Greenmove=5,6
+id=TestGame time=1398957355692 Redmove=6,7
+id=TestGame time=1398957358072 Greenmove=7,7
+id=TestGame time=1398957360458 Redmove=8,8
+id=TestGame time=1398957362829 Greenmove=5,7
+id=TestGame time=1398957365227 Redmove=6,5
+id=TestGame time=1398957367650 Greenmove=8,7
+id=TestGame time=1398957370102 Redmove=8,6
+id=TestGame time=1398957372510 Greenmove=7,6
+id=TestGame time=1398957374946 Redmove=7,8
+id=TestGame time=1398957377371 Greenmove=6,8
+id=TestGame time=1398957379771 Redmove=7,5
+id=TestGame time=1398957382175 Greenmove=8,5
+id=TestGame time=1398957384586 Redmove=8,4
+id=TestGame time=1398957386970 Greenmove=7,4
+id=TestGame time=1398957389384 Redmove=8,3
+id=TestGame time=1398957391783 Greenmove=7,3
+id=TestGame time=1398957394209 Redmove=7,2
+id=TestGame time=1398957396578 Greenmove=6,4
+id=TestGame time=1398957398969 Redmove=6,3
+id=TestGame time=1398957401385 Greenmove=8,2
+id=TestGame time=1398957403792 Redmove=8,1
+id=TestGame time=1398957406205 Greenmove=7,1
+id=TestGame time=1398957408612 Redmove=6,2
+id=TestGame time=1398957411024 Greenmove=6,1
+id=TestGame time=1398957413417 Redmove=5,8
+id=TestGame time=1398957415799 Greenmove=4,8
+id=TestGame time=1398957418184 Redmove=5,3
+id=TestGame time=1398957420562 Greenmove=5,2
+id=TestGame time=1398957422944 Redmove=5,1
+id=TestGame time=1398957425308 Greenmove=4,7
+id=TestGame time=1398957427667 Redmove=4,6
+id=TestGame time=1398957430023 Greenmove=4,3
+id=TestGame time=1398957432404 Redmove=3,8
+id=TestGame time=1398957434758 Greenmove=8,8
+id=TestGame time=1398957434760 Green makes illegal move
+id=TestGame time=1398957456432 quit button pressed
+id=TestGame time=1398957462207 new game
+id=TestGame time=1398957462208 red=TestablePlayers.PlayerNoah green=TestablePlayers.PlayerNoah
+id=TestGame time=1398957463150 initialized
+id=TestGame time=1398957463296 Redmove=6,6
+id=TestGame time=1398957465662 Greenmove=5,6
+id=TestGame time=1398957468037 Redmove=6,7
+id=TestGame time=1398957470413 Greenmove=7,7
+id=TestGame time=1398957472793 Redmove=8,8
+id=TestGame time=1398957475161 Greenmove=5,7
+id=TestGame time=1398957477559 Redmove=6,5
+id=TestGame time=1398957479982 Greenmove=8,7
+id=TestGame time=1398957482433 Redmove=8,6
+id=TestGame time=1398957484828 Greenmove=7,6
+id=TestGame time=1398957487270 Redmove=7,8
+id=TestGame time=1398957489708 Greenmove=6,8
+id=TestGame time=1398957492105 Redmove=7,5
+id=TestGame time=1398957494502 Greenmove=8,5
+id=TestGame time=1398957496910 Redmove=8,4
+id=TestGame time=1398957499294 Greenmove=7,4
+id=TestGame time=1398957501706 Redmove=8,3
+id=TestGame time=1398957504107 Greenmove=7,3
+id=TestGame time=1398957506529 Redmove=7,2
+id=TestGame time=1398957508903 Greenmove=6,4
+id=TestGame time=1398957511285 Redmove=6,3
+id=TestGame time=1398957513703 Greenmove=8,2
+id=TestGame time=1398957516121 Redmove=8,1
+id=TestGame time=1398957518540 Greenmove=7,1
+id=TestGame time=1398957520953 Redmove=6,2
+id=TestGame time=1398957523373 Greenmove=6,1
+id=TestGame time=1398957525770 Redmove=5,8
+id=TestGame time=1398957528174 Greenmove=4,8
+id=TestGame time=1398957530563 Redmove=5,3
+id=TestGame time=1398957532953 Greenmove=5,2
+id=TestGame time=1398957535340 Redmove=5,1
+id=TestGame time=1398957537702 Greenmove=4,7
+id=TestGame time=1398957540066 Redmove=4,6
+id=TestGame time=1398957542435 Greenmove=4,3
+id=TestGame time=1398957544813 Redmove=3,8
+id=TestGame time=1398957547160 Greenmove=8,8
+id=TestGame time=1398957547162 Green makes illegal move
+id=TestGame time=1398957766495 new game
+id=TestGame time=1398957766496 red=TestablePlayers.PlayerNoah green=TestablePlayers.PlayerNoah
+id=TestGame time=1398957767473 initialized
+id=TestGame time=1398957767665 Redmove=6,6
+id=TestGame time=1398957770082 Greenmove=5,6
+id=TestGame time=1398957772584 Redmove=6,7
+id=TestGame time=1398957775086 Greenmove=7,7
+id=TestGame time=1398957777632 Redmove=8,8
+id=TestGame time=1398957780087 Greenmove=5,7
+id=TestGame time=1398957780405 quit button pressed
+id=TestGame time=1398957782769 Redmove=6,5
+id=TestGame time=1398957785580 Greenmove=8,7
+id=TestGame time=1398957788570 Redmove=8,6
+id=TestGame time=1398957791293 Greenmove=7,6
+id=TestGame time=1398957794286 Redmove=7,8
+id=TestGame time=1398957797245 Greenmove=6,8
+id=TestGame time=1398957799956 Redmove=7,5
+id=TestGame time=1398957802650 Greenmove=8,5
+id=TestGame time=1398957805453 Redmove=8,4
+id=TestGame time=1398957808085 Greenmove=7,4
+id=TestGame time=1398957810907 Redmove=8,3
+id=TestGame time=1398957813638 Greenmove=7,3
+id=TestGame time=1398957816515 Redmove=7,2
+id=TestGame time=1398957819045 Greenmove=6,4
+id=TestGame time=1398957821645 Redmove=6,3
+id=TestGame time=1398957824506 Greenmove=8,2
+id=TestGame time=1398957827330 Redmove=8,1
+id=TestGame time=1398957830282 Greenmove=7,1
+id=TestGame time=1398957833070 Redmove=6,2
+id=TestGame time=1398957835864 Greenmove=6,1
+id=TestGame time=1398957838539 Redmove=5,8
+id=TestGame time=1398957841167 Greenmove=4,8
+id=TestGame time=1398957843757 Redmove=5,3
+id=TestGame time=1398957846402 Greenmove=5,2
+id=TestGame time=1398957848969 Redmove=5,1
+id=TestGame time=1398957851386 Greenmove=4,7
+id=TestGame time=1398957853785 Redmove=4,6
+id=TestGame time=1398957856195 Greenmove=4,3
+id=TestGame time=1398957858747 Redmove=3,8
+id=TestGame time=1398959192162 quit button pressed
+id=TestGame time=1398959355834 new game
+id=TestGame time=1398959355834 red=TestablePlayers.PlayerNoah green=TestablePlayers.PlayerNoah
+id=TestGame time=1398959356809 initialized
+id=TestGame time=1398959356950 Redmove=6,6
+id=TestGame time=1398959359316 Greenmove=5,6
+id=TestGame time=1398959361707 Redmove=6,7
+id=TestGame time=1398959364090 Greenmove=7,7
+id=TestGame time=1398959366470 Redmove=8,8
+id=TestGame time=1398959368839 Greenmove=5,7
+id=TestGame time=1398959371240 Redmove=6,5
+id=TestGame time=1398959373666 Greenmove=8,7
+id=TestGame time=1398959376125 Redmove=8,6
+id=TestGame time=1398959378531 Greenmove=7,6
+id=TestGame time=1398959380993 Redmove=7,8
+id=TestGame time=1398959383417 Greenmove=6,8
+id=TestGame time=1398959385818 Redmove=7,5
+id=TestGame time=1398959388217 Greenmove=8,5
+id=TestGame time=1398959390629 Redmove=8,4
+id=TestGame time=1398959393016 Greenmove=7,4
+id=TestGame time=1398959395429 Redmove=8,3
+id=TestGame time=1398959397826 Greenmove=7,3
+id=TestGame time=1398959400250 Redmove=7,2
+id=TestGame time=1398959402626 Greenmove=6,4
+id=TestGame time=1398959405009 Redmove=6,3
+id=TestGame time=1398959407433 Greenmove=8,2
+id=TestGame time=1398959409842 Redmove=8,1
+id=TestGame time=1398959412265 Greenmove=7,1
+id=TestGame time=1398959414665 Redmove=6,2
+id=TestGame time=1398959417078 Greenmove=6,1
+id=TestGame time=1398959419473 Redmove=5,8
+id=TestGame time=1398959421858 Greenmove=4,8
+id=TestGame time=1398959424236 Redmove=5,3
+id=TestGame time=1398959426615 Greenmove=5,2
+id=TestGame time=1398959429008 Redmove=5,1
+id=TestGame time=1398959431380 Greenmove=4,7
+id=TestGame time=1398959433741 Redmove=4,6
+id=TestGame time=1398959436098 Greenmove=4,3
+id=TestGame time=1398959438479 Redmove=3,8
+id=TestGame time=1398959440837 Greenmove=null
+id=TestGame time=1398959440855 Redmove=4,2
+id=TestGame time=1398959443217 Greenmove=3,6
+id=TestGame time=1398959445577 Redmove=3,5
+id=TestGame time=1398959447937 Greenmove=3,4
+id=TestGame time=1398959450306 Redmove=3,3
+id=TestGame time=1398959452667 Greenmove=3,2
+id=TestGame time=1398959455035 Redmove=2,7
+id=TestGame time=1398959457395 Greenmove=4,1
+id=TestGame time=1398959459762 Redmove=3,1
+id=TestGame time=1398959462123 Greenmove=2,5
+id=TestGame time=1398959464499 Redmove=2,6
+id=TestGame time=1398959466858 Greenmove=3,7
+id=TestGame time=1398959469214 Redmove=2,8
+id=TestGame time=1398959471567 Greenmove=2,3
+id=TestGame time=1398959473923 Redmove=2,4
+id=TestGame time=1398959476279 Greenmove=2,1
+id=TestGame time=1398959478630 Redmove=2,2
+id=TestGame time=1398959480979 Greenmove=1,8
+id=TestGame time=1398959483332 Redmove=1,7
+id=TestGame time=1398959485684 Greenmove=1,6
+id=TestGame time=1398959488037 Redmove=1,5
+id=TestGame time=1398959490387 Greenmove=1,4
+id=TestGame time=1398959492739 Redmove=1,3
+id=TestGame time=1398959495091 Greenmove=1,2
+id=TestGame time=1398959497441 Redmove=1,1
+id=TestGame time=1398959499800 Greenmove=null
+id=TestGame time=1398959499803 finished reds=49 greens=15
+id=TestGame time=1398959603402 quit button pressed

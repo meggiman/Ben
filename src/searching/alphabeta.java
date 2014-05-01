@@ -24,8 +24,8 @@ public class alphabeta {
 			return beta;
 		}
 		int maxvalue = alpha;
-		long possiblemoves = gb.possiblemoves(true);
-		if (possiblemoves==0 && gb.possiblemoves(false)==0) {
+		long possiblemoves = gb.getPossibleMoves(true);
+		if (possiblemoves==0 && gb.getPossibleMoves(false)==0) {
 			int stonesred = gb.countStones(GameBoard.RED);
 			int stonesgreen = gb.countStones(GameBoard.GREEN);
 			if (stonesred>stonesgreen) {
@@ -93,8 +93,8 @@ public class alphabeta {
 			return alpha;
 		}
 		int minvalue = beta;
-		long possiblemoves = gb.possiblemoves(false);
-		if (possiblemoves==0 && gb.possiblemoves(true)==0) {
+		long possiblemoves = gb.getPossibleMoves(false);
+		if (possiblemoves==0 && gb.getPossibleMoves(true)==0) {
 			int stonesred = gb.countStones(GameBoard.RED);
 			int stonesgreen = gb.countStones(GameBoard.GREEN);
 			if (stonesred>stonesgreen) {

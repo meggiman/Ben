@@ -28,11 +28,11 @@ public class Negamaxplayer implements ReversiPlayer {
 	
 	@Override
 	public Coordinates nextMove(GameBoard gb) {
-		return Bitboard.longtoCoordinates(nextMove(Bitboard.convert(gb)));
+		return Bitboard.longToCoordinates(nextMove(Bitboard.convert(gb)));
 	}
 	
 	private long negamax(Bitboard gb, int depth){
-		long[] possiblemoves = Bitboard.bitboardserialize(gb.possiblemoves(true));
+		long[] possiblemoves = Bitboard.serializeBitboard(gb.getPossibleMoves(true));
 		if (possiblemoves.length == 0) {
 			return 0;
 		}

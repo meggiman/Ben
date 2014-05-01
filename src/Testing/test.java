@@ -11,7 +11,7 @@ import Gameboard.Bitboard;
 public class test{
 
     public static void main(String[] args){
-        TestArena testArena = new TestArena(new TestablePlayers.PlayerA(), new TestablePlayers.PlayerB(), 200);
+        TestArena testArena = new TestArena(new TestablePlayers.PlayerNoah(), new TestablePlayers.PlayerA(), 1000);
         TestArena.TestResult result = testArena.normalGame(Bitboard.RED, 10);
         JFileChooser fileChooser = new JFileChooser();
         int returned = fileChooser.showSaveDialog(null);
@@ -35,7 +35,7 @@ public class test{
         }
         else{
             long count = 1L;
-            for (Bitboard gbBitboard : gb.getbitboards(player, Bitboard.bitboardserialize(gb.possiblemoves(player)))){
+            for (Bitboard gbBitboard : gb.getBitboards(player, Bitboard.serializeBitboard(gb.getPossibleMoves(player)))){
                 count += countnodes(gbBitboard, depth - 1, !player);
             }
             return count;

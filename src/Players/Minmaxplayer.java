@@ -31,19 +31,19 @@ public class Minmaxplayer implements ReversiPlayer{
 	
 	@Override
 	public Coordinates nextMove(GameBoard gb) {
-		return Bitboard.longtoCoordinates(nextMove(Bitboard.convert(gb)));
+		return Bitboard.longToCoordinates(nextMove(Bitboard.convert(gb)));
 	}
 
 	/**
 	 * Benutzt den Alpha-Beta-Algorithmus um den besten Zug zu finden.
-	 * @param gb Das zu anaysierende {@link Bitboard}. Das Objekt wird verändert und enthält nach der Suche den nächsten Spielzustand.
+	 * @param gb Das zu anaysierende {@link Bitboard}. Das Objekt wird verï¿½ndert und enthï¿½lt nach der Suche den nï¿½chsten Spielzustand.
 	 * @param depth Die Iterationstiefe der Suche.
-	 * @return Die Repräsentation des Zuges als {@link long}.
+	 * @return Die Reprï¿½sentation des Zuges als {@link long}.
 	 */
 	private long alphabeta(Bitboard gb, int depth) {
 		alphabeta.deadline = System.currentTimeMillis()+timeLimit-100;
 		alphabeta.cancel = false;
-		long[] possiblemoves = Bitboard.bitboardserialize(gb.possiblemoves(true));
+		long[] possiblemoves = Bitboard.serializeBitboard(gb.getPossibleMoves(true));
 		if (possiblemoves.length == 0) {
 			return 0;
 		}

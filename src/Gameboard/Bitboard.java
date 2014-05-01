@@ -5,31 +5,30 @@ import reversi.GameBoard;
 import reversi.OutOfBoundsException;
 
 /**
- * Die Klasse {@code Bitboard} ist eine effiziente Implementierung eines 8x8
- * Spielbrettes f�r Reversi und stellt verschiedenste Methoden zur Zugberechnung
- * und Konvertierung von {@link GameBoard} bereit.
+ * The Class {@code Bitboard} is an efficient implementation of 8x8 Gameboard
+ * for reversi.
  * 
  */
 public class Bitboard implements GameBoard{
     /**
-     * Bitmaske um Bits die durch einen Leftshift des Bitboards die Zeile
-     * wechseln zu l�schen.
+     * Bitmask used for Leftshifts of the Bitboard.
      */
-    private static final long leftshiftmask      = 0xFEFEFEFEFEFEFEFEL;
+    private static final long   leftshiftmask      = 0xFEFEFEFEFEFEFEFEL;
 
     /**
-     * Bitmaske um Bits die durch einen Rightshift des Bitboards die Zeile
-     * wechseln zu l�schen.
+     * Bitmask used for Rightshifts of the whole Bitboard.
      */
-    private static final long rightshiftmask     = 0x7F7F7F7F7F7F7F7FL;
+    private static final long   rightshiftmask     = 0x7F7F7F7F7F7F7F7FL;
 
     /**
-     * 64 zuf�llige {@code long} Konstanten f�r die Generierung des
-     * Zobrist-Hash.
+     * 64 random {@code long} constants used to generate zobrist-hashes.
      */
-    private static long[]     zobristrandomred   = { 0xfbf185c26c378076L,
-            0x14fc57c338f4f1a5L, 0x925f95f86089b91dL, 0xf7532bd039d1a1f4L,
-            0xecfbaddab0d6fce0L, 0x2a8ca0dd2626b862L, 0x23d47c43ff36ce38L,
+    private static final long[] zobristrandomred   = { 0xfbf185c26c378076L,
+                                                   0x14fc57c338f4f1a5L,
+                                                   0x925f95f86089b91dL,
+                                                   0xf7532bd039d1a1f4L,
+                                                   0xecfbaddab0d6fce0L,
+            0x2a8ca0dd2626b862L, 0x23d47c43ff36ce38L,
             0x3e6baf923c28f448L,
             0x20d9010265a3f40fL, 0x6388d91cddc1c1cL, 0xafa8e8696ed1738bL,
             0x90bc3d08fc1ec9a2L,
@@ -58,15 +57,17 @@ public class Bitboard implements GameBoard{
             0xc048ab76910b2c5aL, 0x5d11eefe79c29638L, 0x658cfdf9d3598681L,
             0x66fa01853fe29ec3L,
             0x8485961d728f09b5L, 0xcc1281bbe4c0cc6aL, 0x4d16571ec4e48e15L,
-            0x957c6ae1831d84faL                 };
+            0x957c6ae1831d84faL                   };
 
     /**
-     * 64 zuf�llige {@code long} Konstanten f�r die Generierung des
-     * Zobrist-Hash.
+     * 64 random {@code long} constants used to generate zobrist-hashes.
      */
-    private static long[]     zobristrandomgreen = { 0xc5bb837cfc908843L,
-            0xfe69cb281253ce62L, 0x683f782b737295f4L, 0xfa35ce4ae312051eL,
-            0x42c73b38abd54779L, 0xa6bcc139d081d3ecL, 0x15ba9b28ba7956b0L,
+    private static final long[] zobristrandomgreen = { 0xc5bb837cfc908843L,
+                                                   0xfe69cb281253ce62L,
+                                                   0x683f782b737295f4L,
+                                                   0xfa35ce4ae312051eL,
+                                                   0x42c73b38abd54779L,
+            0xa6bcc139d081d3ecL, 0x15ba9b28ba7956b0L,
             0x6283347aa7b70f62L,
             0x2fe227cbe0394798L, 0xf9e9f51b8c1bcd62L, 0xa499cfb3401dae88L,
             0xaf44f6d6cc626537L,
@@ -95,27 +96,25 @@ public class Bitboard implements GameBoard{
             0xfb3305942dec8e66L, 0x11e08678051046b9L, 0x971dcb32e7d6ecd4L,
             0x30873bfc1c5ef92dL,
             0xc7cfaac0a8ac0dcbL, 0xbc4e99466f54709aL, 0x5ac95c64d48d5682L,
-            0x455000a14de5437L                  };
+            0x455000a14de5437L                    };
 
     /**
-     * Diese Variable wird von {@code hashCode()} verwendet um den Hash
-     * inkrementell berrechnen zu k�nnen. Ist das Flag {@link usehash} gesetzt,
-     * wird der Wert von {@code hash} von {@link hashCode()} als Hash
-     * zur�ckgegeben.
+     * This variable is used by {@code hashCode()} to incrementally calculate
+     * zobrist-hashes.
      */
-    public long               hash;
+    public long                 hash;
     /**
-     * Repr�sentation aller roten Steine des Spielfeldes in einer Longvariable.
-     * Das MSB entspricht der linken oberen Ecke des Spielfeldes. Bit Nr. 55
-     * liegt eine Zeile unter der linken oberen Ecke.
+     * Representation of all the red stones on the board. the MSB represents
+     * upper left corner.
+     * Bit nr. 55 lies one row below upper left corner.
      */
-    public long               red                = 0;
+    public long                 red                = 0;
     /**
-     * Repr�sentation aller gr�nen Steine des Spielfeldes in einer Longvariable.
-     * Das MSB entspricht der linken oberen Ecke des Spielfeldes. Bit Nr. 55
-     * liegt eine Zeile unter der linken oberen Ecke.
+     * Representation of all the red stones on the board. the MSB represents
+     * upper left corner.
+     * Bit nr. 55 lies one row below upper left corner.
      */
-    public long               green              = 0;
+    public long                 green              = 0;
 
     /**
      * Erzeugt ein neues, leeres {@link Bitboard}.
@@ -124,24 +123,29 @@ public class Bitboard implements GameBoard{
     }
 
     /**
-     * Erzeugt ein Bitboard mit {@code red} und {@code green} als Bitboard
-     * Repr�sentation der Spielsituation. Die Parameter werden nicht auf
-     * G�ltigkeit gepr�ft.
+     * Creates a new Bitboard with parameters {@code red} and {@code green}
+     * representing the red and green stones.
+     * parameters aren't checked for validity.
      * 
      * @param red
-     *            alle roten Steine
+     *            all the red stones roten Steine
      * @param green
      *            alle gr�nen Steine
      */
     public Bitboard(long red, long green){
         this.red = red;
         this.green = green;
+        hash = generateZobristhash();
     }
 
-    public void refreshZobristhash(long flippeddisks, long moovecord,
-            boolean player){
+    public void refreshZobristhash(long flippeddisks, long moovecord, boolean player){
+        if(moovecord == 0){
+            System.out.println("dasda");
+        }
         int index;
-        for (long bit : bitboardserialize(flippeddisks)){
+        while(flippeddisks != 0){
+            long bit = Long.highestOneBit(flippeddisks);
+            flippeddisks ^= bit;
             index = Long.numberOfTrailingZeros(bit);
             hash ^= zobristrandomred[index];
             hash ^= zobristrandomgreen[index];
@@ -152,27 +156,23 @@ public class Bitboard implements GameBoard{
 
     public long generateZobristhash(){
         long value = 0;
-        for (long bit : bitboardserialize(red)){
+        for (long bit : serializeBitboard(red)){
             value ^= zobristrandomred[Long.numberOfTrailingZeros(bit)];
         }
-        for (long bit : bitboardserialize(green)){
+        for (long bit : serializeBitboard(green)){
             value ^= zobristrandomgreen[Long.numberOfTrailingZeros(bit)];
         }
         return value;
     }
 
     /**
-     * Diese Methode erzeugt aus einem Bitboard ein Array aus Bitboards mit je
-     * einem entsprechendem Bit von {@code bitboard}. Wird haupts�chlich
-     * verwendet um aus der Bitmaske aller m�glichen Z�ge ein Array aller Z�ge
-     * zu bekommen.
+     * Creates an Array of long values with one single bit set each.
      * 
      * @param bitboard
-     *            das Bitboard, welches serialisiert werden soll
-     * @return das Array mit den einzelnen Bits. Gibt {@code null} zur�ck, wenn
-     *         {@code bitboard == 0}.
+     *            the bitboard to serialize.
+     * @return the serialized long variable. {@code null} if bitboard == 0
      */
-    public static long[] bitboardserialize(long bitboard){
+    public static long[] serializeBitboard(long bitboard){
         int bitcount = Long.bitCount(bitboard);
         long tmp;
         long[] bitboards = new long[bitcount];
@@ -186,9 +186,9 @@ public class Bitboard implements GameBoard{
 
     /**
      * Erzeugt aus einem Array von m�glichen Spielz�gen und dem ziehenden
-     * Spieler ein Array der darausfolgenen {@link Bitboards}. Die Z�ge werden
-     * nicht auf G�ltigkeit gepr�ft. Liefert kein sinnvolles Ergebnis f�r
-     * illegale Z�ge.
+     * Spieler ein Array der darausfolgenen {@link Bitboards}.
+     * Die Z�ge werden nicht auf G�ltigkeit gepr�ft. Liefert kein sinnvolles
+     * Ergebnis f�r illegale Z�ge.
      * 
      * @param player
      *            der ziehende Spieler.
@@ -196,7 +196,7 @@ public class Bitboard implements GameBoard{
      *            ein Array aller m�glichen Z�ge.
      * @return
      */
-    public Bitboard[] getbitboards(boolean player, long[] moves){
+    public Bitboard[] getBitboards(boolean player, long[] moves){
         Bitboard[] nextgameboards = new Bitboard[moves.length];
         for (int i = 0; i < nextgameboards.length; i++){
             nextgameboards[i] = ((Bitboard) this.clone());
@@ -213,7 +213,7 @@ public class Bitboard implements GameBoard{
      *            das umzuwandelnde {@link Coordinates} Objekt
      * @return konvertierte Koordinate.
      */
-    public static long coordinatestolong(Coordinates coord){
+    public static long coordinatesToLong(Coordinates coord){
         if(coord == null){
             return 0;
         }
@@ -228,7 +228,7 @@ public class Bitboard implements GameBoard{
      *            zu konvertierende Koordinate
      * @return konvertierte Koordinate
      */
-    public static Coordinates longtoCoordinates(long coord){
+    public static Coordinates longToCoordinates(long coord){
         if(coord == 0){
             return null;
         }
@@ -245,7 +245,7 @@ public class Bitboard implements GameBoard{
      * @return neues Bitboard mit allen markierten Nachbarn ohne die Bits von
      *         bitboard selbst.
      */
-    public static long filladjacent(long bitboard){
+    public static long fillAdjacent(long bitboard){
         long filledbitboard = bitboard;
         filledbitboard |= filledbitboard >>> 1 & 0x7f7f7f7f7f7f7f7fL;
         filledbitboard |= filledbitboard >>> 8;
@@ -273,6 +273,7 @@ public class Bitboard implements GameBoard{
         else{
             green ^= coord;
         }
+        refreshZobristhash(changedfields, coord, player);
     }
 
     /**
@@ -294,10 +295,10 @@ public class Bitboard implements GameBoard{
                     int occupation = gb.getOccupation(coord);
                     if(occupation != GameBoard.EMPTY){
                         if(occupation == GameBoard.RED){
-                            red |= Bitboard.coordinatestolong(coord);
+                            red |= Bitboard.coordinatesToLong(coord);
                         }
                         else{
-                            green |= Bitboard.coordinatestolong(coord);
+                            green |= Bitboard.coordinatesToLong(coord);
                         }
                     }
                 }
@@ -314,7 +315,7 @@ public class Bitboard implements GameBoard{
      * @return gibt die Bitboard-Repr�sentation aller m�glichen Z�ge zur�ck.
      *         Sind keine Z�ge m�glich, wird 0 zur�ck gegeben.
      */
-    public long possiblemoves(boolean player){
+    public long getPossibleMoves(boolean player){
         long emptyfields = ~(red | green);
         long validmoves = 0;
         long potentialmoves;
@@ -393,7 +394,7 @@ public class Bitboard implements GameBoard{
 
     @Override
     public boolean checkMove(int player, Coordinates coord){
-        return ((coordinatestolong(coord) & possiblemoves(player == RED)) != 0);
+        return ((coordinatesToLong(coord) & getPossibleMoves(player == RED)) != 0);
     }
 
     @Override
@@ -415,7 +416,7 @@ public class Bitboard implements GameBoard{
 
     @Override
     public int getOccupation(Coordinates coord) throws OutOfBoundsException{
-        long coords = coordinatestolong(coord);
+        long coords = coordinatesToLong(coord);
         if((coords & red) != 0){
             return RED;
         }
@@ -439,7 +440,7 @@ public class Bitboard implements GameBoard{
 
     @Override
     public boolean isMoveAvailable(int player){
-        return possiblemoves(player == RED) == 0;
+        return getPossibleMoves(player == RED) == 0;
     }
 
     /**
@@ -453,14 +454,14 @@ public class Bitboard implements GameBoard{
 
     @Override
     public void makeMove(int player, Coordinates coord){
-        makeMove(player == RED, coordinatestolong(coord));
+        makeMove(player == RED, coordinatesToLong(coord));
     }
 
     /**
      * Diese Methode setzt einen Stein f�r den angegebenen Spieler auf dem
-     * angegebenen Feld, und dreht Steine des Gegners gem�ss den Regeln um. Es
-     * wird nicht �berpr�ft, ob der angegeben Zug legal ist. Der Zobrist-Hash
-     * wird durch den Aufruf dieser Methode <B>nicht</B> aktualisiert.
+     * angegebenen Feld, und dreht Steine des Gegners gem�ss den Regeln um.
+     * Es wird nicht �berpr�ft, ob der angegeben Zug legal ist. Der Zobrist-Hash
+     * wird durch den Aufruf dieser Methode aktualisiert.
      * 
      * @param player
      *            der ziehende Spieler. Verwende {@code true} f�r rot oder
@@ -593,15 +594,17 @@ public class Bitboard implements GameBoard{
             green = playerfields;
             red = otherplayerfields;
         }
+        refreshZobristhash(changedfields, changedfields, player);
         return changedfields;
     }
 
     /**
      * F�hr den angegebenen Zug auf einer Kopie von {@code this} aus. Der
      * Zobrist Hash wird dabei aktualisiert. Wird dieser f�r kein von diesem
-     * Objekt stammendes {@code Bitboard} ben�tigt, sollte aus
-     * Performancegr�nden die Methode {@link Bitboard#makeMove(boolean, long)
-     * makeMove} auf einem kopierten Objekt ausgef�hrt werden.
+     * Objekt stammendes {@code Bitboard} ben�tigt,
+     * sollte aus Performancegr�nden die Methode
+     * {@link Bitboard#makeMove(boolean, long) makeMove} auf einem kopierten
+     * Objekt ausgef�hrt werden.
      * 
      * @param player
      *            der ziehende Spieler. Verwende {@code true} f�r rot oder

@@ -37,7 +37,7 @@ public class GameTreeDataStructure {
 	}
 	
 	public boolean expandnext(boolean player){
-		long possiblemoves = situation.possiblemoves(player);
+		long possiblemoves = situation.getPossibleMoves(player);
 		int max = Long.bitCount(possiblemoves);
 		if (nextmoves == null) {
 			nextmoves = new GameTreeDataStructure[max];
