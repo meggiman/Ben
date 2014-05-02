@@ -71,6 +71,7 @@ public class TestArena {
 			Bitboard gb = new Bitboard(0x18000000L, 0x1800000000L);
 			player1.initialize(this.player1colour, timelimitplayer1);
 			player2.initialize(this.player2colour, timelimitplayer2);
+			System.gc();
 			TestResult.GameResult game = result.new GameResult();
 			if (this.player1colour == Bitboard.GREEN) {
 				MoveResult move = null;
@@ -876,6 +877,7 @@ public class TestArena {
 				}
 				calculateaverages();
 				isfinished = true;
+				System.gc();
 			}
 			
 			public int getresultcode(){
