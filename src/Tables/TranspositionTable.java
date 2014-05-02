@@ -42,8 +42,8 @@ public class TranspositionTable {
 			keys = new long[maxsize];
 			entries = new TableEntry[maxsize];
 			mask = ~(0x8000000000000000L>>(63-size));
-			for (TableEntry entry : entries) {
-				entry = new TableEntry();
+			for (int i = 0;i<entries.length;i++) {
+				entries[i] = new TableEntry();
 			}
 		}
 		/**
