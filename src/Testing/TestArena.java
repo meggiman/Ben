@@ -154,13 +154,12 @@ public class TestArena {
 		int playercode = (player == player1)?PLAYER1:PLAYER2;
 		Coordinates coord = null;
 		long time = System.currentTimeMillis();
-		coord = player.nextMove(gb);
-//		try {
-//			coord = player.nextMove(gb);
-//		} 
-//		catch (Exception e) {
-//			throw new PlayerException(e, playercode, gb);
-//		}
+		try {
+			coord = player.nextMove(gb);
+		} 
+		catch (Exception e) {
+			throw new PlayerException(e, playercode, gb);
+		}
 		time = System.currentTimeMillis() -time;
 		if (time > ((playercode==PLAYER1)?timelimitplayer1:timelimitplayer2)) {
 			throw new TimeLimitExceededException("Die Zeit wurde um "+time+"ms überschritten.");
