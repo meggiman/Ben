@@ -13,7 +13,7 @@ import Testing.ITestablePlayer;
 public class PlayerA implements ITestablePlayer {
 	private int myColor;
 	private long timeLimit;
-	public Searchalgorithm suchalgorithmus = new alphabetanocloneing();
+	public Searchalgorithm suchalgorithmus;
 	public IEvaluator evaluator = new strategicevaluator();
 	public String name = "alphabeta without cloneing";
 
@@ -21,6 +21,7 @@ public class PlayerA implements ITestablePlayer {
 	public void initialize(int myColor, long timeLimit) {
 		this.myColor = myColor;
 		this.timeLimit = timeLimit;
+		suchalgorithmus = new searching.alphabetanocloneing();
 		suchalgorithmus.evaluator = evaluator;
 	}
 
@@ -34,7 +35,7 @@ public class PlayerA implements ITestablePlayer {
 			gb.green = gb.red;
 			gb.red = temp;
 		}
-		suchalgorithmus.deadline=System.nanoTime()+timeLimit*1000000-15000000;
+		suchalgorithmus.deadline=System.nanoTime()+timeLimit*1000000-20000000;
 		System.out.println("Player A searching...");
 		return suchalgorithmus.nextmove(gb);
 	}

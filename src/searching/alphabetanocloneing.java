@@ -6,10 +6,12 @@ import evaluate.IEvaluator;
 import evaluate.strategicevaluator;
 
 public class alphabetanocloneing extends Searchalgorithm{
-	public static IEvaluator evaluator = new strategicevaluator();
+	public IEvaluator evaluator = new strategicevaluator();
 	//private static TranspositionTable table = new TranspositionTable(2000000, replaceStrategy);
-	private static boolean cancel = false;
+	private boolean cancel = false;
+	private byte countofmoves = 0;
 	public long nextmove(Bitboard gb) {
+		countofmoves++;
 		cancel = false;
 		evaluatednodes = 0;
 		searchednodes = 0;
@@ -24,22 +26,29 @@ public class alphabetanocloneing extends Searchalgorithm{
 		long bestmove  = 0;
 		for (int i = 1; !cancel ; i++) {
 			bestvalue = -20065;
+			long tmpbestmove = 0;
+			int tmpmovenr =0;
 			for (int j = 0; j < possiblemoves.length;j++) {
 				long coord = possiblemoves[j];
 				nextboard = (Bitboard) gb.clone();
 				nextboard.makeMove(true, coord);
-				value = min(nextboard, -20065, 20065, i-1);
+				value = min(nextboard, -20065, 200065, i-1);
 				if (value > bestvalue) {
 					bestvalue = value;
-					bestmove = coord;
+					tmpbestmove = coord;
+					tmpmovenr = j;
 				}
-				if (cancel||bestvalue<-10000||bestvalue>10000) {
-					reacheddepth = i;
-					movenr = j;
-					valueoflastmove = bestvalue;
+				if (cancel) {
 					return bestmove;
 				}
 			}
+			if (i>65-countofmoves) {
+				cancel = true;
+			}
+			bestmove = tmpbestmove;
+			valueoflastmove = bestvalue;
+			movenr = tmpmovenr;
+			reacheddepth=i;
 		}
 		return bestmove;
 	}
@@ -54,21 +63,22 @@ public class alphabetanocloneing extends Searchalgorithm{
 		}
 		int maxvalue = alpha;
 		long possiblemoves = gb.possiblemoves(true);
-		if (possiblemoves==0 && gb.possiblemoves(false)==0) {
-			int stonesred = gb.countStones(GameBoard.RED);
-			int stonesgreen = gb.countStones(GameBoard.GREEN);
-			if (stonesred>stonesgreen) {
-				searchednodes++;
-				return 10000+stonesred-stonesgreen;
+		if (possiblemoves == 0) {
+			if (gb.possiblemoves(false) == 0) {
+				int stonesred = gb.countStones(GameBoard.RED);
+				int stonesgreen = gb.countStones(GameBoard.GREEN);
+				if (stonesred > stonesgreen) {
+					searchednodes++;
+					return 10000 + stonesred - stonesgreen;
+				} else if (stonesred < stonesgreen) {
+					searchednodes++;
+					return -10000 - stonesgreen + stonesred;
+				} else {
+					searchednodes++;
+					return 0;
+				}
 			}
-			else if (stonesred<stonesgreen){
-				searchednodes++;
-				return -10000-stonesgreen+stonesred;
-			}
-			else {
-				searchednodes++;
-				return 0;
-			}
+			return min(gb, alpha, beta, depth-1);
 		}
 		if (depth<=0) {
 			searchednodes++;
@@ -109,21 +119,22 @@ public class alphabetanocloneing extends Searchalgorithm{
 		}
 		int minvalue = beta;
 		long possiblemoves = gb.possiblemoves(false);
-		if (possiblemoves==0 && gb.possiblemoves(true)==0) {
-			int stonesred = gb.countStones(GameBoard.RED);
-			int stonesgreen = gb.countStones(GameBoard.GREEN);
-			if (stonesred>stonesgreen) {
-				searchednodes++;
-				return 10000+stonesred;
+		if (possiblemoves == 0) {
+			if (gb.possiblemoves(true) == 0) {
+				int stonesred = gb.countStones(GameBoard.RED);
+				int stonesgreen = gb.countStones(GameBoard.GREEN);
+				if (stonesred > stonesgreen) {
+					searchednodes++;
+					return 10000 + stonesred-stonesgreen;
+				} else if (stonesred < stonesgreen) {
+					searchednodes++;
+					return -10000 - stonesgreen+stonesred;
+				} else {
+					searchednodes++;
+					return 0;
+				}
 			}
-			else if (stonesred<stonesgreen){
-				searchednodes++;
-				return -10000-stonesgreen;
-			}
-			else {
-				searchednodes++;
-				return 0;
-			}
+			return max(gb, alpha, beta, depth-1);
 		}
 		if (depth<=0) {
 			searchednodes++;
