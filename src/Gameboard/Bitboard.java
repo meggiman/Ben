@@ -497,7 +497,7 @@ public class Bitboard implements GameBoard {
 			green = playerfields;
 			red = otherplayerfields;
 		}
-		refreshZobristhash(changedfields, changedfields, player);
+		refreshZobristhash(changedfields, coord, player);
 		return changedfields;
 	}
 	
