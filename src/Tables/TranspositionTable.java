@@ -68,11 +68,12 @@ public class TranspositionTable {
 			}
 			else if (replaceStrategy.replace(entries[index], entry)){
 				keys[index] = key;
-				entries[index].countofmoves = entry.countofmoves;
-				entries[index].depth = entry.depth;
-				entries[index].isExact = entry.isExact;
-				entries[index].isPvnode = entry.isPvnode;
-				entries[index].value = entry.value;
+				TableEntry oldEntry = entries[index];
+				oldEntry.countofmoves = entry.countofmoves;
+				oldEntry.depth = entry.depth;
+				oldEntry.isExact = entry.isExact;
+				oldEntry.isPvnode = entry.isPvnode;
+				oldEntry.value = entry.value;
 			}
 		}
 		/**
