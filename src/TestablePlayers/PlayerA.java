@@ -15,13 +15,13 @@ public class PlayerA implements ITestablePlayer {
 	private long timeLimit;
 	public Searchalgorithm suchalgorithmus;
 	public IEvaluator evaluator = new strategicevaluator();
-	public String name = "alphabeta without cloneing";
+	public String name = "alphabetaTT normal Bitboard";
 
 	@Override
 	public void initialize(int myColor, long timeLimit) {
 		this.myColor = myColor;
 		this.timeLimit = timeLimit;
-		suchalgorithmus = new searching.alphabetanocloneing();
+		suchalgorithmus = new searching.AlphabetaTT();
 		suchalgorithmus.evaluator = evaluator;
 	}
 

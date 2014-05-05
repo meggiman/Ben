@@ -1,4 +1,4 @@
-package Versuche;
+package Gameboard;
 
 public class Tables {
 	private static byte[] moveTable;

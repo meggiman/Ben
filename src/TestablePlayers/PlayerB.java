@@ -9,6 +9,8 @@ import searching.Searchalgorithm;
 import searching.alphabeta;
 import searching.alphabetanocloneing;
 import Gameboard.Bitboard;
+import Gameboard.Bitboard_lookup_Table;
+import Gameboard.Tables;
 import Testing.ITestablePlayer;
 
 public class PlayerB implements ITestablePlayer {
@@ -16,7 +18,8 @@ public class PlayerB implements ITestablePlayer {
 	private long timeLimit;
 	public Searchalgorithm suchalgorithmus = new AlphabetaTT();
 	public IEvaluator evaluator = new strategicevaluator();
-	public String name = "alphabeta without cloneing and TT";
+	public String name = "alphabetaTT lookup Bitboard";
+	
 
 	@Override
 	public void initialize(int myColor, long timeLimit) {
@@ -24,11 +27,12 @@ public class PlayerB implements ITestablePlayer {
 		this.timeLimit = timeLimit;
 		suchalgorithmus = new searching.AlphabetaTT();
 		suchalgorithmus.evaluator = evaluator;
+		Tables.generateTables();
 	}
 
 	@Override
 	public Coordinates nextMove(GameBoard gb) {
-		return Bitboard.longtoCoordinates(nextMove(Bitboard.convert(gb)));
+		return Bitboard.longtoCoordinates(nextMove(Bitboard_lookup_Table.convert(gb)));
 	}
 	public long nextMove(Bitboard gb){
 		if (myColor == GameBoard.GREEN) {
