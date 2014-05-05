@@ -1,5 +1,6 @@
 package Testing;
 
+import java.io.File;
 import java.io.IOException;
 
 import javax.swing.JFileChooser;
@@ -8,7 +9,6 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.transform.Templates;
 
 import Gameboard.Bitboard;
-import Players.Minmaxwithoutcloningplayer;
 import reversi.Coordinates;
 import reversi.GameBoard;
 import reversi.ReversiPlayer;
@@ -17,9 +17,10 @@ import reversi.ReversiPlayer;
 public class test {
 
 	public static void main(String[] args) {
-		TestArena testArena = new TestArena(new TestablePlayers.PlayerA(), new TestablePlayers.PlayerC(), 200);
-		TestArena.TestResult result = testArena.normalGame(Bitboard.RED,10);
+		TestArena testArena = new TestArena(new TestablePlayers.PlayerA(), new TestablePlayers.PlayerB(), 5000);
+		TestArena.TestResult result = testArena.randomTimeGame(10, 200);
 		JFileChooser fileChooser = new JFileChooser();
+		fileChooser.setSelectedFile(new File("C:\\Users\\Manuel\\workspace\\Reversi\\src\\Testing\\Tests\\testwithTT.xml"));
 		int returned = fileChooser.showSaveDialog(null);
 		if (returned == JFileChooser.APPROVE_OPTION) {
 			try {

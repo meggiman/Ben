@@ -45,7 +45,7 @@ public class AlphabetaTT extends Searchalgorithm {
 					return bestmove;
 				}
 			}
-			if (i>65 - countofmoves) {
+			if (i>34 - countofmoves) {
 				cancel = true;
 			}
 			bestmove = tmpbestmove;
