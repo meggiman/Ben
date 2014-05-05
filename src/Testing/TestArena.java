@@ -150,6 +150,99 @@ public class TestArena {
 		return result;
 	}
 	
+	public TestResult randomTimeGame(int nrofgames, int timevariation){
+		TestResult result =new TestResult();
+		this.player1colour = Bitboard.RED;
+		this.player2colour = Bitboard.GREEN;
+		int timelimit1 = timelimitplayer1;
+		int timelimit2 = timelimitplayer2;
+		for (int i = 0; i < nrofgames; i++) {
+			int randomtime = (int)(Math.random()*timevariation)-timevariation/2;
+			System.out.println("Randomtime: "+randomtime);
+			timelimitplayer1 = timelimit1+randomtime;
+			timelimitplayer2 = timelimit2+randomtime;
+			Bitboard gb = new Bitboard(0x18000000L, 0x1800000000L);
+			player1.initialize(this.player1colour, timelimitplayer1);
+			player2.initialize(this.player2colour, timelimitplayer2);
+			System.gc();
+			TestResult.GameResult game = result.new GameResult();
+			if (this.player1colour == Bitboard.GREEN) {
+				MoveResult move = null;
+				try {
+					move = nextmove(gb, player2);
+				} catch (TimeLimitExceededException e) {
+					game.disqualified2 = true;
+					game.resultcode = GameResult.TIMEEXCEEDED;
+				} catch (IllegalMoveException e) {
+					game.disqualified2 = true;
+					game.resultcode = GameResult.ILLEGALMOVE;
+				} catch (PlayerException e) {
+					game.disqualified2 = true;
+					game.resultcode = GameResult.EXCEPTION;
+					game.exception = e;
+				}
+				if (move != null) {
+					game.addmove(move);
+				}
+			}
+			do {
+				MoveResult move = null;
+				try {
+					move = nextmove(gb, player1);
+				} catch (TimeLimitExceededException e) {
+					game.disqualified1 = true;
+					game.resultcode = GameResult.TIMEEXCEEDED;
+					System.out.println("Player 1 Timeexceeded");
+					System.out.println(e.getMessage());
+					break;
+				} catch (IllegalMoveException e) {
+					game.disqualified1 = true;
+					game.resultcode = GameResult.ILLEGALMOVE;
+					break;
+				} 
+				catch (PlayerException e) {
+					game.disqualified1 = true;
+					game.resultcode = GameResult.EXCEPTION;
+					game.exception = e;
+					break;
+				}
+				if (move != null) {
+					game.addmove(move);
+				}
+
+				try {
+					move = nextmove(gb, player2);
+				} catch (TimeLimitExceededException e) {
+					game.disqualified2 = true;
+					game.resultcode = GameResult.TIMEEXCEEDED;
+					System.out.println("Player 2 Time exceeded.");
+					System.out.println(e.getMessage());
+					break;
+				} catch (IllegalMoveException e) {
+					game.disqualified2 = true;
+					game.resultcode = GameResult.ILLEGALMOVE;
+					break;
+				} catch (PlayerException e) {
+					game.disqualified2 = true;
+					game.resultcode = GameResult.EXCEPTION;
+					game.exception = e;
+					break;
+				}
+				if (move != null) {
+					game.addmove(move);
+				}
+			} while (!gb.isFinished());
+			game.finishgame();
+			result.addGame(game);
+			System.out.println(i);
+			int tmp = this.player1colour;
+			this.player1colour = this.player2colour;
+			this.player2colour = tmp;
+		}
+		result.finishtest();
+		return result;
+	}
+	
 	private MoveResult nextmove(GameBoard gb, ITestablePlayer player) throws TimeLimitExceededException, IllegalMoveException, PlayerException{
 		int playercode = (player == player1)?PLAYER1:PLAYER2;
 		Coordinates coord = null;
