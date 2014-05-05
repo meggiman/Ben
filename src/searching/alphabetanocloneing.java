@@ -42,7 +42,7 @@ public class alphabetanocloneing extends Searchalgorithm{
 					return bestmove;
 				}
 			}
-			if (i>65-countofmoves) {
+			if (i>35-countofmoves) {
 				cancel = true;
 			}
 			bestmove = tmpbestmove;
