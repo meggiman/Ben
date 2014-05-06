@@ -6,6 +6,7 @@ import searching.AlphaBetaNoah;
 import searching.SearchAlgorithm;
 import Gameboard.Bitboard;
 import Testing.ITestablePlayer;
+import evaluate.StrategicEvaluatorNoah;
 
 public class PlayerNoah implements ITestablePlayer{
 
@@ -18,7 +19,7 @@ public class PlayerNoah implements ITestablePlayer{
 
     @Override
     public void initialize(int color, long timeLimit){
-        searcher = new AlphaBetaNoah(color, timeLimit);
+        searcher = new AlphaBetaNoah(color, timeLimit, new StrategicEvaluatorNoah());
     }
 
     @Override

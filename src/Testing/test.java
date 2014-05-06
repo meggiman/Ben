@@ -11,7 +11,7 @@ import Gameboard.Bitboard;
 public class test{
 
     public static void main(String[] args){
-        TestArena testArena = new TestArena(new TestablePlayers.PlayerNoah(), new TestablePlayers.PlayerA(), 1000);
+        TestArena testArena = new TestArena(new TestablePlayers.PlayerNoah(), new TestablePlayers.PlayerA(), 2000);
         TestArena.TestResult result = testArena.normalGame(Bitboard.RED, 10);
         JFileChooser fileChooser = new JFileChooser();
         int returned = fileChooser.showSaveDialog(null);

@@ -104,69 +104,6 @@ public class TranspositionTable{
     }
 
     /**
-     * Interface um verschiedene Ersetzungsstrategien fuer verschiedene Hashmaps
-     * zu verwenden.
-     * 
-     */
-    private interface IReplaceStrategy{
-        /**
-         * Ersetzungsstrategie fuer die Hashmap. Die Strategie ist
-         * implementierungsabhaengig.
-         * 
-         * @param oldEntry
-         *            der evtl. zu ersetzende Wert
-         * @param newEntry
-         *            der evtl. neue Wert
-         * @return true, wenn der alte Eintrag ersetzt werden soll, ansonsten
-         *         false
-         */
-        public boolean replace(TableEntry oldEntry, TableEntry newEntry);
-    }
-
-    private class alwaysreplace implements IReplaceStrategy{
-        /**
-         * Ersetzt den alten Wert immer.
-         */
-        @Override
-        public boolean replace(TableEntry oldEntry, TableEntry newEntry){
-            return true;
-        }
-
-    }
-
-    private class neverreplace implements IReplaceStrategy{
-        /**
-         * Ersetzt den alten Wert niemals.
-         */
-        @Override
-        public boolean replace(TableEntry oldEntry, TableEntry newEntry){
-            return false;
-        }
-
-    }
-
-    private class pvnodepriority implements IReplaceStrategy{
-
-        @Override
-        public boolean replace(TableEntry oldEntry, TableEntry newEntry){
-            if(oldEntry.countofmoves < newEntry.countofmoves
-                    || !oldEntry.isExact){
-                return true;
-            }
-            if(newEntry.isPvnode){
-                return true;
-            }
-            if(!oldEntry.isPvnode && newEntry.isExact){
-                return true;
-            }
-            else{
-                return false;
-            }
-        }
-
-    }
-
-    /**
      * recyclable helper class to sort all moves, best first, worst last,
      * assuming a pvNode
      * is the best way to go exact values are always better than non exact
@@ -182,6 +119,10 @@ public class TranspositionTable{
         boolean              maxNode;
         byte                 count        = 0;
         byte                 searchedUpTo = 0;
+
+        public Sorter(){
+
+        }
 
         public Sorter(long possiblemoves, Bitboard board, boolean player, boolean maxNode, HashMap map){
             this.board = board;
@@ -231,7 +172,7 @@ public class TranspositionTable{
                     long changedfields = board.makeMove(player, possibleMoves[i]);
                     sortedMoves[searchedUpTo] = map.get(board.hash);
                     sortedReferences[searchedUpTo] = i;
-                    board.undomove(changedfields, possibleMoves[i], player);
+                    board.undoMove(changedfields, possibleMoves[i], player);
                     if(sortedMoves[searchedUpTo].isPvnode){
                         count++;
                         return possibleMoves[i];
@@ -245,7 +186,7 @@ public class TranspositionTable{
                 for (byte i = (byte) (searchedUpTo + 1); i < possibleMoves.length; i++){
                     long changedfields = board.makeMove(player, possibleMoves[i]);
                     sortedMoves[searchedUpTo++] = map.get(board.hash);
-                    board.undomove(changedfields, possibleMoves[i], player);
+                    board.undoMove(changedfields, possibleMoves[i], player);
                 }
                 sortEntries((byte) 0, (byte) (sortedMoves.length - 1));
             }
@@ -326,6 +267,12 @@ public class TranspositionTable{
          **/
 
         private boolean worse(TableEntry left, TableEntry right){
+            if(left == null){
+                return true;
+            }
+            else if(right == null){
+                return false;
+            }
             if(left.isExact == right.isExact){
                 if(maxNode){
                     if(left.value < right.value){
@@ -357,6 +304,12 @@ public class TranspositionTable{
          * @returns true if {@code left} is better than {@code right}
          **/
         private boolean better(TableEntry left, TableEntry right){
+            if(left == null){
+                return false;
+            }
+            else if(right == null){
+                return true;
+            }
             if(left.isExact == right.isExact){
                 if(maxNode){
                     if(left.value > right.value){

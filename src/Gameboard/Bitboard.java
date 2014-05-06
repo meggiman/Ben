@@ -13,26 +13,31 @@ public class Bitboard implements GameBoard{
     /**
      * Bitmask used for Leftshifts of the Bitboard.
      */
-    private static final long   leftshiftmask      = 0xFEFEFEFEFEFEFEFEL;
+    private static final long   leftshiftMask      = 0xFEFEFEFEFEFEFEFEL;
 
     /**
      * Bitmask used for Rightshifts of the whole Bitboard.
      */
-    private static final long   rightshiftmask     = 0x7F7F7F7F7F7F7F7FL;
+    private static final long   rightshiftMask     = 0x7F7F7F7F7F7F7F7FL;
 
     /**
      * 64 random {@code long} constants used to generate zobrist-hashes.
      */
-    private static final long[] zobristrandomred   = { 0xfbf185c26c378076L,
+    private static final long[] zobristRandomRed   = { 0xfbf185c26c378076L,
                                                    0x14fc57c338f4f1a5L,
                                                    0x925f95f86089b91dL,
                                                    0xf7532bd039d1a1f4L,
                                                    0xecfbaddab0d6fce0L,
-            0x2a8ca0dd2626b862L, 0x23d47c43ff36ce38L,
-            0x3e6baf923c28f448L,
-            0x20d9010265a3f40fL, 0x6388d91cddc1c1cL, 0xafa8e8696ed1738bL,
-            0x90bc3d08fc1ec9a2L,
-            0x36c017d07c49546bL, 0xf2ef8f4cac6794f1L, 0xf56bb2fcbdc8d2b1L,
+                                                   0x2a8ca0dd2626b862L,
+                                                   0x23d47c43ff36ce38L,
+                                                   0x3e6baf923c28f448L,
+                                                   0x20d9010265a3f40fL,
+                                                   0x6388d91cddc1c1cL,
+                                                   0xafa8e8696ed1738bL,
+                                                   0x90bc3d08fc1ec9a2L,
+                                                   0x36c017d07c49546bL,
+                                                   0xf2ef8f4cac6794f1L,
+            0xf56bb2fcbdc8d2b1L,
             0x7fa139f336fc98feL,
             0x3e4731ff2edbd886L, 0x2341ecdb9dadb92bL, 0x715f9e7d5c37bf11L,
             0xeae7498f80a35fa8L,
@@ -62,16 +67,21 @@ public class Bitboard implements GameBoard{
     /**
      * 64 random {@code long} constants used to generate zobrist-hashes.
      */
-    private static final long[] zobristrandomgreen = { 0xc5bb837cfc908843L,
+    private static final long[] zobristRandomGreen = { 0xc5bb837cfc908843L,
                                                    0xfe69cb281253ce62L,
                                                    0x683f782b737295f4L,
                                                    0xfa35ce4ae312051eL,
                                                    0x42c73b38abd54779L,
-            0xa6bcc139d081d3ecL, 0x15ba9b28ba7956b0L,
-            0x6283347aa7b70f62L,
-            0x2fe227cbe0394798L, 0xf9e9f51b8c1bcd62L, 0xa499cfb3401dae88L,
-            0xaf44f6d6cc626537L,
-            0xdd8b04996dc30640L, 0xc8eff63264fb72e4L, 0x73167782e4db58eaL,
+                                                   0xa6bcc139d081d3ecL,
+                                                   0x15ba9b28ba7956b0L,
+                                                   0x6283347aa7b70f62L,
+                                                   0x2fe227cbe0394798L,
+                                                   0xf9e9f51b8c1bcd62L,
+                                                   0xa499cfb3401dae88L,
+                                                   0xaf44f6d6cc626537L,
+                                                   0xdd8b04996dc30640L,
+                                                   0xc8eff63264fb72e4L,
+            0x73167782e4db58eaL,
             0x7d92bad68f07579eL,
             0xf6845abc389b5264L, 0x535602c1d9a6f48eL, 0x5919b13e0e5568f8L,
             0x190a954c53a004daL,
@@ -135,10 +145,10 @@ public class Bitboard implements GameBoard{
     public Bitboard(long red, long green){
         this.red = red;
         this.green = green;
-        hash = generateZobristhash();
+        hash = generateZobristHash();
     }
 
-    public void refreshZobristhash(long flippeddisks, long moovecord, boolean player){
+    public void refreshZobristHash(long flippeddisks, long moovecord, boolean player){
         if(moovecord == 0){
             System.out.println("dasda");
         }
@@ -147,20 +157,20 @@ public class Bitboard implements GameBoard{
             long bit = Long.highestOneBit(flippeddisks);
             flippeddisks ^= bit;
             index = Long.numberOfTrailingZeros(bit);
-            hash ^= zobristrandomred[index];
-            hash ^= zobristrandomgreen[index];
+            hash ^= zobristRandomRed[index];
+            hash ^= zobristRandomGreen[index];
         }
-        hash ^= (player) ? zobristrandomred[Long.numberOfTrailingZeros(moovecord)]
-                : zobristrandomgreen[Long.numberOfTrailingZeros(moovecord)];
+        hash ^= (player) ? zobristRandomRed[Long.numberOfTrailingZeros(moovecord)]
+                : zobristRandomGreen[Long.numberOfTrailingZeros(moovecord)];
     }
 
-    public long generateZobristhash(){
+    public long generateZobristHash(){
         long value = 0;
         for (long bit : serializeBitboard(red)){
-            value ^= zobristrandomred[Long.numberOfTrailingZeros(bit)];
+            value ^= zobristRandomRed[Long.numberOfTrailingZeros(bit)];
         }
         for (long bit : serializeBitboard(green)){
-            value ^= zobristrandomgreen[Long.numberOfTrailingZeros(bit)];
+            value ^= zobristRandomGreen[Long.numberOfTrailingZeros(bit)];
         }
         return value;
     }
@@ -257,23 +267,23 @@ public class Bitboard implements GameBoard{
     /**
      * Macht den angegebenen Zug r�ckg�ngig.
      * 
-     * @param changedfields
+     * @param changedFields
      *            Die Felder, welche sich durch den Zug ge�ndert haben als long.
-     * @param coord
+     * @param coords
      *            Die Koordinate des Zuges
      * @param player
      *            der Spieler, welcher den Zug ausgef�hrt hatte.
      */
-    public void undomove(long changedfields, long coord, boolean player){
-        red ^= changedfields;
-        green ^= changedfields;
+    public void undoMove(long changedFields, long coords, boolean player){
+        red ^= changedFields;
+        green ^= changedFields;
         if(player){
-            red ^= coord;
+            red ^= coords;
         }
         else{
-            green ^= coord;
+            green ^= coords;
         }
-        refreshZobristhash(changedfields, coord, player);
+        refreshZobristHash(changedFields, coords, player);
     }
 
     /**
@@ -330,20 +340,20 @@ public class Bitboard implements GameBoard{
             otherplayerfields = red;
         }
         // leftshift
-        potentialmoves = (((playerfields << 1) & leftshiftmask & otherplayerfields) << 1)
-                & leftshiftmask;
+        potentialmoves = (((playerfields << 1) & leftshiftMask & otherplayerfields) << 1)
+                & leftshiftMask;
         while(potentialmoves != 0){
             validmoves |= (potentialmoves & emptyfields);
             potentialmoves = (potentialmoves & otherplayerfields) << 1
-                    & leftshiftmask;
+                    & leftshiftMask;
         }
         // rightshift
-        potentialmoves = (((playerfields >>> 1) & rightshiftmask & otherplayerfields) >>> 1)
-                & rightshiftmask;
+        potentialmoves = (((playerfields >>> 1) & rightshiftMask & otherplayerfields) >>> 1)
+                & rightshiftMask;
         while(potentialmoves != 0){
             validmoves |= (potentialmoves & emptyfields);
             potentialmoves = (potentialmoves & otherplayerfields) >>> 1
-                    & rightshiftmask;
+                    & rightshiftMask;
         }
         // upshift
         potentialmoves = (((playerfields << 8) & otherplayerfields) << 8);
@@ -358,36 +368,36 @@ public class Bitboard implements GameBoard{
             potentialmoves = (potentialmoves & otherplayerfields) >>> 8;
         }
         // upleftshift
-        potentialmoves = (((playerfields << 9) & leftshiftmask & otherplayerfields) << 9)
-                & leftshiftmask;
+        potentialmoves = (((playerfields << 9) & leftshiftMask & otherplayerfields) << 9)
+                & leftshiftMask;
         while(potentialmoves != 0){
             validmoves |= (potentialmoves & emptyfields);
             potentialmoves = (potentialmoves & otherplayerfields) << 9
-                    & leftshiftmask;
+                    & leftshiftMask;
         }
         // uprightshift
-        potentialmoves = (((playerfields << 7) & rightshiftmask & otherplayerfields) << 7)
-                & rightshiftmask;
+        potentialmoves = (((playerfields << 7) & rightshiftMask & otherplayerfields) << 7)
+                & rightshiftMask;
         while(potentialmoves != 0){
             validmoves |= (potentialmoves & emptyfields);
             potentialmoves = (potentialmoves & otherplayerfields) << 7
-                    & rightshiftmask;
+                    & rightshiftMask;
         }
         // downleftshift
-        potentialmoves = (((playerfields >>> 7) & leftshiftmask & otherplayerfields) >>> 7)
-                & leftshiftmask;
+        potentialmoves = (((playerfields >>> 7) & leftshiftMask & otherplayerfields) >>> 7)
+                & leftshiftMask;
         while(potentialmoves != 0){
             validmoves |= (potentialmoves & emptyfields);
             potentialmoves = (potentialmoves & otherplayerfields) >>> 7
-                    & leftshiftmask;
+                    & leftshiftMask;
         }
         // downrightshift
-        potentialmoves = (((playerfields >>> 9) & rightshiftmask & otherplayerfields) >>> 9)
-                & rightshiftmask;
+        potentialmoves = (((playerfields >>> 9) & rightshiftMask & otherplayerfields) >>> 9)
+                & rightshiftMask;
         while(potentialmoves != 0){
             validmoves |= (potentialmoves & emptyfields);
             potentialmoves = (potentialmoves & otherplayerfields) >>> 9
-                    & rightshiftmask;
+                    & rightshiftMask;
         }
         return validmoves;
     }
@@ -415,12 +425,12 @@ public class Bitboard implements GameBoard{
     }
 
     @Override
-    public int getOccupation(Coordinates coord) throws OutOfBoundsException{
-        long coords = coordinatesToLong(coord);
-        if((coords & red) != 0){
+    public int getOccupation(Coordinates coords) throws OutOfBoundsException{
+        long coordsAsLong = coordinatesToLong(coords);
+        if((coordsAsLong & red) != 0){
             return RED;
         }
-        else if((coords & green) != 0){
+        else if((coordsAsLong & green) != 0){
             return GREEN;
         }
         else{
@@ -435,7 +445,15 @@ public class Bitboard implements GameBoard{
 
     @Override
     public boolean isFull(){
-        return (red & green) == 0xFFFFFFFFFFFFFFFFL;
+        return Long.bitCount(red) + Long.bitCount(green) == 64;
+    }
+
+    public byte getRed(){
+        return (byte) Long.bitCount(red);
+    }
+
+    public byte getGreen(){
+        return (byte) Long.bitCount(green);
     }
 
     @Override
@@ -490,11 +508,11 @@ public class Bitboard implements GameBoard{
             otherplayerfields = red;
         }
         // leftshift
-        cursor = coord << 1 & leftshiftmask;
+        cursor = coord << 1 & leftshiftMask;
         while(cursor != 0){
             cursor &= otherplayerfields;
             possiblychangedfields |= cursor;
-            cursor = (cursor << 1) & leftshiftmask;
+            cursor = (cursor << 1) & leftshiftMask;
             if((cursor & playerfields) != 0){
                 changedfields |= possiblychangedfields;
                 break;
@@ -502,11 +520,11 @@ public class Bitboard implements GameBoard{
         }
         // rightshift
         possiblychangedfields = 0;
-        cursor = coord >>> 1 & rightshiftmask;
+        cursor = coord >>> 1 & rightshiftMask;
         while(cursor != 0){
             cursor &= otherplayerfields;
             possiblychangedfields |= cursor;
-            cursor = (cursor >>> 1) & rightshiftmask;
+            cursor = (cursor >>> 1) & rightshiftMask;
             if((cursor & playerfields) != 0){
                 changedfields |= possiblychangedfields;
                 break;
@@ -538,11 +556,11 @@ public class Bitboard implements GameBoard{
         }
         // upleftshift
         possiblychangedfields = 0;
-        cursor = coord << 9 & leftshiftmask;
+        cursor = coord << 9 & leftshiftMask;
         while(cursor != 0){
             cursor &= otherplayerfields;
             possiblychangedfields |= cursor;
-            cursor = (cursor << 9) & leftshiftmask;
+            cursor = (cursor << 9) & leftshiftMask;
             if((cursor & playerfields) != 0){
                 changedfields |= possiblychangedfields;
                 break;
@@ -550,11 +568,11 @@ public class Bitboard implements GameBoard{
         }
         // uprightshift
         possiblychangedfields = 0;
-        cursor = coord << 7 & rightshiftmask;
+        cursor = coord << 7 & rightshiftMask;
         while(cursor != 0){
             cursor &= otherplayerfields;
             possiblychangedfields |= cursor;
-            cursor = (cursor << 7) & rightshiftmask;
+            cursor = (cursor << 7) & rightshiftMask;
             if((cursor & playerfields) != 0){
                 changedfields |= possiblychangedfields;
                 break;
@@ -562,11 +580,11 @@ public class Bitboard implements GameBoard{
         }
         // downleftshift
         possiblychangedfields = 0;
-        cursor = coord >>> 7 & leftshiftmask;
+        cursor = coord >>> 7 & leftshiftMask;
         while(cursor != 0){
             cursor &= otherplayerfields;
             possiblychangedfields |= cursor;
-            cursor = (cursor >>> 7) & leftshiftmask;
+            cursor = (cursor >>> 7) & leftshiftMask;
             if((cursor & playerfields) != 0){
                 changedfields |= possiblychangedfields;
                 break;
@@ -574,11 +592,11 @@ public class Bitboard implements GameBoard{
         }
         // downrightshift
         possiblychangedfields = 0;
-        cursor = coord >>> 9 & rightshiftmask;
+        cursor = coord >>> 9 & rightshiftMask;
         while(cursor != 0){
             cursor &= otherplayerfields;
             possiblychangedfields |= cursor;
-            cursor = (cursor >>> 9) & rightshiftmask;
+            cursor = (cursor >>> 9) & rightshiftMask;
             if((cursor & playerfields) != 0){
                 changedfields |= possiblychangedfields;
                 break;
@@ -594,7 +612,7 @@ public class Bitboard implements GameBoard{
             green = playerfields;
             red = otherplayerfields;
         }
-        refreshZobristhash(changedfields, changedfields, player);
+        refreshZobristHash(changedfields, changedfields, player);
         return changedfields;
     }
 
@@ -609,21 +627,26 @@ public class Bitboard implements GameBoard{
      * @param player
      *            der ziehende Spieler. Verwende {@code true} f�r rot oder
      *            {@code false} f�r gr�n.
-     * @param coord
+     * @param coords
      *            die Bitboard-Repr�sentation des Zuges.
      * @return eine Kopie des
      *         {@code Bitboards, auf welchem der angegebene Zug ausgef�hrt wurde}
      */
-    public Bitboard copyandmakemove(boolean player, long coord){
+    public Bitboard copyAndMakeMove(boolean player, long coords){
         Bitboard gb = new Bitboard(this.red, this.green);
-        refreshZobristhash(gb.makeMove(player, coord), coord, player);
+        refreshZobristHash(gb.makeMove(player, coords), coords, player);
         return gb;
     }
 
+    public Bitboard copy(){
+        return new Bitboard(this.red, this.green);
+    }
+
     @Override
-    public boolean validCoordinates(Coordinates coord){
-        return coord.getCol() < 9 && coord.getRow() < 9 && coord.getCol() > 0
-                && coord.getRow() > 0;
+    public boolean validCoordinates(Coordinates coords){
+        return coords.getCol() < 9 && coords.getRow() < 9
+                && coords.getCol() > 0
+                && coords.getRow() > 0;
     }
 
     @Override

@@ -52,7 +52,7 @@ public class alphabetanocloneing {
 		for (int i = 0; i < movelist.length; i++) {
 			changedfields = gb.makeMove(true, movelist[i]);
 			value = min(gb, maxvalue, beta, depth-1);
-			gb.undomove(changedfields, movelist[i], true);
+			gb.undoMove(changedfields, movelist[i], true);
 			if (value > maxvalue) {
 				maxvalue = value;
 				if (value>= beta) {
@@ -71,7 +71,7 @@ public class alphabetanocloneing {
 			possiblemoves ^= nextmove;
 			changedfields = gb.makeMove(true, nextmove);
 			value = min(gb, maxvalue, beta, depth-1);
-			gb.undomove(changedfields, nextmove, true);
+			gb.undoMove(changedfields, nextmove, true);
 			if (value > maxvalue) {
 				maxvalue = value;
 			}
@@ -123,7 +123,7 @@ public class alphabetanocloneing {
 		for (int i = 0; i < movelist.length; i++) {
 			changedfields = gb.makeMove(false, movelist[i]);
 			value = max(gb, alpha, minvalue, depth-1);
-			gb.undomove(changedfields, movelist[i], false);
+			gb.undoMove(changedfields, movelist[i], false);
 			if (value < minvalue) {
 				minvalue = value;
 				if (value <= alpha) {
@@ -142,7 +142,7 @@ public class alphabetanocloneing {
 			possiblemoves ^= nextmove;
 			changedfields = gb.makeMove(false, nextmove);
 			value = max(gb, alpha, minvalue, depth-1);
-			gb.undomove(changedfields, nextmove, false);
+			gb.undoMove(changedfields, nextmove, false);
 			if (value < minvalue) {
 				minvalue = value;
 			}

@@ -2,6 +2,6 @@ package evaluate;
 
 import Gameboard.Bitboard;
 
-public interface IEvaluator {
-	public int evaluate(Bitboard gb, long possiblemoves, boolean player);
+public interface IEvaluator{
+    public short evaluate(Bitboard gb, long possiblemoves, boolean player);
 }

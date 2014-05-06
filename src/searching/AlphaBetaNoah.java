@@ -2,18 +2,29 @@ package searching;
 
 import reversi.GameBoard;
 import Gameboard.Bitboard;
+import Tables.TranspositionTable;
+import Tables.TranspositionTable.Sorter;
+import Tables.TranspositionTable.TableEntry;
+import evaluate.IEvaluator;
 
 public class AlphaBetaNoah extends SearchAlgorithm{
 
     // Game feature providing
-    private boolean      ENEMY     = false;
-    private boolean      PLAYER    = true;
+    private boolean            ENEMY           = false;
+    private boolean            PLAYER          = true;
 
-    private byte         MAXDEPTH  = 10;
-    private static short TOPBORDER = 32767;
-    private Bitboard     board;
-    private long         startingTime;
-    private long         timeLimit;
+    private byte               MAXDEPTH        = 10;
+    private static short       TOPBORDER       = 32767;
+    private Bitboard           board;
+    private long               startingTime;
+    private long               timeLimit;
+    private boolean            run;
+
+    private Sorter[]           sorters         = new Sorter[30];
+    private TableEntry         spareTableEntry = new TableEntry();
+    private TranspositionTable table           = new TranspositionTable(4000000, new Tables.pvNodePriority());
+
+    IEvaluator                 evaluator;
 
     // Measuring
     // public IEvaluator evaluator = null;
@@ -33,7 +44,7 @@ public class AlphaBetaNoah extends SearchAlgorithm{
         return (byte) (move & 0x000000FF);
     }
 
-    public AlphaBetaNoah(int color, long timeLimit){
+    public AlphaBetaNoah(int color, long timeLimit, IEvaluator evaluator){
         if(color == GameBoard.RED){
             PLAYER = true;
             ENEMY = false;
@@ -43,6 +54,10 @@ public class AlphaBetaNoah extends SearchAlgorithm{
             ENEMY = true;
         }
         this.deadline = timeLimit;
+        this.evaluator = evaluator;
+        for (byte i = 0; i < 30; i++){
+            sorters[i] = new Sorter();
+        }
     }
 
     // Do new turn
@@ -53,7 +68,7 @@ public class AlphaBetaNoah extends SearchAlgorithm{
         System.out.println("Move started!");
         long start = System.nanoTime();
 
-        board = gb;
+        board = gb.copy();
 
         // Get next best move by recursion.
         // Initiating with enemy first because that way it returns the
@@ -64,6 +79,7 @@ public class AlphaBetaNoah extends SearchAlgorithm{
 
         // End time measuring
         long time = (System.nanoTime() - start) / 1000000;
+        System.out.println("Best value was: " + extractValue(move));
         System.out.println("Took me " + time + "ms");
 
         valueOfLastMove = extractValue(move);
@@ -98,6 +114,7 @@ public class AlphaBetaNoah extends SearchAlgorithm{
         if(depth > 0){
             // Get all moves and iterate over 'em
             long[] possibleMoves = Bitboard.serializeBitboard(board.getPossibleMoves(!player));
+
             for (byte i = 0; i < possibleMoves.length; i++){
                 // Copy board from slot above in slot of current depth and make
                 // the move
@@ -106,7 +123,7 @@ public class AlphaBetaNoah extends SearchAlgorithm{
                 // Get best value of successors of that move
                 int temp = node(!player, value, (byte) (depth - 1));
                 short tempv = extractValue(temp);
-                board.undomove(changedFields, possibleMoves[i], !player);
+                board.undoMove(changedFields, possibleMoves[i], !player);
 
                 // Min node
                 if(player == PLAYER){
@@ -147,11 +164,7 @@ public class AlphaBetaNoah extends SearchAlgorithm{
         }
         // Calculate value of the board when depth 0 is reached
         else{
-            byte coinsPlayer = 5; // boards[depth].countStones(PLAYER);
-            byte coinsEnemy = 6; // boards[depth].countStones(ENEMY);
-            short coinparity = (short) (100 + 100 * (coinsPlayer - coinsEnemy)
-                    / (coinsPlayer + coinsEnemy));
-            value = coinparity;
+            value = (short) evaluator.evaluate(board, 0, player);
         }
         // System.out.println(player + "/" + depth + "/" + value
         // + " ----- normal exit NORMAL PLAYER");
