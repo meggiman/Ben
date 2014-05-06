@@ -4,6 +4,7 @@ import evaluate.IEvaluator;
 import evaluate.strategicevaluator;
 import reversi.Coordinates;
 import reversi.GameBoard;
+import searching.EndgameSearch;
 import searching.Searchalgorithm;
 import searching.alphabeta;
 import searching.alphabetanocloneing;
@@ -15,7 +16,7 @@ public class PlayerA implements ITestablePlayer {
 	private long timeLimit;
 	public Searchalgorithm suchalgorithmus;
 	public IEvaluator evaluator = new strategicevaluator();
-	public String name = "alphabetaTT normal Bitboard";
+	public String name = "alphabetaTT endgame";
 
 	@Override
 	public void initialize(int myColor, long timeLimit) {
@@ -34,6 +35,23 @@ public class PlayerA implements ITestablePlayer {
 			long temp = gb.green;
 			gb.green = gb.red;
 			gb.red = temp;
+		}
+		if ((64 - gb.countStones(true)-gb.countStones(false)) <= 18) {
+			System.out.println("Endgamesearch started:");
+			long time = System.nanoTime();
+			long move = EndgameSearch.OutcomeSearch.nextMove(gb);
+			System.out.println("Search took "+(System.nanoTime()-time)/1000000+" ms.");
+			switch (EndgameSearch.OutcomeSearch.outcome) {
+			case 1:
+				System.out.println("I will win.");
+				break;
+			case 0:
+				System.out.println("Draw");
+			default:
+				System.out.println("I will loose.");
+				break;
+			}
+			return move;
 		}
 		suchalgorithmus.deadline=System.nanoTime()+timeLimit*1000000-20000000;
 		System.out.println("Player A searching...");

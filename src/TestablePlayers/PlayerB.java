@@ -18,7 +18,7 @@ public class PlayerB implements ITestablePlayer {
 	private long timeLimit;
 	public Searchalgorithm suchalgorithmus = new AlphabetaTT();
 	public IEvaluator evaluator = new strategicevaluator();
-	public String name = "alphabetaTT lookup Bitboard";
+	public String name = "alphabetaTT";
 	
 
 	@Override
@@ -32,7 +32,7 @@ public class PlayerB implements ITestablePlayer {
 
 	@Override
 	public Coordinates nextMove(GameBoard gb) {
-		return Bitboard.longtoCoordinates(nextMove(Bitboard_lookup_Table.convert(gb)));
+		return Bitboard.longtoCoordinates(nextMove(Bitboard.convert(gb)));
 	}
 	public long nextMove(Bitboard gb){
 		if (myColor == GameBoard.GREEN) {

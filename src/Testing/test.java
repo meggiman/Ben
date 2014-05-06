@@ -12,13 +12,23 @@ import Gameboard.Bitboard;
 import reversi.Coordinates;
 import reversi.GameBoard;
 import reversi.ReversiPlayer;
+import searching.EndgameSearch;
 
 
 public class test {
 
 	public static void main(String[] args) {
-		TestArena testArena = new TestArena(new TestablePlayers.PlayerA(), new TestablePlayers.PlayerB(), 5000);
-		TestArena.TestResult result = testArena.randomTimeGame(10, 200);
+		Bitboard gb = new Bitboard(2201394854367868928L,4625217755795637628L);
+		long coord = EndgameSearch.OutcomeSearch.nextMove(gb); //Coord = 281474976710656 gb before green to move g 4625215556772382076 r 2201678528367835136
+		gb.makeMove(true, 281474976710656L);
+		System.out.println(EndgameSearch.OutcomeSearch.outcome);
+		Bitboard[] board = gb.getbitboards(false, Bitboard.bitboardserialize(gb.possiblemoves(false)));
+		gb.green = 4643335853073450364L;
+		gb.red = 2201572630576248832L;
+		EndgameSearch.OutcomeSearch.nextMove(gb);
+		System.out.println(EndgameSearch.OutcomeSearch.outcome);
+		TestArena testArena = new TestArena(new TestablePlayers.PlayerA(), new TestablePlayers.PlayerB(), 200);
+		TestArena.TestResult result = testArena.randomTimeGame(10, 50);
 		JFileChooser fileChooser = new JFileChooser();
 		fileChooser.setSelectedFile(new File("C:\\Users\\Manuel\\workspace\\Reversi\\src\\Testing\\Tests\\testwithTT.xml"));
 		int returned = fileChooser.showSaveDialog(null);
