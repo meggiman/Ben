@@ -119,22 +119,50 @@ public class Stability{
         return stable;
     }
 
-    short getStableEdgePieces(short border){
-        short stable = (short) (border & 1);
-        short potentiallyStable = (short) (border & 1);
-        short tempBoard;
+    byte getStable3EdgePieces(byte border){
+        byte stable = (byte) (border & 1);
+        byte potentiallyStable = (byte) (border & 1);
+        byte tempBoard;
         while(potentiallyStable != 0){
-            tempBoard = (short) (potentiallyStable << 1);
-            potentiallyStable = (short) (tempBoard & border);
+            tempBoard = (byte) (potentiallyStable << 1);
+            potentiallyStable = (byte) (tempBoard & border);
             stable |= potentiallyStable;
         }
 
-        stable |= (short) (border & 0b10000000);
-        potentiallyStable = (short) (border & 0b10000000);
+        stable |= (byte) (border & 0b10000000);
+        potentiallyStable = (byte) (border & 0b10000000);
         while(potentiallyStable != 0){
-            tempBoard = (short) (potentiallyStable >>> 1);
-            potentiallyStable = (short) (tempBoard & border);
+            tempBoard = (byte) ((potentiallyStable & 0xFF) >>> 1);
+            potentiallyStable = (byte) (tempBoard & border);
             stable |= potentiallyStable;
+        }
+        return stable;
+    }
+
+    byte getStable1EdgePieces(byte borderRed, byte borderGreen){
+        byte borderRedCopy = borderRed;
+        byte borderGreenCopy = borderGreen;
+        byte emptyEdge = (byte) ~(borderRed | borderGreen);
+        byte stable = 0;
+        byte potentiallyStable = (byte) (((borderRed << 1) & borderGreen) >>> 1);
+        emptyEdge = (byte) (emptyEdge << 1);
+        while(potentiallyStable != 0){
+            borderGreen = (byte) (borderGreen << 1);
+            emptyEdge = (byte) (emptyEdge << 1);
+            potentiallyStable = (byte) (potentiallyStable & borderGreen);
+            stable |= potentiallyStable & emptyEdge;
+        }
+
+        borderRed = borderRedCopy;
+        borderGreen = borderGreenCopy;
+        emptyEdge = (byte) ~(borderRed | borderGreen);
+        potentiallyStable = (byte) (((0xFF & borderRed >>> 1) & borderGreen) << 1);
+        emptyEdge = (byte) (0xFF & emptyEdge >>> 1);
+        while(potentiallyStable != 0){
+            borderGreen = (byte) (0xFF & borderGreen >>> 1);
+            emptyEdge = (byte) (0xFF & emptyEdge >>> 1);
+            potentiallyStable = (byte) (potentiallyStable & borderGreen);
+            stable |= potentiallyStable & emptyEdge;
         }
         return stable;
     }
@@ -160,6 +188,6 @@ public class Stability{
 
     public static void main(String[] args){
         Stability s = new Stability();
-        System.out.println(s.getUnanchoredStableEdgePieces((byte) 4, (byte) 10));
+        System.out.println(s.getStable1EdgePieces((byte) 20, (byte) 40));
     }
 }
