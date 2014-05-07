@@ -63,11 +63,8 @@ public class Stability{
         return false;
     }
 
-    long getSouthStablePieces(){
-        long player = 0;
-        long other = 0;
+    long getSouthStablePieces(long player){
         long tempBoard;
-        byte timesShifted = 0;
         long mask = 0b11111111;
 
         long stable = player & mask;
@@ -75,8 +72,90 @@ public class Stability{
         while(potentiallyStable != 0){
             tempBoard = shiftNorth(potentiallyStable);
             potentiallyStable = tempBoard & player;
-            stable &= potentiallyStable;
+            stable |= potentiallyStable;
+        }
+        return stable;
+    }
+
+    long getNorthStablePieces(long player){
+        long tempBoard;
+        long mask = 0b11111111_00000000_00000000_00000000_00000000_00000000_00000000_00000000L;
+
+        long stable = player & mask;
+        long potentiallyStable = player & mask;
+        while(potentiallyStable != 0){
+            tempBoard = shiftSouth(potentiallyStable);
+            potentiallyStable = tempBoard & player;
+            stable |= potentiallyStable;
+        }
+        return stable;
+    }
+
+    long getEastStablePieces(long player){
+        long tempBoard;
+        long mask = 0b1_00000001_00000001_00000001_00000001_00000001_00000001_00000001L;
+
+        long stable = player & mask;
+        long potentiallyStable = player & mask;
+        while(potentiallyStable != 0){
+            tempBoard = shiftWest(potentiallyStable);
+            potentiallyStable = tempBoard & player;
+            stable |= potentiallyStable;
+        }
+        return stable;
+    }
+
+    long getWestStablePieces(long player){
+        long tempBoard;
+        long mask = 0b10000000_10000000_10000000_10000000_10000000_10000000_10000000_10000000L;
+
+        long stable = player & mask;
+        long potentiallyStable = player & mask;
+        while(potentiallyStable != 0){
+            tempBoard = shiftEast(potentiallyStable);
+            potentiallyStable = tempBoard & player;
+            stable |= potentiallyStable;
+        }
+        return stable;
+    }
+
+    short getStableEdgePieces(short border){
+        short stable = (short) (border & 1);
+        short potentiallyStable = (short) (border & 1);
+        short tempBoard;
+        while(potentiallyStable != 0){
+            tempBoard = (short) (potentiallyStable << 1);
+            potentiallyStable = (short) (tempBoard & border);
+            stable |= potentiallyStable;
         }
 
+        stable |= (short) (border & 0b10000000);
+        potentiallyStable = (short) (border & 0b10000000);
+        while(potentiallyStable != 0){
+            tempBoard = (short) (potentiallyStable >>> 1);
+            potentiallyStable = (short) (tempBoard & border);
+            stable |= potentiallyStable;
+        }
+        return stable;
+    }
+
+    byte getAloneEdgePieces(byte borderRed, byte borderGreen){
+        // Shift left and right and check via & if there is an empty piece
+        byte emptyEdge = (byte) ~(borderRed | borderGreen);
+        return (byte) (((((borderRed << 1) & emptyEdge) >>> 2) & emptyEdge) << 1);
+    }
+
+    byte getUnstableEdgePieces(byte borderRed, byte borderGreen){
+        byte emptyEdge = (byte) ~(borderRed | borderGreen);
+        byte potentiallyUnstable = (byte) ((borderRed << 1) & emptyEdge);
+        byte unstable = (byte) (((potentiallyUnstable >>> 2) & borderGreen) << 1);
+        potentiallyUnstable = (byte) ((borderRed >>> 1) & emptyEdge);
+        unstable |= (((potentiallyUnstable << 2) & borderGreen) >>> 1);
+        return (byte) unstable;
+    }
+
+    public static void main(String[] args){
+        Stability s = new Stability();
+        System.out.println(s.getUnstableEdgePieces((byte) 17, (byte) 8));
     }
 }
