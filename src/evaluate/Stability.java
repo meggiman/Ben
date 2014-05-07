@@ -154,8 +154,12 @@ public class Stability{
         return (byte) unstable;
     }
 
+    byte getUnanchoredStableEdgePieces(byte borderRed, byte unstableGreen){
+        return (byte) (((((borderRed << 1) & unstableGreen) >>> 2) & unstableGreen) << 1);
+    }
+
     public static void main(String[] args){
         Stability s = new Stability();
-        System.out.println(s.getUnstableEdgePieces((byte) 17, (byte) 8));
+        System.out.println(s.getUnanchoredStableEdgePieces((byte) 4, (byte) 10));
     }
 }
