@@ -25,7 +25,7 @@ public class PlayerB implements ITestablePlayer {
 	public void initialize(int myColor, long timeLimit) {
 		this.myColor = myColor;
 		this.timeLimit = timeLimit;
-		suchalgorithmus = new searching.AlphabetaTT();
+		suchalgorithmus = new searching.alphabetanocloneing();
 		suchalgorithmus.evaluator = evaluator;
 		Tables.generateTables();
 	}
@@ -42,7 +42,9 @@ public class PlayerB implements ITestablePlayer {
 		}
 		suchalgorithmus.deadline=System.nanoTime()+timeLimit*1000000-20000000;
 		System.out.println("Player B searching...");
-		return suchalgorithmus.nextmove(gb);
+		long coord = suchalgorithmus.nextmove(gb);
+		System.out.println(suchalgorithmus.searchednodes);
+		return coord;
 	}
 
 	@Override

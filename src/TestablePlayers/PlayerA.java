@@ -39,16 +39,19 @@ public class PlayerA implements ITestablePlayer {
 		if ((64 - gb.countStones(true)-gb.countStones(false)) <= 18) {
 			System.out.println("Endgamesearch started:");
 			long time = System.nanoTime();
+			System.out.println("Red: "+gb.red+"L  Green: "+gb.green+"L");
 			long move = EndgameSearch.OutcomeSearch.nextMove(gb);
+			System.out.println("Zug: "+move+"L");
 			System.out.println("Search took "+(System.nanoTime()-time)/1000000+" ms.");
+			System.out.println("Searched "+EndgameSearch.OutcomeSearch.nodecount+" Nodes.");
 			switch (EndgameSearch.OutcomeSearch.outcome) {
 			case 1:
-				System.out.println("I will win.");
+				System.out.println("I will win.\n");
 				break;
 			case 0:
-				System.out.println("Draw");
+				System.out.println("Draw\n");
 			default:
-				System.out.println("I will loose.");
+				System.out.println("I will probably loose.\n");
 				break;
 			}
 			return move;

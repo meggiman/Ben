@@ -9,8 +9,10 @@ public class EndgameSearch {
 	public static class OutcomeSearch{
 		public static int outcome;
 		public static long nodecount;
+		public static int remainingStones;
 		public final static long nextMove(Bitboard gb){
 			nodecount = 0;
+			remainingStones = gb.countStones(true) + gb.countStones(false);
 			long possibleMoves = gb.possiblemoves(true);
 			if (possibleMoves == 0) {
 				long possibleMovesEnemy = gb.possiblemoves(false);
