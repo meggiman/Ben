@@ -8,7 +8,9 @@ public class EndgameSearch {
 	}
 	public static class OutcomeSearch{
 		public static int outcome;
+		public static long nodecount;
 		public final static long nextMove(Bitboard gb){
+			nodecount = 0;
 			long possibleMoves = gb.possiblemoves(true);
 			if (possibleMoves == 0) {
 				long possibleMovesEnemy = gb.possiblemoves(false);
@@ -31,6 +33,7 @@ public class EndgameSearch {
 				if (value == 0){
 					outcome = 0;
 					bestmove = coord;
+					alpha = 0;
 				}
 				possibleMoves ^= coord;
 			}
@@ -39,6 +42,7 @@ public class EndgameSearch {
 		}
 		
 		final static byte min(Bitboard gb,byte alpha, byte beta){
+			nodecount++;
 			long possibleMoves = gb.possiblemoves(false);
 			if (possibleMoves == 0) {
 				if (gb.possiblemoves(true) == 0) {
@@ -89,7 +93,7 @@ public class EndgameSearch {
 				do {
 					long coord = Long.highestOneBit(possibleMoves);
 					long changedfields = gb.makeMove(false, coord);
-					if (max(gb, (byte) 0, (byte) 1) == 0) {
+					if (max(gb, (byte) 0, (byte) 1) <= 0) {
 						gb.undomove(changedfields, coord, false);
 						return 0;
 					}
@@ -104,6 +108,7 @@ public class EndgameSearch {
 		
 		
 		final static byte max(Bitboard gb,byte alpha, byte beta){
+			nodecount++;
 			long possibleMoves = gb.possiblemoves(true);
 			if (possibleMoves == 0) {
 				if (gb.possiblemoves(false) == 0) {
@@ -154,7 +159,7 @@ public class EndgameSearch {
 				do {
 					long coord = Long.highestOneBit(possibleMoves);
 					long changedfields = gb.makeMove(true, coord);
-					if (min(gb, (byte) -1, (byte) 0) == 0) {
+					if (min(gb, (byte) -1, (byte) 0) >= 0) {
 						gb.undomove(changedfields, coord, true);
 						return 0;
 					}
