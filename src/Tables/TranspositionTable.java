@@ -59,7 +59,7 @@ public class TranspositionTable{
         public void put(long key, TableEntry entry){
             int index = (int) (key & mask);
             if(entries[index] == null){
-                TableEntry newEntry = new TableEntry(entry.value, entry.depth, entry.isExact, entry.isPvnode, entry.bestMove, entry.countofmoves);
+                TableEntry newEntry = new TableEntry(entry.value, entry.depth, entry.isExact, entry.isPvnode, entry.countofmoves);
                 entries[index] = newEntry;
             }
             else if(keys[index] == key){
@@ -69,7 +69,7 @@ public class TranspositionTable{
                 entryInTable.depth = entry.depth;
                 entryInTable.isExact = entry.isExact;
                 entryInTable.isPvnode = entry.isPvnode;
-                entryInTable.bestMove = entry.bestMove;
+//                entryInTable.bestMove = entry.bestMove;
                 entryInTable.value = entry.value;
             }
             else if(replaceStrategy.replace(entries[index], entry)){
@@ -79,7 +79,7 @@ public class TranspositionTable{
                 oldEntry.depth = entry.depth;
                 oldEntry.isExact = entry.isExact;
                 oldEntry.isPvnode = entry.isPvnode;
-                oldEntry.bestMove = entry.bestMove;
+//                oldEntry.bestMove = entry.bestMove;
                 oldEntry.value = entry.value;
             }
         }
@@ -128,10 +128,10 @@ public class TranspositionTable{
          */
         public boolean isPvnode;
 
-        /**
-         * The index of the best move going from this transposition.
-         */
-        public byte    bestMove;
+//        /**
+//         * The index of the best move going from this transposition.
+//         */
+//        public byte    bestMove;
 
         /**
          * Contains the amount of moves done by both players so far.
@@ -141,21 +141,21 @@ public class TranspositionTable{
         public TableEntry(){
         }
 
-        public TableEntry(short value, byte depth, boolean isExact, boolean isPvnode, byte bestMove, byte countofmoves){
+        public TableEntry(short value, byte depth, boolean isExact, boolean isPvnode, byte countofmoves){
             this.value = value;
             this.depth = depth;
             this.isExact = isExact;
             this.isPvnode = isPvnode;
-            this.bestMove = bestMove;
+//            this.bestMove = bestMove;
             this.countofmoves = countofmoves;
         }
 
-        public static void recycleEntry(TableEntry entry, short value, byte depth, boolean isExact, boolean isPvnode, byte bestMove, byte countofmoves){
+        public static void recycleEntry(TableEntry entry, short value, byte depth, boolean isExact, boolean isPvnode, byte countofmoves){
             entry.value = value;
             entry.depth = depth;
             entry.isExact = isExact;
             entry.isPvnode = isPvnode;
-            entry.bestMove = bestMove;
+//            entry.bestMove = bestMove;
             entry.countofmoves = countofmoves;
         }
     }

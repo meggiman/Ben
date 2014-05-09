@@ -234,6 +234,17 @@ public class TestArena {
 			} while (!gb.isFinished());
 			game.finishgame();
 			result.addGame(game);
+			switch (game.winner) {
+			case PLAYER1:
+				System.out.println(player1.getname()+" won.");
+				break;
+			case PLAYER2:
+				System.out.println(player2.getname()+" won.");
+				break;
+			default:
+				System.out.println("Draw.");
+				break;
+			}
 			System.out.println(i);
 			int tmp = this.player1colour;
 			this.player1colour = this.player2colour;
@@ -242,7 +253,6 @@ public class TestArena {
 		result.finishtest();
 		return result;
 	}
-	
 	private MoveResult nextmove(GameBoard gb, ITestablePlayer player) throws TimeLimitExceededException, IllegalMoveException, PlayerException{
 		int playercode = (player == player1)?PLAYER1:PLAYER2;
 		Coordinates coord = null;

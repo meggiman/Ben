@@ -10,20 +10,24 @@ import searching.alphabeta;
 import searching.alphabetanocloneing;
 import Gameboard.Bitboard;
 import Testing.ITestablePlayer;
+import Versuche.Bitboard_lookup_Table;
+import Versuche.Tables;
 
 public class PlayerB implements ITestablePlayer {
 	private int myColor;
 	private long timeLimit;
 	public Searchalgorithm suchalgorithmus = new AlphabetaTT();
 	public IEvaluator evaluator = new strategicevaluator();
-	public String name = "alphabeta without cloneing and TT";
+	public String name = "alphabetaTT";
+	
 
 	@Override
 	public void initialize(int myColor, long timeLimit) {
 		this.myColor = myColor;
 		this.timeLimit = timeLimit;
-		suchalgorithmus = new searching.AlphabetaTT();
+		suchalgorithmus = new searching.alphabetanocloneing();
 		suchalgorithmus.evaluator = evaluator;
+		Tables.generateTables();
 	}
 
 	@Override
@@ -38,7 +42,9 @@ public class PlayerB implements ITestablePlayer {
 		}
 		suchalgorithmus.deadline=System.nanoTime()+timeLimit*1000000-20000000;
 		System.out.println("Player B searching...");
-		return suchalgorithmus.nextmove(gb);
+		long coord = suchalgorithmus.nextmove(gb);
+		System.out.println(suchalgorithmus.searchednodes);
+		return coord;
 	}
 
 	@Override

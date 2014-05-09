@@ -1,17 +1,14 @@
 package Versuche;
 
+import Gameboard.Bitboard;
 import reversi.Coordinates;
 import reversi.GameBoard;
 import reversi.OutOfBoundsException;
 
-public class Bitboard_lookup_Table implements GameBoard{
-
-	public long red;
-	public long green;
+public class Bitboard_lookup_Table extends Bitboard implements GameBoard{
 	
 	public Bitboard_lookup_Table(long red, long green){
-		this.red = red;
-		this.green = green;
+		super(red,green);
 	}
 	
 	/**
@@ -80,18 +77,6 @@ public class Bitboard_lookup_Table implements GameBoard{
 		return filledbitboard^bitboard;
 	}
 	
-	public static long[] bitboardserialize(long bitboard){
-		int bitcount = Long.bitCount(bitboard);
-		long tmp;
-		long[] bitboards = new long[bitcount];
-		for (int i = 0; i < bitcount; i++) {
-			tmp = Long.highestOneBit(bitboard);
-			bitboards[i] = tmp;
-			bitboard ^= tmp;
-		}
-		return bitboards;
-	}
-	
 	public long likelyMoves(boolean player){
 		if (player) {
 			return filladjacent(green)& ~red;
@@ -101,65 +86,47 @@ public class Bitboard_lookup_Table implements GameBoard{
 		}
 	}
 	
-	public long possiblemoves(boolean player){
-		long[] likelyMoves = bitboardserialize(likelyMoves(player));
-		long possiblemoves=0;
-		for (long l : likelyMoves) {
-			if (getflipboard(player, l)!=0) {
-				possiblemoves|=l;
-			}
-		}
-		return possiblemoves;
-	}
+//	public long possiblemoves(boolean player){
+//		long[] likelyMoves = bitboardserialize(likelyMoves(player));
+//		long possiblemoves=0;
+//		for (long l : likelyMoves) {
+//			if (getflipboard(player, l)!=0) {
+//				possiblemoves|=l;
+//			}
+//		}
+//		return possiblemoves;
+//	}
 	
 	@Override
 	public GameBoard clone(){
 		return new Bitboard_lookup_Table(red, green);
 	}
 	
-	@Override
-	public boolean checkMove(int player, Coordinates coord) {
-		// TODO Automatisch generierter Methodenstub
-		return false;
-	}
-
-	@Override
-	public int countStones(int player) {
-		// TODO Automatisch generierter Methodenstub
-		return 0;
-	}
-
-	@Override
-	public int getOccupation(Coordinates coord) throws OutOfBoundsException {
-		// TODO Automatisch generierter Methodenstub
-		return 0;
-	}
-
-	@Override
-	public int getSize() {
-		// TODO Automatisch generierter Methodenstub
-		return 0;
-	}
-
-	@Override
-	public boolean isFull() {
-		// TODO Automatisch generierter Methodenstub
-		return false;
-	}
-
-	@Override
-	public boolean isMoveAvailable(int player) {
-		// TODO Automatisch generierter Methodenstub
-		return false;
-	}
-
-	@Override
-	public void makeMove(int player, Coordinates coord) {
-		// TODO Automatisch generierter Methodenstub
-		
+	public static Bitboard convert(GameBoard gb){
+		long red = 0;
+		long green = 0;
+		Coordinates coord;
+		try {
+			for (int i = 1; i < 9; i++) {
+				for (int j = 1; j < 9; j++) {
+					coord = new Coordinates(i, j);
+					int occupation = gb.getOccupation(coord);
+					if (occupation  != GameBoard.EMPTY) {
+						if(occupation == GameBoard.RED){
+							red |= Bitboard.coordinatestolong(coord);
+						}
+						else {
+							green |= Bitboard.coordinatestolong(coord);
+						}
+					}
+				}
+			}
+		} catch (OutOfBoundsException e) {
+		}
+		return new Bitboard_lookup_Table(red, green);
 	}
 	
-	public void makeMove(boolean player, long coord){
+	public long makeMove(boolean player, long coord){
 		long flipboard = getflipboard(player, coord);
 		red^=flipboard;
 		green^=flipboard;
@@ -169,6 +136,8 @@ public class Bitboard_lookup_Table implements GameBoard{
 		else {
 			green|=coord;
 		}
+		refreshZobristhash(flipboard, coord, player);
+		return flipboard;
 	}
 	
 	public long getflipboard(boolean player, long coord ){
@@ -202,7 +171,7 @@ public class Bitboard_lookup_Table implements GameBoard{
 		//Diagleftrightcheck
 		shiftdistance = (row+column-7)<<3;
 		playerrow = getdiagleftright((shiftdistance>0)?playerbitboard>>>shiftdistance:playerbitboard<<-shiftdistance);
-		opponentrow = getdiagleftright((shiftdistance>0)?opponentbitboard>>>shiftdistance:opponentbitboard<<shiftdistance);
+		opponentrow = getdiagleftright((shiftdistance>0)?opponentbitboard>>>shiftdistance:opponentbitboard<<-shiftdistance);
 		fliprow = Tables.moveLookup(playerrow, opponentrow, column);
 		flipboard |= (shiftdistance>0)?maptodiagleftright(fliprow)<<shiftdistance:maptodiagleftright(fliprow)>>>-shiftdistance;
 		
@@ -211,15 +180,8 @@ public class Bitboard_lookup_Table implements GameBoard{
 		playerrow = getdiagrightleft((shiftdistance>0)?playerbitboard<<shiftdistance:playerbitboard>>>-shiftdistance);
 		opponentrow = getdiagrightleft((shiftdistance>0)?opponentbitboard<<shiftdistance:opponentbitboard>>>-shiftdistance);
 		fliprow = Tables.moveLookup(playerrow, opponentrow, column);
-		flipboard |= (shiftdistance>0)?maptodiagleftright(fliprow)>>>shiftdistance:maptodiagleftright(fliprow)<<-shiftdistance;
+		flipboard |= (shiftdistance>0)?maptodiagrightleft(fliprow)>>>shiftdistance:maptodiagrightleft(fliprow)<<-shiftdistance;
 		return flipboard;
-	} 
-	
-
-	@Override
-	public boolean validCoordinates(Coordinates coord) {
-		// TODO Automatisch generierter Methodenstub
-		return false;
 	}
 
 }
