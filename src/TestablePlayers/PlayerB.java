@@ -9,9 +9,9 @@ import searching.Searchalgorithm;
 import searching.alphabeta;
 import searching.alphabetanocloneing;
 import Gameboard.Bitboard;
-import Gameboard.Bitboard_lookup_Table;
-import Gameboard.Tables;
 import Testing.ITestablePlayer;
+import Versuche.Bitboard_lookup_Table;
+import Versuche.Tables;
 
 public class PlayerB implements ITestablePlayer {
 	private int myColor;
