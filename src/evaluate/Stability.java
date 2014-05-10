@@ -1,179 +1,169 @@
 package evaluate;
 
-import Gameboard.Bitboard;
-
 public class Stability{
-    Bitboard                 board;
 
-    public static final long mask_northWest = 0b1111111011111110111111101111111011111110111111101111111000000000L;
+    short[] edgeTable = new short[59049];
 
-    public static final long mask_northEast = 0b0111111101111111011111110111111101111111011111110111111100000000L;
+    byte    maskC     = 0b01000010;
+    byte    maskA     = 0b00100100;
+    byte    maskB     = 0b00011000;
 
-    public static final long mask_southWest = 0b0000000011111110111111101111111011111110111111101111111011111110L;
-
-    public static final long mask_southEast = 0b0000000001111111011111110111111101111111011111110111111101111111L;
-
-    public static final long mask_east      = 0b0111111101111111011111110111111101111111011111110111111101111111L;
-
-    public static final long mask_west      = 0b1111111011111110111111101111111011111110111111101111111011111110L;
-
-    // Shift in all 8 directions
-
-    private final long shiftNorthWest(long board){
-        return (board << 9) & mask_northWest;
-    }
-
-    private final long shiftNorthEast(long board){
-        return (board << 7) & mask_northEast;
-    }
-
-    private final long shiftSouthWest(long board){
-        return (board >>> 7) & mask_southWest;
-    }
-
-    private final long shiftSouthEast(long board){
-        return (board >>> 9) & mask_southEast;
-    }
-
-    private final long shiftNorth(long board){
-        return (board << 8);
-    }
-
-    private final long shiftSouth(long board){
-        return (board >>> 8);
-    }
-
-    private final long shiftWest(long board){
-        return (board << 1) & mask_west;
-    }
-
-    private final long shiftEast(long board){
-        return (board >>> 1) & mask_east;
-    }
-
-    boolean isStable(boolean player, byte piece){
-        if(board.red >> piece == -128){
-            return true;
-        }
-        if((board.red & 0b00000001) == 1){
-            if(board.red << (7 - 1 - piece) == -128){
-                return true;
+    Stability(){
+        for (int k = 0; k < 59049; k++){
+            int c = k;
+            short[] board = new short[3];
+            for (int z = 0; z < 10; z++){
+                board[c % 3] |= (short) (1 << z);
+                // System.out.print(c % 3);
+                c /= 3;
             }
+
+            // Red values
+            byte unstableRed = getUnstableEdgePieces((byte) (0xFF & board[1]), (byte) (0xFF & board[2]));
+            byte unanchoredRed = getUnanchoredStableEdgePieces((byte) (0xFF & board[1]), getUnstableEdgePieces((byte) (0xFF & board[2]), (byte) (0xFF & board[1])));
+            byte aloneRed = getAloneEdgePieces((byte) (0xFF & board[1]), (byte) (0xFF & board[2]));
+            byte stable1Red = getStable1EdgePieces((byte) (0xFF & board[1]), (byte) (0xFF & board[2]));
+            byte stable3Red = getStable3EdgePieces((byte) (0xFF & board[1]), (byte) (0xFF & board[2]));
+            byte semiRed = (byte) ((0b11111111 ^ unstableRed ^ unanchoredRed
+                    ^ aloneRed
+                    ^ stable1Red
+                    ^ stable3Red) & board[1]);
+
+            // Green values
+            byte unstableGreen = getUnstableEdgePieces((byte) (0xFF & board[2]), (byte) (0xFF & board[1]));
+            byte unanchoredGreen = getUnanchoredStableEdgePieces((byte) (0xFF & board[2]), getUnstableEdgePieces((byte) (0xFF & board[1]), (byte) (0xFF & board[2])));
+            byte aloneGreen = getAloneEdgePieces((byte) (0xFF & board[2]), (byte) (0xFF & board[1]));
+            byte stable1Green = getStable1EdgePieces((byte) (0xFF & board[2]), (byte) (0xFF & board[1]));
+            byte stable3Green = getStable3EdgePieces((byte) (0xFF & board[2]), (byte) (0xFF & board[1]));
+            byte semiGreen = (byte) ((0b11111111 ^ unstableGreen
+                    ^ unanchoredGreen ^ aloneGreen
+                    ^ stable1Green
+                    ^ stable3Green) & board[2]);
+
+            short score = 0;
+
+            // Score red
+            score += Integer.bitCount(maskC & unstableRed) * -50;
+            score += Integer.bitCount(maskA & unstableRed) * 20;
+            score += Integer.bitCount(maskB & unstableRed) * 15;
+
+            score += Integer.bitCount(maskA & unanchoredRed) * 300;
+            score += Integer.bitCount(maskB & unanchoredRed) * 200;
+
+            score += Integer.bitCount(maskC & aloneRed) * -75;
+            score += Integer.bitCount(maskA & aloneRed) * -25;
+            score += Integer.bitCount(maskB & aloneRed) * -50;
+
+            score += Integer.bitCount(stable1Red) * 800;
+
+            score += Integer.bitCount(maskC & stable3Red) * 1200;
+            score += Integer.bitCount(maskA & stable3Red) * 1000;
+            score += Integer.bitCount(maskB & stable3Red) * 1000;
+            score += Integer.bitCount(0b10000001 & stable3Red) * 800;
+
+            score += Integer.bitCount(maskC & semiRed) * -125;
+            score += Integer.bitCount(maskA & semiRed) * 100;
+            score += Integer.bitCount(maskB & semiRed) * 100;
+
+            // Negative score Green
+            score -= Integer.bitCount(maskC & unstableGreen) * -50;
+            score -= Integer.bitCount(maskA & unstableGreen) * 20;
+            score -= Integer.bitCount(maskB & unstableGreen) * 15;
+
+            score -= Integer.bitCount(maskA & unanchoredGreen) * 300;
+            score -= Integer.bitCount(maskB & unanchoredGreen) * 200;
+
+            score -= Integer.bitCount(maskC & aloneGreen) * -75;
+            score -= Integer.bitCount(maskA & aloneGreen) * -25;
+            score -= Integer.bitCount(maskB & aloneGreen) * -50;
+
+            score -= Integer.bitCount(stable1Green) * 800;
+
+            score -= Integer.bitCount(maskC & stable3Green) * 1200;
+            score -= Integer.bitCount(maskA & stable3Green) * 1000;
+            score -= Integer.bitCount(maskB & stable3Green) * 1000;
+            score -= Integer.bitCount(0b10000001 & stable3Green) * 800;
+
+            score -= Integer.bitCount(maskC & semiGreen) * -125;
+            score -= Integer.bitCount(maskA & semiGreen) * 100;
+            score -= Integer.bitCount(maskB & semiGreen) * 100;
+
+            edgeTable[k] = score;
+            System.out.println(k);
+            System.out.println(String.format("%8s",
+                    Integer.toBinaryString(0xFF & board[1])).replace(' ', '0'));
+            System.out.println(String.format("%8s",
+                    Integer.toBinaryString(0xFF & board[2])).replace(' ', '0'));
+            System.out.println(score);
+            System.out.println("-------------------");
+
         }
-        return false;
+        System.out.println("bla");
     }
 
-    long getSouthStablePieces(long player){
-        long tempBoard;
-        long mask = 0b11111111;
-
-        long stable = player & mask;
-        long potentiallyStable = player & mask;
-        while(potentiallyStable != 0){
-            tempBoard = shiftNorth(potentiallyStable);
-            potentiallyStable = tempBoard & player;
-            stable |= potentiallyStable;
+    final static byte getStable3EdgePieces(byte borderRed, byte borderGreen){
+        byte emptyEdge = (byte) ~(borderRed | borderGreen);
+        if(Integer.bitCount(emptyEdge) == 0){
+            return borderRed;
         }
-        return stable;
-    }
-
-    long getNorthStablePieces(long player){
-        long tempBoard;
-        long mask = 0b11111111_00000000_00000000_00000000_00000000_00000000_00000000_00000000L;
-
-        long stable = player & mask;
-        long potentiallyStable = player & mask;
-        while(potentiallyStable != 0){
-            tempBoard = shiftSouth(potentiallyStable);
-            potentiallyStable = tempBoard & player;
-            stable |= potentiallyStable;
-        }
-        return stable;
-    }
-
-    long getEastStablePieces(long player){
-        long tempBoard;
-        long mask = 0b1_00000001_00000001_00000001_00000001_00000001_00000001_00000001L;
-
-        long stable = player & mask;
-        long potentiallyStable = player & mask;
-        while(potentiallyStable != 0){
-            tempBoard = shiftWest(potentiallyStable);
-            potentiallyStable = tempBoard & player;
-            stable |= potentiallyStable;
-        }
-        return stable;
-    }
-
-    long getWestStablePieces(long player){
-        long tempBoard;
-        long mask = 0b10000000_10000000_10000000_10000000_10000000_10000000_10000000_10000000L;
-
-        long stable = player & mask;
-        long potentiallyStable = player & mask;
-        while(potentiallyStable != 0){
-            tempBoard = shiftEast(potentiallyStable);
-            potentiallyStable = tempBoard & player;
-            stable |= potentiallyStable;
-        }
-        return stable;
-    }
-
-    byte getStable3EdgePieces(byte border){
-        byte stable = (byte) (border & 1);
-        byte potentiallyStable = (byte) (border & 1);
+        byte stable = (byte) (borderRed & 1);
+        byte potentiallyStable = (byte) (borderRed & 1);
         byte tempBoard;
         while(potentiallyStable != 0){
             tempBoard = (byte) (potentiallyStable << 1);
-            potentiallyStable = (byte) (tempBoard & border);
+            potentiallyStable = (byte) (tempBoard & borderRed);
             stable |= potentiallyStable;
         }
 
-        stable |= (byte) (border & 0b10000000);
-        potentiallyStable = (byte) (border & 0b10000000);
+        stable |= (byte) (borderRed & 0b10000000);
+        potentiallyStable = (byte) (borderRed & 0b10000000);
         while(potentiallyStable != 0){
             tempBoard = (byte) ((potentiallyStable & 0xFF) >>> 1);
-            potentiallyStable = (byte) (tempBoard & border);
+            potentiallyStable = (byte) (tempBoard & borderRed);
             stable |= potentiallyStable;
         }
+
         return stable;
     }
 
-    byte getStable1EdgePieces(byte borderRed, byte borderGreen){
+    final static byte getStable1EdgePieces(byte borderRed, byte borderGreen){
         byte borderRedCopy = borderRed;
         byte borderGreenCopy = borderGreen;
         byte emptyEdge = (byte) ~(borderRed | borderGreen);
         byte stable = 0;
-        byte potentiallyStable = (byte) (((borderRed << 1) & borderGreen) >>> 1);
+        byte potentiallyStable = (byte) ((0xFF & (borderRed << 1) & borderGreen) >>> 1);
         emptyEdge = (byte) (emptyEdge << 1);
         while(potentiallyStable != 0){
+            borderRed = (byte) (borderRed << 1);
             borderGreen = (byte) (borderGreen << 1);
             emptyEdge = (byte) (emptyEdge << 1);
             potentiallyStable = (byte) (potentiallyStable & borderGreen);
             stable |= potentiallyStable & emptyEdge;
+            stable |= potentiallyStable & (borderRed << 1);
         }
 
         borderRed = borderRedCopy;
         borderGreen = borderGreenCopy;
         emptyEdge = (byte) ~(borderRed | borderGreen);
-        potentiallyStable = (byte) (((0xFF & borderRed >>> 1) & borderGreen) << 1);
-        emptyEdge = (byte) (0xFF & emptyEdge >>> 1);
+        potentiallyStable = (byte) ((((0xFF & borderRed) >>> 1) & borderGreen) << 1);
+        emptyEdge = (byte) ((0xFF & emptyEdge) >>> 1);
         while(potentiallyStable != 0){
-            borderGreen = (byte) (0xFF & borderGreen >>> 1);
-            emptyEdge = (byte) (0xFF & emptyEdge >>> 1);
+            borderRed = (byte) ((0xFF & borderRed) >>> 1);
+            borderGreen = (byte) ((0xFF & borderGreen) >>> 1);
+            emptyEdge = (byte) ((0xFF & emptyEdge) >>> 1);
             potentiallyStable = (byte) (potentiallyStable & borderGreen);
             stable |= potentiallyStable & emptyEdge;
+            stable |= potentiallyStable & ((0xFF & borderRed) >>> 1);
         }
         return stable;
     }
 
-    byte getAloneEdgePieces(byte borderRed, byte borderGreen){
-        // Shift left and right and check via & if there is an empty piece
+    final static byte getAloneEdgePieces(byte borderRed, byte borderGreen){
         byte emptyEdge = (byte) ~(borderRed | borderGreen);
         return (byte) (((((borderRed << 1) & emptyEdge) >>> 2) & emptyEdge) << 1);
     }
 
-    byte getUnstableEdgePieces(byte borderRed, byte borderGreen){
+    final static byte getUnstableEdgePieces(byte borderRed, byte borderGreen){
         byte emptyEdge = (byte) ~(borderRed | borderGreen);
         byte potentiallyUnstable = (byte) ((borderRed << 1) & emptyEdge);
         byte unstable = (byte) (((potentiallyUnstable >>> 2) & borderGreen) << 1);
@@ -182,12 +172,13 @@ public class Stability{
         return (byte) unstable;
     }
 
-    byte getUnanchoredStableEdgePieces(byte borderRed, byte unstableGreen){
+    final static byte getUnanchoredStableEdgePieces(byte borderRed, byte unstableGreen){
         return (byte) (((((borderRed << 1) & unstableGreen) >>> 2) & unstableGreen) << 1);
     }
 
     public static void main(String[] args){
         Stability s = new Stability();
-        System.out.println(s.getStable1EdgePieces((byte) 20, (byte) 40));
+        // System.out.println(s.getStable1EdgePieces((byte) 0b10101000, (byte)
+        // 84));
     }
 }
