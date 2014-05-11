@@ -2,7 +2,7 @@ package TestablePlayers;
 
 import reversi.Coordinates;
 import reversi.GameBoard;
-import searching.SearchAlgorithm;
+import searching.Searchalgorithm;
 import searching.alphabetainterface;
 import Gameboard.Bitboard;
 import Testing.ITestablePlayer;
@@ -12,7 +12,7 @@ import evaluate.strategicevaluator;
 public class PlayerC implements ITestablePlayer{
     private int            myColor;
     private long           timeLimit;
-    public SearchAlgorithm suchalgorithmus = new alphabetainterface();
+    public Searchalgorithm suchalgorithmus = new alphabetainterface();
     public IEvaluator      evaluator       = new strategicevaluator();
     public String          name            = null;
 

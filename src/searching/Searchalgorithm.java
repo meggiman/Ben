@@ -4,7 +4,7 @@ import Gameboard.Bitboard;
 import reversi.Coordinates;
 import evaluate.IEvaluator;
 
-public abstract class SearchAlgorithm {
+public abstract class Searchalgorithm {
 	public IEvaluator evaluator = null;
 	public long deadline = 0;
 	public long searchedNodesCount = 0;

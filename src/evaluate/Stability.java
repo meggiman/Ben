@@ -1,5 +1,7 @@
 package evaluate;
 
+import Gameboard.Bitboard;
+
 public class Stability{
 
     short[] edgeTable = new short[59049];
@@ -99,6 +101,177 @@ public class Stability{
 
         }
         System.out.println("bla");
+    }
+
+    final short getEdgeValue(Bitboard board, boolean player){
+        byte edgeTopRed = (byte) (board.red >>> 1);
+        byte edgeBotRed = (byte) (board.red & 0xFF);
+        byte edgeLeftRed = (byte) (board.red >>> 56 & 0b10000000
+                | board.red >>> 49
+                & 0b01000000
+                | board.red >>> 42 & 0b00100000 | board.red >>> 35
+                & 0b00010000
+                | board.red >>> 28 & 0b00001000 | board.red >>> 21
+                & 0b00000100
+                | board.red >>> 14 & 0b00000010 | board.red >>> 7);
+        ;
+        byte edgeRightRed = (byte) (board.red >>> 49 & 0b10000000
+                | board.red >>> 42
+                & 0b01000000
+                | board.red >>> 35 & 0b00100000 | board.red >>> 28
+                & 0b00010000
+                | board.red >>> 21 & 0b00001000 | board.red >>> 14
+                & 0b00000100
+                | board.red >>> 7 & 0b00000010 | board.red);
+
+        byte edgeTopGreen = (byte) (board.green >>> 1);
+        byte edgeBotGreen = (byte) (board.green & 0xFF);
+        byte edgeLeftGreen = (byte) (board.green >>> 56 & 0b10000000
+                | board.green >>> 49
+                & 0b01000000
+                | board.green >>> 42 & 0b00100000 | board.green >>> 35
+                & 0b00010000
+                | board.green >>> 28 & 0b00001000 | board.green >>> 21
+                & 0b00000100
+                | board.green >>> 14 & 0b00000010 | board.green >>> 7);
+        byte edgeRightGreen = (byte) (board.green >>> 49 & 0b10000000
+                | board.green >>> 42
+                & 0b01000000
+                | board.green >>> 35 & 0b00100000 | board.green >>> 28
+                & 0b00010000
+                | board.green >>> 21 & 0b00001000 | board.green >>> 14
+                & 0b00000100
+                | board.green >>> 7 & 0b00000010 | board.green);
+
+        int indexTop = 0;
+        int indexBot = 0;
+        int indexLeft = 0;
+        int indexRight = 0;
+        int multiplier = 1;
+        if(player){
+            for (int z = 0; z < 8; z++){
+                if((edgeTopRed & (1 << z)) != 0){
+                    indexTop += multiplier;
+                }
+                else if((edgeTopGreen & (1 << z)) != 0){
+                    indexTop += multiplier * 2;
+                }
+
+                if((edgeBotRed & (1 << z)) != 0){
+                    indexBot += multiplier;
+                }
+                else if((edgeBotGreen & (1 << z)) != 0){
+                    indexBot += multiplier * 2;
+                }
+
+                if((edgeLeftRed & (1 << z)) != 0){
+                    indexLeft += multiplier;
+                }
+                else if((edgeLeftGreen & (1 << z)) != 0){
+                    indexLeft += multiplier * 2;
+                }
+
+                if((edgeRightRed & (1 << z)) != 0){
+                    indexRight += multiplier;
+                }
+                else if((edgeRightGreen & (1 << z)) != 0){
+                    indexRight += multiplier * 2;
+                }
+            }
+        }
+        else{
+            for (int z = 0; z < 8; z++){
+                if((edgeTopRed & (1 << z)) != 0){
+                    indexTop += multiplier * 2;
+                }
+                else if((edgeTopGreen & (1 << z)) != 0){
+                    indexTop += multiplier;
+                }
+
+                if((edgeBotRed & (1 << z)) != 0){
+                    indexBot += multiplier * 2;
+                }
+                else if((edgeBotGreen & (1 << z)) != 0){
+                    indexBot += multiplier;
+                }
+
+                if((edgeLeftRed & (1 << z)) != 0){
+                    indexLeft += multiplier * 2;
+                }
+                else if((edgeLeftGreen & (1 << z)) != 0){
+                    indexLeft += multiplier;
+                }
+
+                if((edgeRightRed & (1 << z)) != 0){
+                    indexRight += multiplier * 2;
+                }
+                else if((edgeRightGreen & (1 << z)) != 0){
+                    indexRight += multiplier;
+                }
+            }
+        }
+
+        return (short) (edgeTable[indexTop] + edgeTable[indexBot]
+                + edgeTable[indexLeft] + edgeTable[indexRight]);
+
+    }
+
+    final static void fillEdge(){
+
+    }
+
+    final static byte makeMove(byte coords, byte[] board){
+        byte playerFields = board[0];
+        byte otherplayerFields = board[1];
+        byte cursor;
+        byte possiblyChangedFields = 0;
+        byte changedFields = 0;
+        // leftshift
+        cursor = (byte) (coords << 1);
+        while(cursor != 0){
+            cursor &= otherplayerFields;
+            possiblyChangedFields |= cursor;
+            cursor = (byte) (cursor << 1);
+            if((cursor & playerFields) != 0){
+                changedFields |= possiblyChangedFields;
+                break;
+            }
+        }
+        // rightshift
+        possiblyChangedFields = 0;
+        cursor = (byte) ((0xFF & coords) >>> 1);
+        while(cursor != 0){
+            cursor &= otherplayerFields;
+            possiblyChangedFields |= cursor;
+            cursor = (byte) (0xFF & cursor >>> 1);
+            if((cursor & playerFields) != 0){
+                changedFields |= possiblyChangedFields;
+                break;
+            }
+        }
+
+        return changedFields;
+    }
+
+    final static byte possibleMoves(byte playerFields, byte otherplayerFields){
+
+        byte emptyFields = (byte) ~(playerFields | otherplayerFields);
+        byte validMoves = 0;
+        byte potentialMoves;
+
+        // leftshift
+        potentialMoves = (byte) (((playerFields << 1) & otherplayerFields) << 1);
+        while(potentialMoves != 0){
+            validMoves |= (potentialMoves & emptyFields);
+            potentialMoves = (byte) ((potentialMoves & otherplayerFields) << 1);
+        }
+        // rightshift
+        potentialMoves = (byte) (((((0xFF & playerFields) >>> 1) & otherplayerFields) & 0xFF) >>> 1);
+        while(potentialMoves != 0){
+            validMoves |= (potentialMoves & emptyFields);
+            potentialMoves = (byte) ((potentialMoves & otherplayerFields & 0xFF) >>> 1);
+        }
+        return validMoves;
     }
 
     final static byte getStable3EdgePieces(byte borderRed, byte borderGreen){

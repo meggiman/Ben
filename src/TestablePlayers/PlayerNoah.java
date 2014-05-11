@@ -3,14 +3,14 @@ package TestablePlayers;
 import reversi.Coordinates;
 import reversi.GameBoard;
 import searching.AlphaBetaNoah;
-import searching.SearchAlgorithm;
+import searching.Searchalgorithm;
 import Gameboard.Bitboard;
 import Testing.ITestablePlayer;
 import evaluate.StrategicEvaluatorNoah;
 
 public class PlayerNoah implements ITestablePlayer{
 
-    SearchAlgorithm      searcher;
+    Searchalgorithm      searcher;
     private final String name = "Noah";
 
     public PlayerNoah(){

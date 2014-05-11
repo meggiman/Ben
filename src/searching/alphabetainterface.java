@@ -3,7 +3,7 @@ package searching;
 import reversi.GameBoard;
 import Gameboard.Bitboard;
 
-public class alphabetainterface extends SearchAlgorithm {
+public class alphabetainterface extends Searchalgorithm {
 	private boolean cancel = false;
 
 	@Override

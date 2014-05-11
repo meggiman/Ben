@@ -7,7 +7,7 @@ import Tables.TranspositionTable.Sorter;
 import Tables.TranspositionTable.TableEntry;
 import evaluate.IEvaluator;
 
-public class AlphaBetaNoah extends SearchAlgorithm{
+public class AlphaBetaNoah extends Searchalgorithm{
 
     // Game feature providing
     private boolean            ENEMY           = false;

@@ -37,9 +37,10 @@ public class Bitboard implements GameBoard{
                                                    0x90bc3d08fc1ec9a2L,
                                                    0x36c017d07c49546bL,
                                                    0xf2ef8f4cac6794f1L,
-            0xf56bb2fcbdc8d2b1L,
-            0x7fa139f336fc98feL,
-            0x3e4731ff2edbd886L, 0x2341ecdb9dadb92bL, 0x715f9e7d5c37bf11L,
+                                                   0xf56bb2fcbdc8d2b1L,
+                                                   0x7fa139f336fc98feL,
+                                                   0x3e4731ff2edbd886L,
+            0x2341ecdb9dadb92bL, 0x715f9e7d5c37bf11L,
             0xeae7498f80a35fa8L,
             0xcbfb8bf37d9c9a6aL, 0x6519cc1b281cd98eL, 0x1220e41bc588fd4dL,
             0xbf7683bbe19659e9L,
@@ -81,9 +82,10 @@ public class Bitboard implements GameBoard{
                                                    0xaf44f6d6cc626537L,
                                                    0xdd8b04996dc30640L,
                                                    0xc8eff63264fb72e4L,
-            0x73167782e4db58eaL,
-            0x7d92bad68f07579eL,
-            0xf6845abc389b5264L, 0x535602c1d9a6f48eL, 0x5919b13e0e5568f8L,
+                                                   0x73167782e4db58eaL,
+                                                   0x7d92bad68f07579eL,
+                                                   0xf6845abc389b5264L,
+            0x535602c1d9a6f48eL, 0x5919b13e0e5568f8L,
             0x190a954c53a004daL,
             0xda2d619f9dbae31dL, 0x11365e1683ffb279L, 0x84f41aa83ce66e8eL,
             0x1c736a9c06c3f22aL,
@@ -243,6 +245,10 @@ public class Bitboard implements GameBoard{
             return null;
         }
         return new Coordinates(1 + (Long.numberOfLeadingZeros(coord) >>> 3), 1 + Long.numberOfLeadingZeros(coord) % 8);
+    }
+
+    public final byte discCount(){
+        return (byte) (Long.bitCount(red) + Long.bitCount(green));
     }
 
     /**
