@@ -19,6 +19,12 @@ public class Bitboard implements GameBoard {
 	 */
 	private static final long rightshiftmask = 0x7F7F7F7F7F7F7F7FL;
 	
+	
+	/**
+	 * Bitmask used for shifting correction.
+	 */
+	private static final long shiftmask = 0x7E7E7E7E7E7E7E7EL;
+	
 	/**
 	 * 64 random {@code long} constants used to generate zobrist-hashes.
 	 */
@@ -304,6 +310,67 @@ public class Bitboard implements GameBoard {
 		return validmoves;
 	}
 	
+	public final static long possibleMovesRed(final long red, long green){
+		long emptyfields = ~(red|green);
+		long validmoves = 0;
+		long potentialmoves;
+		
+		
+		//upshift
+		potentialmoves = (((red<<8)&green)<<8);
+		while (potentialmoves!=0) {
+			validmoves |= (potentialmoves&emptyfields);
+			potentialmoves = (potentialmoves&green)<<8;
+		}
+		
+		//downshift
+		potentialmoves = (((red>>>8)&green)>>>8);
+		while (potentialmoves!=0) {
+			validmoves |= (potentialmoves&emptyfields);
+			potentialmoves = (potentialmoves&green)>>>8;
+		}
+		
+		green &= shiftmask;
+		//leftshift
+		potentialmoves = (((red<<1)&green)<<1);
+		while (potentialmoves!=0) {
+			validmoves |= (potentialmoves&emptyfields);
+			potentialmoves = (potentialmoves&green)<<1;
+		}
+		//rightshift
+		potentialmoves = (((red>>>1)&green)>>>1);
+		while (potentialmoves!=0) {
+			validmoves |= (potentialmoves&emptyfields);
+			potentialmoves = (potentialmoves&green)>>>1;
+		}
+		
+		//upleftshift
+		potentialmoves = (((red<<9)&green)<<9);
+		while (potentialmoves!=0) {
+			validmoves |= (potentialmoves&emptyfields);
+			potentialmoves = (potentialmoves&green)<<9;
+		}
+		//uprightshift
+		potentialmoves = (((red<<7)&green)<<7);
+		while (potentialmoves!=0) {
+			validmoves |= (potentialmoves&emptyfields);
+			potentialmoves = (potentialmoves&green)<<7;
+		}
+		//downleftshift
+		potentialmoves = (((red>>>7)&green)>>>7);
+		while (potentialmoves!=0) {
+			validmoves |= (potentialmoves&emptyfields);
+			potentialmoves = (potentialmoves&green)>>>7;
+		}
+		//downrightshift
+		potentialmoves = (((red>>>9)&green)>>>9);
+		while (potentialmoves!=0) {
+			validmoves |= (potentialmoves&emptyfields);
+			potentialmoves = (potentialmoves&green)>>>9;
+		}
+		return validmoves;
+	}
+	
 	@Override
 	public boolean checkMove(int player, Coordinates coord) {
 		return ((coordinatestolong(coord)&possiblemoves(player==RED))!=0);
@@ -498,6 +565,127 @@ public class Bitboard implements GameBoard {
 			red = otherplayerfields;
 		}
 		refreshZobristhash(changedfields, coord, player);
+		return changedfields;
+	}
+	
+	public final static long getflippedDiskRed(long red, long green, final long coord) {
+		long cursor;
+		long possiblychangedfields=0;
+		long changedfields=0;
+//		if ((coord & (green|red)) != 0) {
+//			return 0;
+//		}
+		
+		//upshift
+		cursor=(coord<<8)&green;
+		if (cursor!=0) {
+			possiblychangedfields = 0;
+			do {
+				possiblychangedfields |= cursor;
+				cursor = (cursor << 8);
+			} while ((cursor & green) != 0);
+			if ((cursor & red) != 0) {
+				changedfields |= possiblychangedfields;
+			}
+		}
+		//downshift
+		cursor=(coord>>>8)&green;
+		if (cursor!=0) {
+			possiblychangedfields = 0;
+			do {
+				possiblychangedfields |= cursor;
+				cursor = (cursor >>> 8);
+			} while ((cursor & green) != 0);
+			if ((cursor & red) != 0) {
+				changedfields |= possiblychangedfields;
+			}
+		}
+		
+		//shift correction
+		green &= shiftmask;
+		
+		//leftshift
+		cursor=(coord<<1)&green;
+		if (cursor!=0) {
+			possiblychangedfields = 0;
+			do {
+				possiblychangedfields |= cursor;
+				cursor = (cursor << 1);
+			} while ((cursor & green) != 0);
+			if ((cursor & red) != 0) {
+				changedfields |= possiblychangedfields;
+			}
+		}
+		
+		
+		//rightshift
+		cursor=(coord>>>1)&green;
+		if (cursor!=0) {
+			possiblychangedfields = 0;
+			do {
+				possiblychangedfields |= cursor;
+				cursor = (cursor >>> 1);
+			} while ((cursor & green) != 0);
+			if ((cursor & red) != 0) {
+				changedfields |= possiblychangedfields;
+			}
+		}
+				
+		//upleftshift
+		cursor=(coord<<9)&green;
+		if (cursor!=0) {
+			possiblychangedfields = 0;
+			do {
+				possiblychangedfields |= cursor;
+				cursor = (cursor << 9);
+			} while ((cursor & green) != 0);
+			if ((cursor & red) != 0) {
+				changedfields |= possiblychangedfields;
+			}
+		}
+		
+		
+		//uprightshift
+		cursor=(coord<<7)&green;
+		if (cursor!=0) {
+			possiblychangedfields = 0;
+			do {
+				possiblychangedfields |= cursor;
+				cursor = (cursor << 7);
+			} while ((cursor & green) != 0);
+			if ((cursor & red) != 0) {
+				changedfields |= possiblychangedfields;
+			}
+		}
+		
+		
+		//downleftshift
+		cursor=(coord>>>7)&green;
+		if (cursor!=0) {
+			possiblychangedfields = 0;
+			do {
+				possiblychangedfields |= cursor;
+				cursor = (cursor >>> 7);
+			} while ((cursor & green) != 0);
+			if ((cursor & red) != 0) {
+				changedfields |= possiblychangedfields;
+			}
+		}
+		
+		
+		//downrightshift
+		cursor=(coord>>>9)&green;
+		if (cursor!=0) {
+			possiblychangedfields = 0;
+			do {
+				possiblychangedfields |= cursor;
+				cursor = (cursor >>> 9);
+			} while ((cursor & green) != 0);
+			if ((cursor & red) != 0) {
+				changedfields |= possiblychangedfields;
+			}
+		}
+
 		return changedfields;
 	}
 	

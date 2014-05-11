@@ -36,7 +36,7 @@ public class PlayerA implements ITestablePlayer {
 			gb.green = gb.red;
 			gb.red = temp;
 		}
-		if ((64 - gb.countStones(true)-gb.countStones(false)) <= 18) {
+		if ((64 - gb.countStones(true)-gb.countStones(false)) <= 4) {
 			System.out.println("Endgamesearch started:");
 			long time = System.nanoTime();
 			System.out.println("Red: "+gb.red+"L  Green: "+gb.green+"L");
