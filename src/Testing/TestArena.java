@@ -265,7 +265,7 @@ public class TestArena {
 		}
 		time = System.currentTimeMillis() -time;
 		if (time > ((playercode==PLAYER1)?timelimitplayer1:timelimitplayer2)) {
-			throw new TimeLimitExceededException("Die Zeit wurde um "+time+"ms überschritten.");
+//			throw new TimeLimitExceededException("Die Zeit wurde um "+time+"ms überschritten.");
 		}		
 		if (coord == null) {
 			return null;

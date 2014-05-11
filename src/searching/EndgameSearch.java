@@ -12,167 +12,178 @@ public class EndgameSearch {
 		public static int remainingStones;
 		public final static long nextMove(Bitboard gb){
 			nodecount = 0;
-			remainingStones = gb.countStones(true) + gb.countStones(false);
+			int alpha = -1;
+			int beta = 1;
+			remainingStones = 64 - gb.countStones(true) - gb.countStones(false);
 			long possibleMoves = gb.possiblemoves(true);
 			if (possibleMoves == 0) {
 				long possibleMovesEnemy = gb.possiblemoves(false);
 				if (possibleMovesEnemy != 0) {
-					outcome = (int)min(gb, (byte)-1, (byte)1);
+					outcome = min(gb.red, gb.green, alpha, beta);
 				}
 				return 0;
 			}
 			long bestmove = Long.highestOneBit(possibleMoves);
-			byte alpha = (byte)-1;
-			while (possibleMoves != 0) {
+			int bestvalue = alpha;
+			do {
 				long coord = Long.highestOneBit(possibleMoves);
 				long changedfields = gb.makeMove(true, coord);
-				byte value = min(gb, alpha, (byte)1);
+				int value = min(gb.red, gb.green, bestvalue, beta);
 				gb.undomove(changedfields, coord, true);
-				if (value == 1) {
-					outcome = 1;
-					return coord;
-				}
-				if (value == 0){
-					outcome = 0;
+				if (value > bestvalue) {
+					if (value >= beta) {
+						bestvalue = value;
+						outcome = value;
+						return coord;
+					}
+					bestvalue = value;
 					bestmove = coord;
-					alpha = 0;
 				}
 				possibleMoves ^= coord;
-			}
-			outcome = -1;
+			} while (possibleMoves != 0);
+			outcome = bestvalue;
 			return bestmove;
 		}
 		
-		final static byte min(Bitboard gb,byte alpha, byte beta){
+		final static int min(long red, long green, int alpha, int beta){
 			nodecount++;
-			long possibleMoves = gb.possiblemoves(false);
+			remainingStones--;
+			if (remainingStones<=6) {
+				remainingStones++;
+				return finalScorefewremainingMin(red, green, alpha, beta, false);
+			}
+			long possibleMoves = Bitboard.possibleMovesRed(green, red);
 			if (possibleMoves == 0) {
-				if (gb.possiblemoves(true) == 0) {
-					int myStones = gb.countStones(false);
-					int opponentStones = gb.countStones(true);
-					if (myStones>opponentStones) {
-						return (byte)-1;
-					}
-					else if (opponentStones>myStones) {
-						return (byte)1;
-					}
-					else {
-						return 0;
-					}
+				if (Bitboard.possibleMovesRed(red, green) == 0) {
+					remainingStones++;
+					return Long.bitCount(red) - Long.bitCount(green);
 				}
-				return max(gb,alpha, beta);
+				remainingStones++;
+				return max(red, green,alpha, beta);
 			}
-			if (alpha ==-1 && beta == 1) {
-				do {
-					long coord = Long.highestOneBit(possibleMoves);
-					long changedfields = gb.makeMove(false, coord);
-					byte value = max(gb, alpha, beta);
-					gb.undomove(changedfields, coord, false);
-					if (value == -1) {
-						return -1;
-					} 
-					possibleMoves ^= coord;
-					if (value == 0) {
-						beta = 0;
-						break;
+			int bestvalue = beta;
+			int value = beta;
+			do {
+				long coord = Long.highestOneBit(possibleMoves);
+				long changedfields = Bitboard.getflippedDiskRed(green, red, coord);
+				value = max(red^changedfields, green^changedfields^coord, alpha, value);
+				if (value < beta) {
+					if (value <= alpha) {
+						remainingStones++;
+						return alpha;
 					}
-				} while (possibleMoves != 0);
-			}
-			if (beta == 0) {
-				while (possibleMoves != 0) {
-					long coord = Long.highestOneBit(possibleMoves);
-					long changedfields = gb.makeMove(false, coord);
-					if (max(gb, (byte) -1, (byte) 0) == -1) {
-						gb.undomove(changedfields, coord, false);
-						return -1;
-					}
-					gb.undomove(changedfields, coord, false);
-					possibleMoves ^= coord;
+					bestvalue = value;
 				}
-				return 0;
-			}
-			if (alpha == 0) {
-				do {
-					long coord = Long.highestOneBit(possibleMoves);
-					long changedfields = gb.makeMove(false, coord);
-					if (max(gb, (byte) 0, (byte) 1) <= 0) {
-						gb.undomove(changedfields, coord, false);
-						return 0;
-					}
-					gb.undomove(changedfields, coord, false);
-					possibleMoves ^= coord;
-				}while (possibleMoves != 0);
-				return 1;
-			}
-			return 1;
+				possibleMoves ^= coord;
+			} while (possibleMoves != 0);
+			remainingStones++;
+			return bestvalue;
 		}
 		
-		
-		
-		final static byte max(Bitboard gb,byte alpha, byte beta){
+		final static int max(long red, long green, int alpha, int beta){
 			nodecount++;
-			long possibleMoves = gb.possiblemoves(true);
+			remainingStones--;
+			if (remainingStones<=6) {
+				remainingStones++;
+				return finalScorefewremainingMax(red, green, alpha, beta, false);
+			}
+			long possibleMoves = Bitboard.possibleMovesRed(red, green);
 			if (possibleMoves == 0) {
-				if (gb.possiblemoves(false) == 0) {
-					int myStones = gb.countStones(true);
-					int opponentStones = gb.countStones(false);
-					if (myStones>opponentStones) {
-						return (byte)1;
-					}
-					else if (opponentStones>myStones) {
-						return (byte)-1;
-					}
-					else {
-						return 0;
-					}
+				if (Bitboard.possibleMovesRed(green, red) == 0) {
+					remainingStones++;
+					return Long.bitCount(red) - Long.bitCount(green);
 				}
-				return min(gb,alpha, beta);
+				remainingStones++;
+				return min(red, green,alpha, beta);
 			}
-			if (alpha ==-1 && beta == 1) {
-				do {
-					long coord = Long.highestOneBit(possibleMoves);
-					long changedfields = gb.makeMove(true, coord);
-					byte value = min(gb, alpha, beta);
-					gb.undomove(changedfields, coord, true);
-					if (value == 1) {
-						return 1;
-					} 
-					possibleMoves ^= coord;
-					if (value == 0) {
-						alpha = 0;
-						break;
+			int bestvalue = alpha;
+			int value = alpha;
+			do {
+				long coord = Long.highestOneBit(possibleMoves);
+				long changedfields = Bitboard.getflippedDiskRed(red, green, coord);
+				value = min(red^changedfields^coord, green^changedfields, value, beta);
+				if (value > alpha) {
+					if (value >= beta) {
+						remainingStones++;
+						return beta;
 					}
-				} while (possibleMoves != 0);
-			}
-			if (alpha == 0) {
-				while (possibleMoves != 0) {
-					long coord = Long.highestOneBit(possibleMoves);
-					long changedfields = gb.makeMove(true, coord);
-					if (min(gb, (byte) 0, (byte) 1) == 1) {
-						gb.undomove(changedfields, coord, true);
-						return 1;
-					}
-					gb.undomove(changedfields, coord, true);
-					possibleMoves ^= coord;
+					bestvalue = value;
 				}
-				return 0;
-			}
-			if (beta == 0) {
-				do {
-					long coord = Long.highestOneBit(possibleMoves);
-					long changedfields = gb.makeMove(true, coord);
-					if (min(gb, (byte) -1, (byte) 0) >= 0) {
-						gb.undomove(changedfields, coord, true);
-						return 0;
+				possibleMoves ^= coord;
+			} while (possibleMoves != 0);
+			remainingStones++;
+			return bestvalue;
+		}
+		
+		public static int finalScorefewremainingMin(long red, long green,int alpha, int beta, boolean passed){
+			nodecount++;
+			long emptyfields = ~(red|green);
+			long changedfields = 0;
+			long coord = 0;
+			int bestvalue = beta;
+			int value = beta;
+			boolean nomoveavailable = true;
+			while (emptyfields != 0) {
+				coord = Long.highestOneBit(emptyfields);
+				changedfields = Bitboard.getflippedDiskRed(green, red, coord);
+				if (changedfields != 0) {
+					value = finalScorefewremainingMax(red^changedfields, green^changedfields^coord,alpha, bestvalue, false);
+					if (value < beta) {
+						if (value <= alpha) {
+							return alpha;
+						}
+						bestvalue = value;
 					}
-					gb.undomove(changedfields, coord, true);
-					possibleMoves ^= coord;
-				}while (possibleMoves != 0);
-				return -1;
+					nomoveavailable = false;
+				}
+				emptyfields ^= coord;
 			}
-			return -1;
+			if (nomoveavailable) {
+				if (passed) {
+					return Long.bitCount(red) - Long.bitCount(green);
+				}
+				return finalScorefewremainingMax(red, green, alpha, beta, true);
+			}
+			return bestvalue;
+		}
+		
+		public static int finalScorefewremainingMax(long red, long green,int alpha, int beta, boolean passed){
+			nodecount++;
+			long emptyfields = ~(red|green);
+			long changedfields = 0;
+			long coord = 0;
+			int bestvalue = alpha;
+			int value = alpha;
+			boolean nomoveavailable = true;
+			while (emptyfields != 0) {
+				coord = Long.highestOneBit(emptyfields);
+				changedfields = Bitboard.getflippedDiskRed(red, green, coord);
+				if (changedfields != 0) {
+					value = finalScorefewremainingMin(red^changedfields^coord, green^changedfields,bestvalue, beta, false);
+					if (value > alpha) {
+						if (value >= beta) {
+							return beta;
+						}
+						bestvalue = value;
+					}
+					nomoveavailable = false;
+				}
+				emptyfields ^= coord;
+			}
+			if (nomoveavailable) {
+				if (passed) {
+					return Long.bitCount(red) - Long.bitCount(green);
+				}
+				return finalScorefewremainingMin(red, green, alpha, beta, true);
+			}
+			return bestvalue;
 		}
 	}
+	
+	
+		
+	
+	
 	public static class ExactSearch{
 		
 	}

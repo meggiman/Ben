@@ -26,13 +26,20 @@ public class test {
 //		long time2 = System.nanoTime();
 //			test = countnodes(103079215104L, 402653184L, 12);
 //		System.out.println(System.nanoTime()-time2);
-		System.out.println(test);
+//		System.out.println(test);
+		
 		long coord = EndgameSearch.OutcomeSearch.nextMove(gb);
 		coord += EndgameSearch.OutcomeSearch.nextMove(gb)-gb.red;
 		System.out.println("test:");
 		long time = System.nanoTime();
 			 coord = EndgameSearch.OutcomeSearch.nextMove(gb)-gb.green;
 		System.out.println("Zeit in ms: "+(System.nanoTime()-time)+"\n"+coord);
+		
+		gb.green = 8821447121317630L;
+		gb.red = -8821447121350399L;
+//		int outcome = EndgameSearch.OutcomeSearch.finalScorefewremainingMax(gb.red, gb.green, -1, 1, false);
+		EndgameSearch.OutcomeSearch.nextMove(gb);
+		int outcometrue = EndgameSearch.OutcomeSearch.outcome;
 		TestArena testArena = new TestArena(new TestablePlayers.PlayerA(), new TestablePlayers.PlayerB(), 200);
 		TestArena.TestResult result = testArena.randomTimeGame(10, 50);
 		JFileChooser fileChooser = new JFileChooser();
