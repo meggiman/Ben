@@ -38,7 +38,7 @@ public class PlayerNoah implements ITestablePlayer{
     }
 
     @Override
-    public long getEvaluatedNodes(){
+    public long getEvaluatedNodesCount(){
         return searcher.evaluatedNodesCount;
     }
 

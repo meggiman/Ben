@@ -22,7 +22,7 @@ public class AlphaBetaNoah extends Searchalgorithm{
 
     private Sorter[]           sorters         = new Sorter[30];
     private TableEntry         spareTableEntry = new TableEntry();
-    private TranspositionTable table           = new TranspositionTable(4000000, new Tables.pvNodePriority());
+    private TranspositionTable table           = new TranspositionTable(4000000, new TranspositionTable.pvNodePriority());
 
     IEvaluator                 evaluator;
 

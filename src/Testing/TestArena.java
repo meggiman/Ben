@@ -84,6 +84,7 @@ public class TestArena{
             Bitboard gb = new Bitboard(0x18000000L, 0x1800000000L);
             player1.initialize(this.player1colour, timelimitplayer1);
             player2.initialize(this.player2colour, timelimitplayer2);
+            System.gc();
             TestResult.GameResult game = result.new GameResult();
             if(this.player1colour == Bitboard.GREEN){
                 MoveResult move = null;
@@ -111,6 +112,8 @@ public class TestArena{
                 }catch(TimeLimitExceededException e){
                     game.disqualified1 = true;
                     game.resultcode = GameResult.TIMEEXCEEDED;
+                    System.out.println("Player 1 Timeexceeded");
+                    System.out.println(e.getMessage());
                     break;
                 }catch(IllegalMoveException e){
                     game.disqualified1 = true;
@@ -131,6 +134,8 @@ public class TestArena{
                 }catch(TimeLimitExceededException e){
                     game.disqualified2 = true;
                     game.resultcode = GameResult.TIMEEXCEEDED;
+                    System.out.println("Player 2 Time exceeded.");
+                    System.out.println(e.getMessage());
                     break;
                 }catch(IllegalMoveException e){
                     game.disqualified2 = true;
@@ -145,9 +150,113 @@ public class TestArena{
                 if(move != null){
                     game.addmove(move);
                 }
-            }while(!gb.isFinished());
+            }while(!gb.hasFinished());
             game.finishgame();
             result.addGame(game);
+            System.out.println(i);
+            int tmp = this.player1colour;
+            this.player1colour = this.player2colour;
+            this.player2colour = tmp;
+        }
+        result.finishtest();
+        return result;
+    }
+
+    public TestResult randomTimeGame(int nrofgames, int timevariation){
+        TestResult result = new TestResult();
+        this.player1colour = Bitboard.RED;
+        this.player2colour = Bitboard.GREEN;
+        int timelimit1 = timelimitplayer1;
+        int timelimit2 = timelimitplayer2;
+        for (int i = 0; i < nrofgames; i++){
+            int randomtime = (int) (Math.random() * timevariation)
+                    - timevariation / 2;
+            System.out.println("Randomtime: " + randomtime);
+            timelimitplayer1 = timelimit1 + randomtime;
+            timelimitplayer2 = timelimit2 + randomtime;
+            Bitboard gb = new Bitboard(0x18000000L, 0x1800000000L);
+            player1.initialize(this.player1colour, timelimitplayer1);
+            player2.initialize(this.player2colour, timelimitplayer2);
+            System.gc();
+            TestResult.GameResult game = result.new GameResult();
+            if(this.player1colour == Bitboard.GREEN){
+                MoveResult move = null;
+                try{
+                    move = nextmove(gb, player2);
+                }catch(TimeLimitExceededException e){
+                    game.disqualified2 = true;
+                    game.resultcode = GameResult.TIMEEXCEEDED;
+                }catch(IllegalMoveException e){
+                    game.disqualified2 = true;
+                    game.resultcode = GameResult.ILLEGALMOVE;
+                }catch(PlayerException e){
+                    game.disqualified2 = true;
+                    game.resultcode = GameResult.EXCEPTION;
+                    game.exception = e;
+                }
+                if(move != null){
+                    game.addmove(move);
+                }
+            }
+            do{
+                MoveResult move = null;
+                try{
+                    move = nextmove(gb, player1);
+                }catch(TimeLimitExceededException e){
+                    game.disqualified1 = true;
+                    game.resultcode = GameResult.TIMEEXCEEDED;
+                    System.out.println("Player 1 Timeexceeded");
+                    System.out.println(e.getMessage());
+                    break;
+                }catch(IllegalMoveException e){
+                    game.disqualified1 = true;
+                    game.resultcode = GameResult.ILLEGALMOVE;
+                    break;
+                }catch(PlayerException e){
+                    game.disqualified1 = true;
+                    game.resultcode = GameResult.EXCEPTION;
+                    game.exception = e;
+                    break;
+                }
+                if(move != null){
+                    game.addmove(move);
+                }
+
+                try{
+                    move = nextmove(gb, player2);
+                }catch(TimeLimitExceededException e){
+                    game.disqualified2 = true;
+                    game.resultcode = GameResult.TIMEEXCEEDED;
+                    System.out.println("Player 2 Time exceeded.");
+                    System.out.println(e.getMessage());
+                    break;
+                }catch(IllegalMoveException e){
+                    game.disqualified2 = true;
+                    game.resultcode = GameResult.ILLEGALMOVE;
+                    break;
+                }catch(PlayerException e){
+                    game.disqualified2 = true;
+                    game.resultcode = GameResult.EXCEPTION;
+                    game.exception = e;
+                    break;
+                }
+                if(move != null){
+                    game.addmove(move);
+                }
+            }while(!gb.hasFinished());
+            game.finishgame();
+            result.addGame(game);
+            switch(game.winner){
+                case PLAYER1:
+                    System.out.println(player1.getName() + " won.");
+                    break;
+                case PLAYER2:
+                    System.out.println(player2.getName() + " won.");
+                    break;
+                default:
+                    System.out.println("Draw.");
+                    break;
+            }
             System.out.println(i);
             int tmp = this.player1colour;
             this.player1colour = this.player2colour;
@@ -164,12 +273,13 @@ public class TestArena{
         try{
             coord = player.nextMove(gb);
         }catch(Exception e){
-            e.printStackTrace();
             throw new PlayerException(e, playercode, gb);
         }
-        if(System.currentTimeMillis() - time > ((playercode == PLAYER1) ? timelimitplayer1
+        time = System.currentTimeMillis() - time;
+        if(time > ((playercode == PLAYER1) ? timelimitplayer1
                 : timelimitplayer2)){
-            throw new TimeLimitExceededException("Die Zeit ist abgelaufen.");
+            throw new TimeLimitExceededException("Die Zeit wurde um " + time
+                    + "ms �berschritten.");
         }
         if(coord == null){
             return null;
@@ -183,10 +293,10 @@ public class TestArena{
         move.player = playercode;
         move.depth = player.getDepthOfLatestSearch();
         gb.makeMove(playercolour, coord);
-        move.gameboard = gb;
+        move.gameboard = gb.clone();
         move.move = coord;
         move.movenr = player.getMoveNrOfLatestSearch();
-        move.NrofevaluatedNodes = player.getEvaluatedNodes();
+        move.NrofevaluatedNodes = player.getEvaluatedNodesCount();
         move.NrofsearchedNodes = player.getNodesCount();
         move.NrofTTHits = player.getNrOfTTHits();
         move.value = player.getValueOfLatestSearch();
@@ -903,6 +1013,7 @@ public class TestArena{
                 }
                 calculateaverages();
                 isfinished = true;
+                System.gc();
             }
 
             public int getresultcode(){

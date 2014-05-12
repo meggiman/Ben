@@ -1,166 +1,155 @@
 package searching;
 
-import Gameboard.Bitboard;
-import Tables.TranspositionTable;
-import evaluate.IEvaluator;
-import evaluate.strategicevaluator;
 import reversi.GameBoard;
+import Gameboard.Bitboard;
 
-public class alphabeta {
-	public static IEvaluator evaluator = new strategicevaluator();
-	//private static TranspositionTable table = new TranspositionTable(2000000, replaceStrategy);
-	public static long deadline;
-	public static boolean cancel = false;
-	public static long searchednodes = 0;
-	public static long evaluatednodes = 0;
-	public static long TTHits = 0;
-	
-	public static int max(Bitboard gb, int alpha, int beta, int depth){
-		if (cancel) {
-			return beta;
-		}
-		else if (System.currentTimeMillis() >= deadline) {
-			cancel = true;
-			return beta;
-		}
-		int maxvalue = alpha;
-		long possiblemoves = gb.getPossibleMoves(true);
-		if (possiblemoves==0 && gb.getPossibleMoves(false)==0) {
-			int stonesred = gb.countStones(GameBoard.RED);
-			int stonesgreen = gb.countStones(GameBoard.GREEN);
-			if (stonesred>stonesgreen) {
-				searchednodes++;
-				return 10000+stonesred-stonesgreen;
-			}
-			else if (stonesred<stonesgreen){
-				searchednodes++;
-				return -10000-stonesgreen+stonesred;
-			}
-			else {
-				searchednodes++;
-				return 0;
-			}
-		}
-		if (depth<=0) {
-			searchednodes++;
-			evaluatednodes++;
-			return evaluator.evaluate(gb,possiblemoves,true);
-		}
-		searchednodes++;
-		Bitboard[] movelist = sortmovesred(gb, possiblemoves);
-		int value;
-		for (int i = 0; i < movelist.length; i++) {
-			value = min(movelist[i], maxvalue, beta, depth-1);
-			if (value > maxvalue) {
-				maxvalue = value;
-				if (value>= beta) {
-					return beta;
-				}
-			}
-			if (cancel) {
-				return maxvalue;
-				
-			}
-		}
-		long nextmove;
-		Bitboard nextposition;
-		int count = Long.bitCount(possiblemoves);
-		for (int i = movelist.length; i < count; i++) {
-			nextmove = Long.lowestOneBit(possiblemoves);
-			possiblemoves ^= nextmove;
-			nextposition = (Bitboard)gb.clone();
-			nextposition.makeMove(true, nextmove);
-			value = min(nextposition, maxvalue, beta, depth-1);
-			if (value > maxvalue) {
-				maxvalue = value;
-			}
-			if (value>= beta) {
-				return beta;
-			}
-			if (cancel) {
-				return maxvalue;
-			}
-		}
-		return maxvalue;
-	}
-	
-	public static int min(Bitboard gb, int alpha, int beta, int depth) {
-		if (cancel) {
-			return alpha;
-		}
-		else if (System.currentTimeMillis() >= deadline) {
-			cancel = true;
-			return alpha;
-		}
-		int minvalue = beta;
-		long possiblemoves = gb.getPossibleMoves(false);
-		if (possiblemoves==0 && gb.getPossibleMoves(true)==0) {
-			int stonesred = gb.countStones(GameBoard.RED);
-			int stonesgreen = gb.countStones(GameBoard.GREEN);
-			if (stonesred>stonesgreen) {
-				searchednodes++;
-				return 10000+stonesred;
-			}
-			else if (stonesred<stonesgreen){
-				searchednodes++;
-				return -10000-stonesgreen;
-			}
-			else {
-				searchednodes++;
-				return 0;
-			}
-		}
-		if (depth<=0) {
-			searchednodes++;
-			evaluatednodes++;
-			return evaluator.evaluate(gb,possiblemoves,true);
-		}
-		searchednodes++;
-		Bitboard[] movelist = sortmovesgreen(gb, possiblemoves);
-		int value;
-		for (int i = 0; i < movelist.length; i++) {
-			value = max(movelist[i], alpha, minvalue, depth-1);
-			if (value < minvalue) {
-				minvalue = value;
-				if (value <= alpha) {
-					return alpha;
-				}
-			}
-			if (cancel) {
-				return minvalue;
-			}
-		}
-		long nextmove;
-		Bitboard nextposition;
-		int count = Long.bitCount(possiblemoves);
-		for (int i = movelist.length; i < count; i++) {
-			nextmove = Long.lowestOneBit(possiblemoves);
-			possiblemoves ^= nextmove;
-			nextposition = (Bitboard)gb.clone();
-			nextposition.makeMove(false, nextmove);
-			value = max(nextposition, alpha, minvalue, depth-1);
-			if (value < minvalue) {
-				minvalue = value;
-			}
-			if (value<= alpha) {
-				return alpha;
-			}
-			if (cancel) {
-				return minvalue;
-			}
-		}
-		return minvalue;
-	}
-	
-	
-	public static Bitboard[] sortmovesred(Bitboard gb, long possiblemoves){
-		Bitboard[] move = new Bitboard[]{(Bitboard)gb.clone()};
-		move[0].makeMove(true, Long.highestOneBit(possiblemoves));
-		return move;
-	}
-	public static Bitboard[] sortmovesgreen(Bitboard gb, long possiblemoves){
-		Bitboard[] move = new Bitboard[]{(Bitboard)gb.clone()};
-		move[0].makeMove(false, Long.highestOneBit(possiblemoves));
-		return move;
-	}
+public class AlphaBeta extends Searchalgorithm{
+    private boolean cancel = false;
+
+    @Override
+    public long nextMove(Bitboard gb){
+        cancel = false;
+        evaluatedNodesCount = 0;
+        searchedNodesCount = 0;
+        TTHits = 0;
+        long[] possibleMoves = Bitboard.serializeBitboard(gb.getPossibleMoves(true));
+        if(possibleMoves.length == 0){
+            return 0;
+        }
+        Bitboard nextBoard;
+        int bestValue = 0;
+        int value;
+        long bestMove = 0;
+        for (int i = 1; !cancel; i++){
+            bestValue = -10065;
+            for (int j = 0; j < possibleMoves.length; j++){
+                long coord = possibleMoves[j];
+                nextBoard = (Bitboard) gb.clone();
+                nextBoard.makeMove(true, coord);
+                value = min(nextBoard, -10065, 10065, i - 1);
+                if(value > bestValue){
+                    bestValue = value;
+                    bestMove = coord;
+                }
+                if(cancel || bestValue < -10000 || bestValue > 10000){
+                    reachedDepth = i;
+                    moveNr = j;
+                    valueOfLastMove = bestValue;
+                    return bestMove;
+                }
+            }
+        }
+        valueOfLastMove = bestValue;
+        return bestMove;
+    }
+
+    private int max(Bitboard gb, int alpha, int beta, int depth){
+        if(cancel){
+            return beta;
+        }
+        else if(System.currentTimeMillis() >= deadline){
+            cancel = true;
+            return beta;
+        }
+        int maxValue = alpha;
+        long possibleMoves = gb.getPossibleMoves(true);
+        if(possibleMoves == 0 && gb.getPossibleMoves(false) == 0){
+            int stonesRed = gb.countStones(GameBoard.RED);
+            int stonesGreen = gb.countStones(GameBoard.GREEN);
+            if(stonesRed > stonesGreen){
+                searchedNodesCount++;
+                return 10000 + stonesRed - stonesGreen;
+            }
+            else if(stonesRed < stonesGreen){
+                searchedNodesCount++;
+                return -10000 - stonesGreen + stonesRed;
+            }
+            else{
+                searchedNodesCount++;
+                return 0;
+            }
+        }
+        if(depth <= 0){
+            searchedNodesCount++;
+            evaluatedNodesCount++;
+            return evaluator.evaluate(gb, possibleMoves, true);
+        }
+        searchedNodesCount++;
+        int value;
+        long nextMove;
+        Bitboard nextPosition;
+        int count = Long.bitCount(possibleMoves);
+        for (int i = 0; i < count; i++){
+            nextMove = Long.lowestOneBit(possibleMoves);
+            possibleMoves ^= nextMove;
+            nextPosition = (Bitboard) gb.clone();
+            nextPosition.makeMove(true, nextMove);
+            value = min(nextPosition, maxValue, beta, depth - 1);
+            if(value > maxValue){
+                maxValue = value;
+                if(value >= beta){
+                    return beta;
+                }
+            }
+            if(cancel){
+                return maxValue;
+            }
+        }
+        return maxValue;
+    }
+
+    private int min(Bitboard gb, int alpha, int beta, int depth){
+        if(cancel){
+            return alpha;
+        }
+        else if(System.currentTimeMillis() >= deadline){
+            cancel = true;
+            return alpha;
+        }
+        int minValue = beta;
+        long possibleMoves = gb.getPossibleMoves(false);
+        if(possibleMoves == 0 && gb.getPossibleMoves(true) == 0){
+            int stonesRed = gb.countStones(GameBoard.RED);
+            int stonesGreen = gb.countStones(GameBoard.GREEN);
+            if(stonesRed > stonesGreen){
+                searchedNodesCount++;
+                return 10000 + stonesRed;
+            }
+            else if(stonesRed < stonesGreen){
+                searchedNodesCount++;
+                return -10000 - stonesGreen;
+            }
+            else{
+                searchedNodesCount++;
+                return 0;
+            }
+        }
+        if(depth <= 0){
+            searchedNodesCount++;
+            evaluatedNodesCount++;
+            return evaluator.evaluate(gb, possibleMoves, true);
+        }
+        searchedNodesCount++;
+        int value;
+        long nextMove;
+        Bitboard nextPosition;
+        int count = Long.bitCount(possibleMoves);
+        for (int i = 0; i < count; i++){
+            nextMove = Long.lowestOneBit(possibleMoves);
+            possibleMoves ^= nextMove;
+            nextPosition = (Bitboard) gb.clone();
+            nextPosition.makeMove(false, nextMove);
+            value = max(nextPosition, alpha, minValue, depth - 1);
+            if(value < minValue){
+                minValue = value;
+                if(value <= alpha){
+                    return alpha;
+                }
+            }
+            if(cancel){
+                return minValue;
+            }
+        }
+        return minValue;
+    }
 }

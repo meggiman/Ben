@@ -2,27 +2,27 @@ package searching;
 
 import Gameboard.Bitboard;
 import evaluate.IEvaluator;
-import evaluate.strategicevaluator;
+import evaluate.StrategicEvaluator;
 
-public class alphabetanegamax{
-    public static IEvaluator evaluator = new strategicevaluator();
+public class AlphaBetaNegamax{
+    public static IEvaluator evaluator = new StrategicEvaluator();
 
     public static int search(Bitboard gb, boolean player, int depth, int alpha, int beta){
-        long posssiblemovesbitboard = gb.getPossibleMoves(player);
+        long posssibleMovesBitboard = gb.getPossibleMoves(player);
 
-        if(posssiblemovesbitboard == 0 && gb.getPossibleMoves(!player) == 0){
+        if(posssibleMovesBitboard == 0 && gb.getPossibleMoves(!player) == 0){
             return (gb.countStones(player) - gb.countStones(!player)) << 10;
         }
 
         if(depth == 0){
-            return evaluator.evaluate(gb, posssiblemovesbitboard, player);
+            return evaluator.evaluate(gb, posssibleMovesBitboard, player);
         }
         // Sorter sorter = new Sorter(posssiblemovesbitboard, gb, player);
         // Bitboard nextgb = sorter.nextGb(gb);
         // if (nextgb == null) {
         // nextgb = gb;
         // }
-        int maxvalue = alpha;
+        int maxValue = alpha;
         int value;
         // do {
         // // value = -search(nextgb, !player, depth-1, -beta, -maxvalue);
@@ -34,6 +34,6 @@ public class alphabetanegamax{
         // }
         // // nextgb = sorter.nextGb(gb);
         // } while (nextgb != null);
-        return maxvalue;
+        return maxValue;
     }
 }

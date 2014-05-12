@@ -20,7 +20,7 @@ import reversi.Utils;
 
 public class Player implements ReversiPlayer{
 
-    private long         maxTime;
+    // private long maxTime;
 
     private byte         ENEMY;
     private byte         PLAYER;
@@ -51,7 +51,7 @@ public class Player implements ReversiPlayer{
 
     @Override
     public void initialize(int myColor, long timeLimit){
-        maxTime = timeLimit;
+        // maxTime = timeLimit;
         ENEMY = (byte) Utils.other(myColor);
         PLAYER = (byte) myColor;
         long start = System.nanoTime();

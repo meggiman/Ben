@@ -2,15 +2,17 @@ package searching;
 
 import reversi.GameBoard;
 import Gameboard.Bitboard;
+import Tables.TranspositionTable;
+import Tables.TranspositionTable.TableEntry;
 import evaluate.IEvaluator;
 import evaluate.StrategicEvaluator;
 
-public class AlphaBetaNoCloneing extends Searchalgorithm{
-    public IEvaluator evaluator    = new StrategicEvaluator();
-    // private static TranspositionTable table = new TranspositionTable(2000000,
-    // replaceStrategy);
-    private boolean   cancel       = false;
-    private byte      countOfMoves = 0;
+public class AlphabetaTT extends Searchalgorithm{
+    private TranspositionTable tt           = new TranspositionTable(8000000, new TranspositionTable.pvNodePriority());
+    private TableEntry         newEntry     = new TableEntry();
+    public IEvaluator          evaluator    = new StrategicEvaluator();
+    private boolean            cancel       = false;
+    private byte               countOfMoves = 0;
 
     public long nextMove(Bitboard gb){
         countOfMoves++;
@@ -23,7 +25,7 @@ public class AlphaBetaNoCloneing extends Searchalgorithm{
             return 0;
         }
         Bitboard nextBoard;
-        int bestValue;
+        int bestValue = 0;
         int value;
         long bestMove = 0;
         for (int i = 1; !cancel; i++){
@@ -31,20 +33,20 @@ public class AlphaBetaNoCloneing extends Searchalgorithm{
             long tmpBestMove = 0;
             int tmpMoveNr = 0;
             for (int j = 0; j < possibleMoves.length; j++){
-                long coord = possibleMoves[j];
+                long coords = possibleMoves[j];
                 nextBoard = (Bitboard) gb.clone();
-                nextBoard.makeMove(true, coord);
-                value = min(nextBoard, -20065, 200065, i - 1);
+                nextBoard.makeMove(true, coords);
+                value = min(nextBoard, -10065, 10065, i - 1);
                 if(value > bestValue){
                     bestValue = value;
-                    tmpBestMove = coord;
+                    tmpBestMove = coords;
                     tmpMoveNr = j;
                 }
                 if(cancel){
                     return bestMove;
                 }
             }
-            if(i > 35 - countOfMoves){
+            if(i > 34 - countOfMoves){
                 cancel = true;
             }
             bestMove = tmpBestMove;
@@ -82,14 +84,27 @@ public class AlphaBetaNoCloneing extends Searchalgorithm{
             }
             return min(gb, alpha, beta, depth - 1);
         }
+        // Look for transposition in transposition table
+        TranspositionTable.TableEntry entry = tt.get(gb.hash);
+        if(entry != null){
+            if(entry.isExact && entry.depth >= depth){
+                TTHits++;
+                return entry.value;
+            }
+        }
+
         if(depth <= 0){
             searchedNodesCount++;
             evaluatedNodesCount++;
-            return evaluator.evaluate(gb, possibleMoves, true);
+            int value = evaluator.evaluate(gb, possibleMoves, true);
+            TableEntry.recycleEntry(newEntry, (short) value, (byte) depth, true, false, countOfMoves);
+            tt.put(gb.hash, newEntry);
+            return value;
         }
         searchedNodesCount++;
         long changedFields = 0;
         int value;
+        long pvNodeKey = 0;
         long nextMove;
         int count = Long.bitCount(possibleMoves);
         for (int i = 0; i < count; i++){
@@ -101,12 +116,21 @@ public class AlphaBetaNoCloneing extends Searchalgorithm{
             if(value > maxValue){
                 maxValue = value;
                 if(value >= beta){
+                    TableEntry.recycleEntry(newEntry, (short) beta, (byte) depth, false, false, countOfMoves);
+                    tt.put(gb.hash, newEntry);
                     return beta;
                 }
+                TableEntry.recycleEntry(newEntry, (short) value, (byte) depth, true, false, countOfMoves);
+                pvNodeKey = gb.hash;
+                tt.put(pvNodeKey, newEntry);
             }
             if(cancel){
                 return maxValue;
             }
+        }
+        if(maxValue != alpha){
+            TableEntry.recycleEntry(newEntry, (short) maxValue, (byte) depth, true, true, countOfMoves);
+            tt.put(pvNodeKey, newEntry);
         }
         return maxValue;
     }
@@ -138,14 +162,27 @@ public class AlphaBetaNoCloneing extends Searchalgorithm{
             }
             return max(gb, alpha, beta, depth - 1);
         }
+        // Look for transpositions in transposition table
+        TranspositionTable.TableEntry entry = tt.get(gb.hash);
+        if(entry != null){
+            if(entry.isExact && entry.depth >= depth){
+                TTHits++;
+                return entry.value;
+            }
+        }
+
         if(depth <= 0){
             searchedNodesCount++;
             evaluatedNodesCount++;
-            return evaluator.evaluate(gb, possibleMoves, true);
+            int value = evaluator.evaluate(gb, possibleMoves, true);
+            TableEntry.recycleEntry(newEntry, (short) value, (byte) depth, true, false, countOfMoves);
+            tt.put(gb.hash, newEntry);
+            return value;
         }
         searchedNodesCount++;
         int value;
         long changedFields = 0;
+        long pvNodeKey = 0;
         long nextMove;
         int count = Long.bitCount(possibleMoves);
         for (int i = 0; i < count; i++){
@@ -157,12 +194,21 @@ public class AlphaBetaNoCloneing extends Searchalgorithm{
             if(value < minValue){
                 minValue = value;
                 if(value <= alpha){
+                    TableEntry.recycleEntry(newEntry, (short) alpha, (byte) depth, false, false, countOfMoves);
+                    tt.put(gb.hash, newEntry);
                     return alpha;
                 }
+                TableEntry.recycleEntry(newEntry, (short) value, (byte) depth, true, false, countOfMoves);
+                pvNodeKey = gb.hash;
+                tt.put(pvNodeKey, newEntry);
             }
             if(cancel){
                 return minValue;
             }
+        }
+        if(minValue != beta){
+            TableEntry.recycleEntry(newEntry, (short) minValue, (byte) depth, true, true, countOfMoves);
+            tt.put(pvNodeKey, newEntry);
         }
         return minValue;
     }

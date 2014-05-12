@@ -25,7 +25,7 @@ public interface ITestablePlayer extends ReversiPlayer{
      *         evaluiert werden mussten. Wird iterative deepening verwendet, so
      *         werden mehrfache Evaluierungen auch mehrmals gez�hlt.
      */
-    public long getEvaluatedNodes();
+    public long getEvaluatedNodesCount();
 
     /**
      * 

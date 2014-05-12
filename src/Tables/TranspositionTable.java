@@ -5,57 +5,91 @@ import java.io.Serializable;
 import Gameboard.Bitboard;
 
 /**
- * Stellt Klassen und Methoden zum Speichern und Verwalten von Transpositions
- * Tabellen bereit.
- * 
- */
+ * Provides classes and methodes to save and maintanin transposition tables
+ **/
 public class TranspositionTable{
     /**
-     * Die Anzahl der Elemente der TranspositionTable. Maximalgroesse ist
-     * 2147483647, sofern der System-Speicher gross genug ist.
+     * The number of entries in the table.
+     * Maxsize is 2147483647, provided there is enough memory.
      */
-    private int              maxsize;
+    private int              maxSize;
     private IReplaceStrategy replaceStrategy;
+    public HashMap           hashMap;
 
-    public TranspositionTable(int maxsize, IReplaceStrategy replaceStrategy){
-        this.maxsize = ~(0x80000000 >> Integer.numberOfLeadingZeros(maxsize));
+    public TranspositionTable(int maxSize, IReplaceStrategy replaceStrategy){
+        this.maxSize = (0x80000000 >>> Integer.numberOfLeadingZeros(maxSize));
+        this.replaceStrategy = replaceStrategy;
+        hashMap = new HashMap();
     }
 
-    public class HashMap implements Serializable{
-        private final int  size    = 31 - Integer.numberOfLeadingZeros(maxsize);
-        private long[]     keys    = new long[maxsize];
-        TableEntry[]       entries = new TableEntry[maxsize];
-        private final long mask    = ~(0x8000000000000000L >> (63 - size));
+    public TableEntry get(long key){
+        return hashMap.get(key);
+    }
+
+    public void put(long key, TableEntry entry){
+        hashMap.put(key, entry);
+    }
+
+    public class HashMap{
+        private final int    size;
+        private final long[] keys;
+        TableEntry[]         entries;
+        private final long   mask;
+
+        public HashMap(){
+            size = 31 - Integer.numberOfLeadingZeros(maxSize);
+            keys = new long[maxSize];
+            entries = new TableEntry[maxSize];
+            mask = ~(0x8000000000000000L >> (63 - size));
+            for (int i = 0;i<entries.length;i++) {
+				entries[i] = new TableEntry();
+			}
+        }
 
         /**
-         * Speichert einen neuen Eintrag in der Hashmap. Die Methode verwendet
-         * die Methode des statischen {@link IReplaceStrategy} Objekts von
+         * Saves a new entry to the hashmap. This method uses the method of the
+         * static {@link IReplaceStrategy} object of the containing
          * {@link TranspostitionTabble}.
          * 
          * @param key
-         *            Der Schluessel, unter welchem der Eintrag kuenftig
-         *            abrufbar ist.
+         *            the key pointing to the value.
          * @param entry
-         *            der Eintrag
+         *            the value
          */
         public void put(long key, TableEntry entry){
             int index = (int) (key & mask);
-            if(keys[index] == 0 || keys[index] == key){
-                entries[index] = entry;
+            if(entries[index] == null){
+                TableEntry newEntry = new TableEntry(entry.value, entry.depth, entry.isExact, entry.isPvnode, entry.countOfMoves);
+                entries[index] = newEntry;
+            }
+            else if(keys[index] == key){
+                keys[index] = key;
+                TableEntry entryInTable = entries[index];
+                entryInTable.countOfMoves = entry.countOfMoves;
+                entryInTable.depth = entry.depth;
+                entryInTable.isExact = entry.isExact;
+                entryInTable.isPvnode = entry.isPvnode;
+//                entryInTable.bestMove = entry.bestMove;
+                entryInTable.value = entry.value;
             }
             else if(replaceStrategy.replace(entries[index], entry)){
                 keys[index] = key;
-                entries[index] = entry;
+                TableEntry oldEntry = entries[index];
+                oldEntry.countOfMoves = entry.countOfMoves;
+                oldEntry.depth = entry.depth;
+                oldEntry.isExact = entry.isExact;
+                oldEntry.isPvnode = entry.isPvnode;
+//                oldEntry.bestMove = entry.bestMove;
+                oldEntry.value = entry.value;
             }
         }
 
         /**
-         * Gibt den dem key entsprechenden Eintrag zurueck.
+         * Returns the value key is pointing to.
          * 
          * @param key
-         *            der Schluessel des gesuschten Eintrags
-         * @return den dem Schluessel entsprechenden Eintrag. Gibt null zurueck,
-         *         wenn der Eintrag nicht gefunden wurde.
+         *            the key pointing to the value
+         * @return the value key is pointing to; null if there was no entry.
          */
         public TableEntry get(long key){
             int index = (int) (key & mask);
@@ -69,38 +103,121 @@ public class TranspositionTable{
     }
 
     /**
-     * Subklasse zum Speichern der {@link TranspositionTable} Eintraege.
-     * 
+     * A struct beholding all the data concerning one transposition, contained
+     * by a {@link TranspositionTable}.
      */
     public static class TableEntry implements Serializable{
+
         /**
-         * Der Wert der Spielposition.
+         * The value of the transposition.
          */
         public short   value;
 
         /**
-         * Tiefe, aus welcher {@code value} stammt.
+         * depth on which {@code value} was found.
          */
         public byte    depth;
 
         /**
-         * Dieses Flag gibt an, ob {@code value} exakt ist oder nur eine obere
-         * oder untere Schranke.
+         * This flag tells wether {@code value} exact or just a boundary.
          */
         public boolean isExact;
 
         /**
-         * Wenn {@code true} ist {@code value} eine obere Schranke, wenn
-         * {@code false} eine untere Schranke. Dieses Flag ist bei gesetzem
-         * {@code isexact} Flag bedeutungslos.
+         * This flag tells wether it's a Pvnode or not.
          */
         public boolean isPvnode;
 
+//        /**
+//         * The index of the best move going from this transposition.
+//         */
+//        public byte    bestMove;
+
         /**
-         * Gibt den besten jemals gefundenen naechsten Zug in {@code long}
-         * Repraesentation an.
+         * Contains the amount of moves done by both players so far.
          */
-        public byte    countofmoves;
+        public byte    countOfMoves;
+
+        public TableEntry(){
+        }
+
+        public TableEntry(short value, byte depth, boolean isExact, boolean isPvNode, byte countOfMoves){
+            this.value = value;
+            this.depth = depth;
+            this.isExact = isExact;
+            this.isPvnode = isPvNode;
+//            this.bestMove = bestMove;
+            this.countOfMoves = countOfMoves;
+        }
+
+        public static void recycleEntry(TableEntry entry, short value, byte depth, boolean isExact, boolean isPvNode, byte countOfMoves){
+            entry.value = value;
+            entry.depth = depth;
+            entry.isExact = isExact;
+            entry.isPvnode = isPvNode;
+//            entry.bestMove = bestMove;
+            entry.countOfMoves = countOfMoves;
+        }
+    }
+
+    /**
+     * Interface to use the different replacement strategies for the hasmaps
+     * 
+     */
+    public static interface IReplaceStrategy{
+        /**
+         * A replacement algorithm. Depending on the implementation.
+         * 
+         * @param oldEntry
+         *            the old, maybe to be replaced entry.
+         * @param newEntry
+         *            the new, maybe replacing entry
+         * @return true, if the old entry should be replaced, false if not.
+         */
+        public boolean replace(TableEntry oldEntry, TableEntry newEntry);
+    }
+
+    public static class alwaysReplace implements IReplaceStrategy{
+        /**
+         * Always replaces the old entry
+         */
+        @Override
+        public boolean replace(TableEntry oldEntry, TableEntry newEntry){
+            return true;
+        }
+
+    }
+
+    public static class neverReplace implements IReplaceStrategy{
+        /**
+         * never replaces the old entry
+         */
+        @Override
+        public boolean replace(TableEntry oldEntry, TableEntry newEntry){
+            return false;
+        }
+
+    }
+
+    public static class pvNodePriority implements IReplaceStrategy{
+
+        @Override
+        public boolean replace(TableEntry oldEntry, TableEntry newEntry){
+            if(oldEntry.countOfMoves < newEntry.countOfMoves
+                    || !oldEntry.isExact){
+                return true;
+            }
+            if(newEntry.isPvnode){
+                return true;
+            }
+            if(!oldEntry.isPvnode && newEntry.isExact){
+                return true;
+            }
+            else{
+                return false;
+            }
+        }
+
     }
 
     /**
@@ -124,12 +241,12 @@ public class TranspositionTable{
 
         }
 
-        public Sorter(long possiblemoves, Bitboard board, boolean player, boolean maxNode, HashMap map){
+        public Sorter(long possibleMovesAsLong, Bitboard board, boolean player, boolean maxNode, HashMap map){
             this.board = board;
             this.map = map;
             this.player = player;
             this.maxNode = maxNode;
-            this.possibleMoves = Bitboard.serializeBitboard(possiblemoves);
+            this.possibleMoves = Bitboard.serializeBitboard(possibleMovesAsLong);
             sortedMoves = new TableEntry[possibleMoves.length - 1];
             sortedReferences = new byte[possibleMoves.length - 1];
         }
@@ -138,7 +255,7 @@ public class TranspositionTable{
          * Recycles the Sorter object to not have a thousand of it floating
          * around
          * 
-         * @param possiblemoves
+         * @param possibleMovesAsLong
          *            all possible moves
          * @param board
          *            the current Bitboard
@@ -150,12 +267,12 @@ public class TranspositionTable{
          * @param map
          *            the transposition table
          */
-        public void recycle(long possiblemoves, Bitboard board, boolean player, boolean maxNode, HashMap map){
+        public void recycle(long possibleMovesAsLong, Bitboard board, boolean player, boolean maxNode, HashMap map){
             this.board = board;
             this.map = map;
             this.player = player;
             this.maxNode = maxNode;
-            this.possibleMoves = Bitboard.serializeBitboard(possiblemoves);
+            this.possibleMoves = Bitboard.serializeBitboard(possibleMovesAsLong);
             sortedMoves = new TableEntry[possibleMoves.length - 1];
             sortedReferences = new byte[possibleMoves.length - 1];
         }
@@ -169,10 +286,10 @@ public class TranspositionTable{
             // If no move was returned yet, search for the pvNode
             if(count == 0){
                 for (byte i = 0; i < possibleMoves.length; i++){
-                    long changedfields = board.makeMove(player, possibleMoves[i]);
+                    long changedFields = board.makeMove(player, possibleMoves[i]);
                     sortedMoves[searchedUpTo] = map.get(board.hash);
                     sortedReferences[searchedUpTo] = i;
-                    board.undoMove(changedfields, possibleMoves[i], player);
+                    board.undoMove(changedFields, possibleMoves[i], player);
                     if(sortedMoves[searchedUpTo].isPvnode){
                         count++;
                         return possibleMoves[i];
@@ -184,9 +301,9 @@ public class TranspositionTable{
             // return the best of them
             if(count == 1){
                 for (byte i = (byte) (searchedUpTo + 1); i < possibleMoves.length; i++){
-                    long changedfields = board.makeMove(player, possibleMoves[i]);
+                    long changedFields = board.makeMove(player, possibleMoves[i]);
                     sortedMoves[searchedUpTo++] = map.get(board.hash);
-                    board.undoMove(changedfields, possibleMoves[i], player);
+                    board.undoMove(changedFields, possibleMoves[i], player);
                 }
                 sortEntries((byte) 0, (byte) (sortedMoves.length - 1));
             }

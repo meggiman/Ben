@@ -1,3 +1,4 @@
+
 package Versuche;
 
 import java.util.HashMap;
@@ -7,7 +8,7 @@ import javax.xml.transform.Templates;
 public class Tablegenerator {
 
 	public static byte[] generatemovetable(){
-		//Generiere alle möglichen Rowobjekte und erzeuge eine Liste aller möglichen.
+		//Generiere alle mï¿½glichen Rowobjekte und erzeuge eine Liste aller mï¿½glichen.
 		Row temp = new Row();
 		int key;
 		byte[] table = new byte[256*256*8];
@@ -15,7 +16,7 @@ public class Tablegenerator {
 		temp.makemove();
 		for (int i = 0; i < 256; i++) {
 			for (int j = 0; j < 256; j++) {
-				for (int j2 = 1; j2 < 8; j2++) {
+				for (int j2 = 0; j2 < 8; j2++) {
 					temp = new Row((byte)i, (byte)j, (byte)j2);
 					if (temp.checkrow()) {
 						key = i|(j<<8)|(j2<<16);
@@ -65,6 +66,7 @@ public class Tablegenerator {
 					break;
 				}
 			}
+			possiblychangedfields = 0;
 			cursor = (byte) (coord>>>1);
 			while (cursor !=0){
 				cursor &= otherplayer;

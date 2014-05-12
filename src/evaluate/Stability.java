@@ -284,7 +284,7 @@ public class Stability{
     }
 
     public static void main(String[] args){
-        Stability s = new Stability();
+        // Stability s = new Stability();
         // System.out.println(s.getStable1EdgePieces((byte) 0b10101000, (byte)
         // 84));
     }

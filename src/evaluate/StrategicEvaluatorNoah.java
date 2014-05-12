@@ -11,7 +11,7 @@ public class StrategicEvaluatorNoah implements IEvaluator{
 
     @Override
     public short evaluate(Bitboard gb, long possibleMoves, boolean player){
-        double discs = gb.discCount();
+        double discs = gb.getDiscCount();
         double EC = 5;
         double MC = (3.5 - discs / 50);
         double SC;
