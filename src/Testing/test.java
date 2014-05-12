@@ -2,6 +2,8 @@ package Testing;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.jar.JarEntry;
 
 import javax.swing.JFileChooser;
 import javax.xml.stream.FactoryConfigurationError;
@@ -27,7 +29,6 @@ public class test {
 //			test = countnodes(103079215104L, 402653184L, 12);
 //		System.out.println(System.nanoTime()-time2);
 //		System.out.println(test);
-		
 		long coord = EndgameSearch.OutcomeSearch.nextMove(gb);
 		coord += EndgameSearch.OutcomeSearch.nextMove(gb)-gb.red;
 		System.out.println("test:");
@@ -35,11 +36,11 @@ public class test {
 			 coord = EndgameSearch.OutcomeSearch.nextMove(gb)-gb.green;
 		System.out.println("Zeit in ms: "+(System.nanoTime()-time)+"\n"+coord);
 		
-		gb.green = 8821447121317630L;
-		gb.red = -8821447121350399L;
-//		int outcome = EndgameSearch.OutcomeSearch.finalScorefewremainingMax(gb.red, gb.green, -1, 1, false);
-		EndgameSearch.OutcomeSearch.nextMove(gb);
-		int outcometrue = EndgameSearch.OutcomeSearch.outcome;
+		gb.green = 16915016339750142L;
+		gb.red = -16915016373305344L;
+//		long outcome = EndgameSearch.OutcomeSearch.nextMove(gb);
+//		EndgameSearch.OutcomeSearch.nextMove(gb); //Zug 33554432L
+//		int outcometrue = EndgameSearch.OutcomeSearch.outcome;
 		TestArena testArena = new TestArena(new TestablePlayers.PlayerA(), new TestablePlayers.PlayerB(), 200);
 		TestArena.TestResult result = testArena.randomTimeGame(10, 50);
 		JFileChooser fileChooser = new JFileChooser();

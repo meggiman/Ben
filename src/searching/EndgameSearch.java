@@ -22,87 +22,83 @@ public class EndgameSearch {
 			if (possibleMoves == 0) {
 				long possibleMovesEnemy = gb.possiblemoves(false);
 				if (possibleMovesEnemy != 0) {
-					outcome = min(gb.red, gb.green, alpha, beta, remainingStones);
+					outcome = min(gb.red, gb.green, alpha, beta, remainingStones, Bitboard.possibleMovesRed(gb.green, gb.red));
 				}
 				return 0;
 			}
 			long bestmove = Long.highestOneBit(possibleMoves);
 			int bestvalue = alpha;
-			do {
-				long coord = Long.highestOneBit(possibleMoves);
-				long changedfields = gb.makeMove(true, coord);
-				int value = min(gb.red, gb.green, bestvalue, beta, remainingStones-1);
-				gb.undomove(changedfields, coord, true);
+			int value = alpha;
+			MoveList moveList = MoveList.recycle(moveListPool[remainingStones], possibleMoves, gb.red, gb.green);
+			for(int i = 0; i < moveList.size; i++) {
+				int index = moveList.orderedIndices[i];
+				value = min(moveList.red[index], moveList.green[index] , value, beta, remainingStones-1, moveList.possiblemoves[index]);
 				if (value > bestvalue) {
 					if (value >= beta) {
 						bestvalue = value;
 						outcome = value;
-						return coord;
+						return moveList.move[index];
 					}
 					bestvalue = value;
-					bestmove = coord;
+					bestmove = moveList.move[index];
 				}
-				possibleMoves ^= coord;
-			} while (possibleMoves != 0);
+				possibleMoves ^= moveList.move[index];
+			}
 			outcome = bestvalue;
 			return bestmove;
 		}
 		
-		final static int min(long red, long green, int alpha, int beta, int remainingstones){
+		final static int min(long red, long green, int alpha, int beta, int remainingstones, long possibleMoves){
 			nodecount++;
-			if (remainingstones<=6) {
+			if (remainingstones<=4) {
 				return finalScorefewremainingMin(red, green, alpha, beta, false);
 			}
-			long possibleMoves = Bitboard.possibleMovesRed(green, red);
 			if (possibleMoves == 0) {
 				if (Bitboard.possibleMovesRed(red, green) == 0) {
 					return Long.bitCount(red) - Long.bitCount(green);
 				}
-				return max(red, green,alpha, beta, remainingstones-1);
+				return max(red, green,alpha, beta, remainingstones-1, Bitboard.possibleMovesRed(red, green));
 			}
 			int bestvalue = beta;
 			int value = beta;
-			do {
-				long coord = Long.highestOneBit(possibleMoves);
-				long changedfields = Bitboard.getflippedDiskRed(green, red, coord);
-				value = max(red^changedfields, green^changedfields^coord, alpha, value, remainingstones-1);
+			MoveList moveList = MoveList.recycle(moveListPool[remainingstones], possibleMoves, green, red);
+			for (int i = 0; i < moveList.size; i++){
+				int index = moveList.orderedIndices[i];
+				value = max(moveList.green[index], moveList.red[index] , alpha, value, remainingstones-1, moveList.possiblemoves[index]);
 				if (value < beta) {
 					if (value <= alpha) {
 						return alpha;
 					}
 					bestvalue = value;
 				}
-				possibleMoves ^= coord;
-			} while (possibleMoves != 0);
+			}
 			return bestvalue;
 		}
 		
-		final static int max(long red, long green, int alpha, int beta, int remainingstones){
+		final static int max(long red, long green, int alpha, int beta, int remainingstones, long possibleMoves){
 			nodecount++;
-			if (remainingstones<=6) {
+			if (remainingstones<=4) {
 				return finalScorefewremainingMax(red, green, alpha, beta, false);
 			}
-			long possibleMoves = Bitboard.possibleMovesRed(red, green);
 			if (possibleMoves == 0) {
 				if (Bitboard.possibleMovesRed(green, red) == 0) {
 					return Long.bitCount(red) - Long.bitCount(green);
 				}
-				return min(red, green,alpha, beta, remainingstones-1);
+				return min(red, green,alpha, beta, remainingstones-1, Bitboard.possibleMovesRed(green, red));
 			}
 			int bestvalue = alpha;
 			int value = alpha;
-			do {
-				long coord = Long.highestOneBit(possibleMoves);
-				long changedfields = Bitboard.getflippedDiskRed(red, green, coord);
-				value = min(red^changedfields^coord, green^changedfields, value, beta, remainingstones-1);
+			MoveList moveList = MoveList.recycle(moveListPool[remainingstones], possibleMoves, red, green);
+			for (int i = 0; i < moveList.size; i++){
+				int index = moveList.orderedIndices[i];
+				value = min(moveList.red[index], moveList.green[index] , alpha, value, remainingstones-1, moveList.possiblemoves[index]);
 				if (value > alpha) {
 					if (value >= beta) {
 						return beta;
 					}
 					bestvalue = value;
 				}
-				possibleMoves ^= coord;
-			} while (possibleMoves != 0);
+			}
 			return bestvalue;
 		}
 		
@@ -175,6 +171,7 @@ public class EndgameSearch {
 			public long[] possiblemoves;
 			public long[] red;
 			public long[] green;
+			public long[] move;
 			public int[] orderedScore;
 			public int[] orderedIndices;
 			public int size;
@@ -191,26 +188,35 @@ public class EndgameSearch {
 				green = new long[size];
 				orderedScore = new int[size];
 				orderedIndices = new int[size];
+				move = new long[size];
 			}
-			public final static void recycle(MoveList oldlist, long possiblemoves, long red, long green) {
+			public final static MoveList recycle(MoveList oldlist, long possiblemoves, long red, long green) {
 				int size = Long.bitCount(possiblemoves);
 				oldlist.size = size;
 				for (int i = 0; i < size; i++){
 					oldlist.orderedIndices[i] = i;
 					long coord = Long.highestOneBit(possiblemoves);
-					long flipeddisk = Bitboard.getflippedDiskRed(green, red, coord);
-					long newred = red^flipeddisk;
-					long newgreen = green^flipeddisk^coord;
+					oldlist.move[i] = coord;
+					long flipeddisk = Bitboard.getflippedDiskRed(red, green, coord);
+					long newred = red^flipeddisk^coord;
+					long newgreen = green^flipeddisk;
 					oldlist.red[i] = newred;
 					oldlist.green[i] = newgreen;
 					long newpossiblemoves = Bitboard.possibleMovesRed(newgreen, newred);
 					oldlist.possiblemoves[i] = newpossiblemoves;
-					long cornerstability = Bitboard.filladjacent(red&CORNERS);
-					cornerstability &= red;
-					int score = 3*Long.bitCount(cornerstability) - Long.bitCount(possiblemoves);
+					long occupiedCorners = newred&CORNERS;
+					long cornerstability = occupiedCorners;
+					cornerstability |= occupiedCorners>>>1 & 0x7f7f7f7f7f7f7f7fL;
+					cornerstability |= occupiedCorners>>>8;
+					cornerstability |= occupiedCorners<<1 & 0xfefefefefefefefeL;
+					cornerstability |= occupiedCorners<<8;
+					cornerstability &= newred;
+					int score = 8*Long.bitCount(cornerstability) - 8*Long.bitCount(newpossiblemoves&CORNERS) - Long.bitCount(newpossiblemoves);
 					oldlist.orderedScore[i] = score;
+					possiblemoves ^= coord;
 				}
 				insertionSort(oldlist.orderedScore, oldlist.orderedIndices, size);
+				return oldlist;
 			}
 			
 			private final static void insertionSort(int[] orderedScore, int[] orderedIndices, int size){
@@ -218,10 +224,11 @@ public class EndgameSearch {
 					int j;
 					int tempScore = orderedScore[i];
 					int tempIndex = orderedIndices[i];
-					for (j = i-1;  j >= 0 && tempScore < orderedScore[j] ; j--) {
+					for (j = i-1;  j >= 0 && tempScore > orderedScore[j] ; j--) {
 						orderedScore[j+1] = orderedScore[j];
 						orderedIndices[j+1] = orderedIndices[j];
 					}
+					j++;
 					orderedScore[j] = tempScore;
 					orderedIndices[j] = tempIndex;
 				}
