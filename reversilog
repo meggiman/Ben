@@ -4371,3 +4371,167 @@ id=TestGame time=1399766678407 Redmove=7,2
 id=TestGame time=1399766680758 Greenmove=8,5
 id=TestGame time=1399766683107 finished reds=31 greens=33
 id=TestGame time=1399766690612 quit button pressed
+id=TestGame time=1399883286563 new game
+id=TestGame time=1399883286564 red=Players.Player green=TestablePlayers.PlayerNoah
+id=TestGame time=1399883288733 initialized
+id=TestGame time=1399883288828 Redmove=6,4
+id=TestGame time=1399883291356 Greenmove=5,3
+id=TestGame time=1399883293722 Redmove=6,3
+id=TestGame time=1399883298029 Greenmove=3,5
+id=TestGame time=1399883300395 Redmove=3,4
+id=TestGame time=1399883306750 Greenmove=4,3
+id=TestGame time=1399883309112 Redmove=3,3
+id=TestGame time=1399883318975 Greenmove=4,2
+id=TestGame time=1399883321334 Redmove=5,2
+id=TestGame time=1399883335029 Greenmove=2,4
+id=TestGame time=1399883337396 Redmove=4,6
+id=TestGame time=1399883362910 Greenmove=5,6
+id=TestGame time=1399883365277 Redmove=2,2
+id=TestGame time=1399883411076 Greenmove=6,1
+id=TestGame time=1399883413441 Redmove=4,1
+id=TestGame time=1399883444030 Greenmove=6,5
+id=TestGame time=1399883446389 Redmove=2,5
+id=TestGame time=1399883489963 Greenmove=2,3
+id=TestGame time=1399883492324 Redmove=5,7
+id=TestGame time=1399883590860 Greenmove=1,5
+id=TestGame time=1399883593222 Redmove=1,6
+id=TestGame time=1399883632866 Greenmove=6,7
+id=TestGame time=1399883635230 Redmove=1,2
+id=TestGame time=1399883659882 Greenmove=3,6
+id=TestGame time=1399883662247 Redmove=7,6
+id=TestGame time=1399883778192 Greenmove=6,2
+id=TestGame time=1399883780554 Redmove=1,3
+id=TestGame time=1399883824270 Greenmove=5,8
+id=TestGame time=1399883826631 Redmove=7,2
+id=TestGame time=1399883858993 Greenmove=1,7
+id=TestGame time=1399883861348 Redmove=6,8
+id=TestGame time=1399883890259 Greenmove=7,8
+id=TestGame time=1399883892618 Redmove=6,6
+id=TestGame time=1399883904815 Greenmove=7,1
+id=TestGame time=1399883907173 Redmove=7,7
+id=TestGame time=1399883917235 Greenmove=8,8
+id=TestGame time=1399883919596 Redmove=4,7
+id=TestGame time=1399883932445 Greenmove=3,7
+id=TestGame time=1399883934803 Redmove=2,8
+id=TestGame time=1399883942046 Greenmove=8,6
+id=TestGame time=1399883944397 Redmove=8,7
+id=TestGame time=1399883948825 Greenmove=4,8
+id=TestGame time=1399883951180 Redmove=3,8
+id=TestGame time=1399883954489 Greenmove=2,6
+id=TestGame time=1399883956849 Redmove=2,7
+id=TestGame time=1399883959506 Greenmove=1,8
+id=TestGame time=1399883961872 Redmove=8,5
+id=TestGame time=1399883964347 Greenmove=8,3
+id=TestGame time=1399883966705 Redmove=8,2
+id=TestGame time=1399883969075 Greenmove=8,4
+id=TestGame time=1399883971430 Redmove=null
+id=TestGame time=1399883971446 Greenmove=8,1
+id=TestGame time=1399883973800 Redmove=7,3
+id=TestGame time=1399883976156 Greenmove=7,5
+id=TestGame time=1399883978515 Redmove=7,4
+id=TestGame time=1399883980870 Greenmove=5,1
+id=TestGame time=1399883983230 Redmove=1,4
+id=TestGame time=1399883985586 Greenmove=3,2
+id=TestGame time=1399883987943 Redmove=2,1
+id=TestGame time=1399883990304 Greenmove=3,1
+id=TestGame time=1399883992661 Redmove=null
+id=TestGame time=1399883992669 Greenmove=1,1
+id=TestGame time=1399883995022 finished reds=15 greens=49
+id=TestGame time=1399884069822 quit button pressed
+id=TestGame time=1399884483706 new game
+id=TestGame time=1399884483706 red=Players.Player green=TestablePlayers.PlayerNoah
+id=TestGame time=1399884485747 initialized
+id=TestGame time=1399884485822 Redmove=6,4
+id=TestGame time=1399884488212 Green failed: ArithmeticException: / by zero
+id=TestGame time=1399884558101 quit button pressed
+id=TestGame time=1399884567418 new game
+id=TestGame time=1399884567419 red=Players.Player green=TestablePlayers.PlayerNoah
+id=TestGame time=1399884569422 initialized
+id=TestGame time=1399884569499 Redmove=6,3
+id=TestGame time=1399884571945 Greenmove=5,3
+id=TestGame time=1399884574313 Redmove=6,2
+id=TestGame time=1399884576707 Greenmove=7,2
+id=TestGame time=1399884579066 Redmove=7,3
+id=TestGame time=1399884581474 Greenmove=7,4
+id=TestGame time=1399884583843 Redmove=8,1
+id=TestGame time=1399884586284 Greenmove=7,1
+id=TestGame time=1399884588645 Redmove=8,4
+id=TestGame time=1399884591059 Greenmove=5,2
+id=TestGame time=1399884593418 Redmove=4,3
+id=TestGame time=1399884595913 Greenmove=6,4
+id=TestGame time=1399884598279 Redmove=6,1
+id=TestGame time=1399884600813 Greenmove=8,3
+id=TestGame time=1399884603171 Redmove=8,5
+id=TestGame time=1399884605684 Greenmove=8,6
+id=TestGame time=1399884608042 Redmove=8,2
+id=TestGame time=1399884610515 Greenmove=7,5
+id=TestGame time=1399884612870 Redmove=6,6
+id=TestGame time=1399884615359 Greenmove=5,7
+id=TestGame time=1399884617715 Redmove=7,7
+id=TestGame time=1399884620218 Greenmove=6,8
+id=TestGame time=1399884622571 Redmove=7,6
+id=TestGame time=1399884625168 Greenmove=6,7
+id=TestGame time=1399884627517 Redmove=6,5
+id=TestGame time=1399884630019 Greenmove=5,6
+id=TestGame time=1399884632378 Redmove=4,8
+id=TestGame time=1399884634899 Greenmove=5,8
+id=TestGame time=1399884637252 Redmove=8,7
+id=TestGame time=1399884639642 Greenmove=5,1
+id=TestGame time=1399884641997 Redmove=4,2
+id=TestGame time=1399884644425 Greenmove=4,1
+id=TestGame time=1399884646777 Redmove=4,7
+id=TestGame time=1399884647581 quit button pressed
+id=TestGame time=1399884678463 new game
+id=TestGame time=1399884678464 red=Players.Player green=TestablePlayers.PlayerNoah
+id=TestGame time=1399884680445 initialized
+id=TestGame time=1399884680527 Redmove=6,6
+id=TestGame time=1399884682994 Greenmove=5,6
+id=TestGame time=1399884685358 Redmove=6,4
+id=TestGame time=1399884687760 Greenmove=7,7
+id=TestGame time=1399884690119 Redmove=6,5
+id=TestGame time=1399884692543 Greenmove=7,4
+id=TestGame time=1399884694909 Redmove=7,5
+id=TestGame time=1399884697399 Greenmove=8,4
+id=TestGame time=1399884699763 Redmove=8,5
+id=TestGame time=1399884702257 Greenmove=8,6
+id=TestGame time=1399884704621 Redmove=8,3
+id=TestGame time=1399884707075 Greenmove=8,2
+id=TestGame time=1399884709435 Redmove=6,7
+id=TestGame time=1399884711912 Greenmove=6,3
+id=TestGame time=1399884714273 Redmove=7,2
+id=TestGame time=1399884716920 Greenmove=7,6
+id=TestGame time=1399884719275 Redmove=8,7
+id=TestGame time=1399884721387 quit button pressed
+id=TestGame time=1399884767802 new game
+id=TestGame time=1399884767803 red=Players.Player green=TestablePlayers.PlayerNoah
+id=TestGame time=1399884769792 initialized
+id=TestGame time=1399884769884 Redmove=6,6
+id=TestGame time=1399884772520 Greenmove=5,6
+id=TestGame time=1399884774879 Redmove=6,3
+id=TestGame time=1399884777659 Greenmove=7,7
+id=TestGame time=1399884780016 Redmove=8,8
+id=TestGame time=1399884780714 quit button pressed
+id=TestGame time=1399884803241 new game
+id=TestGame time=1399884803241 red=Players.Player green=TestablePlayers.PlayerNoah
+id=TestGame time=1399884805272 initialized
+id=TestGame time=1399884805357 Redmove=6,4
+id=TestGame time=1399884807744 Green failed: ArithmeticException: / by zero
+id=TestGame time=1399884826179 new game
+id=TestGame time=1399884826180 red=Players.Player green=TestablePlayers.PlayerNoah
+id=TestGame time=1399884828063 initialized
+id=TestGame time=1399884828143 Redmove=6,4
+id=TestGame time=1399884830658 Greenmove=5,3
+id=TestGame time=1399884833025 Redmove=4,6
+id=TestGame time=1399884839241 Greenmove=3,5
+id=TestGame time=1399884841602 Redmove=3,4
+id=TestGame time=1399884848400 Greenmove=3,3
+id=TestGame time=1399884850760 Redmove=6,2
+id=TestGame time=1399884856328 quit button pressed
+id=TestGame time=1399885100724 quit button pressed
+id=TestGame time=1399886321593 new game
+id=TestGame time=1399886321594 red=Players.Player green=TestablePlayers.PlayerNoah
+id=TestGame time=1399886323811 initialized
+id=TestGame time=1399886323889 Redmove=6,3
+id=TestGame time=1399886326347 Greenmove=null
+id=TestGame time=1399886326348 Green makes illegal move
+id=TestGame time=1399886365854 quit button pressed

@@ -11,51 +11,33 @@ public class StrategicEvaluatorNoah implements IEvaluator{
 
     @Override
     public short evaluate(Bitboard gb, long possibleMoves, boolean player){
-        short discs = gb.discCount();
-        short EC = 500;
-        short MC = (short) (350 - 2 * discs);
-        short SC;
+        double discs = gb.discCount();
+        double EC = 5;
+        double MC = (3.5 - discs / 50);
+        double SC;
         if(discs < 10){
-            SC = (short) (200 - discs);
+            SC = (2 - discs / 100);
         }
         else if(discs < 20){
-            SC = (short) (190 - 2 * (discs - 10));
+            SC = (1.9 - (discs - 10) / 50);
         }
         else if(discs < 40){
-            SC = (short) (170 - 5 * (discs - 20));
+            SC = (1.7 - (discs - 20) / 20);
         }
         else if(discs < 50){
-            SC = (short) (70 - 7 * (discs - 40));
+            SC = (0.7 - 7 * (discs - 40) / 100);
         }
         else{
             SC = 0;
         }
 
+        long possibleMovesEnemy = gb.getPossibleMoves(!player);
         short edgeAdvantage = (short) (stability.getEdgeValue(gb, player) / 32);
-        short mobilityAdvantage = (short) ((possibleMoves - gb.getPossibleMoves(!player)));
-        short occupiedSquareAdvantage = 1;
+        short mobilityAdvantage = (short) ((possibleMoves + possibleMovesEnemy) == 0 ? 0
+                : ((float) (possibleMoves - possibleMovesEnemy)
+                        / (possibleMoves + possibleMovesEnemy) * 1000));
+        short occupiedSquareAdvantage = 0;
 
-        if(gb.isFinished()){
-            if(gb.getRed() > gb.getGreen()){
-                if(player){
-                    return 32767;
-                }
-                else{
-                    return -32767;
-                }
-            }
-            else if(gb.getRed() < gb.getGreen()){
-                if(player){
-                    return -32767;
-                }
-                else{
-                    return 32767;
-                }
-            }
-            else{
-                return 0;
-            }
-        }
         return (short) (EC * edgeAdvantage + MC * mobilityAdvantage + SC
                 * occupiedSquareAdvantage);
     }

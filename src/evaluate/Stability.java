@@ -11,10 +11,10 @@ public class Stability{
     byte    maskB     = 0b00011000;
 
     Stability(){
-        for (int k = 0; k < 59049; k++){
+        for (int k = 0; k < 6561; k++){
             int c = k;
             short[] board = new short[3];
-            for (int z = 0; z < 10; z++){
+            for (int z = 0; z < 8; z++){
                 board[c % 3] |= (short) (1 << z);
                 // System.out.print(c % 3);
                 c /= 3;
@@ -90,7 +90,7 @@ public class Stability{
             score -= Integer.bitCount(maskA & semiGreen) * 100;
             score -= Integer.bitCount(maskB & semiGreen) * 100;
 
-            edgeTable[k] = score;
+            edgeTable[(board[1] << 8) & board[2]] = score;
             System.out.println(k);
             System.out.println(String.format("%8s",
                     Integer.toBinaryString(0xFF & board[1])).replace(' ', '0'));
@@ -103,116 +103,50 @@ public class Stability{
         System.out.println("bla");
     }
 
+    public static int getfirstcolumn(long bitboard){
+
+        return (int) bitboard & 0xFF;
+    }
+
     final short getEdgeValue(Bitboard board, boolean player){
-        byte edgeTopRed = (byte) (board.red >>> 1);
-        byte edgeBotRed = (byte) (board.red & 0xFF);
-        byte edgeLeftRed = (byte) (board.red >>> 56 & 0b10000000
-                | board.red >>> 49
-                & 0b01000000
-                | board.red >>> 42 & 0b00100000 | board.red >>> 35
-                & 0b00010000
-                | board.red >>> 28 & 0b00001000 | board.red >>> 21
-                & 0b00000100
-                | board.red >>> 14 & 0b00000010 | board.red >>> 7);
-        ;
-        byte edgeRightRed = (byte) (board.red >>> 49 & 0b10000000
-                | board.red >>> 42
-                & 0b01000000
-                | board.red >>> 35 & 0b00100000 | board.red >>> 28
-                & 0b00010000
-                | board.red >>> 21 & 0b00001000 | board.red >>> 14
-                & 0b00000100
-                | board.red >>> 7 & 0b00000010 | board.red);
+        short edgeTopRed = (short) (board.red >>> 56);
+        short edgeBotRed = (short) (board.red & 0xFF);
+        long bitboard = board.red & 0x0101010101010101L;
+        bitboard |= bitboard >>> 28;
+        bitboard |= bitboard >>> 14;
+        bitboard |= bitboard >>> 7;
+        short edgeLeftRed = (short) (bitboard & 0xFF);
+        bitboard = (board.red >>> 7) & 0x0101010101010101L;
+        bitboard |= bitboard >>> 28;
+        bitboard |= bitboard >>> 14;
+        bitboard |= bitboard >>> 7;
+        short edgeRightRed = (short) (bitboard & 0xFF);
 
-        byte edgeTopGreen = (byte) (board.green >>> 1);
-        byte edgeBotGreen = (byte) (board.green & 0xFF);
-        byte edgeLeftGreen = (byte) (board.green >>> 56 & 0b10000000
-                | board.green >>> 49
-                & 0b01000000
-                | board.green >>> 42 & 0b00100000 | board.green >>> 35
-                & 0b00010000
-                | board.green >>> 28 & 0b00001000 | board.green >>> 21
-                & 0b00000100
-                | board.green >>> 14 & 0b00000010 | board.green >>> 7);
-        byte edgeRightGreen = (byte) (board.green >>> 49 & 0b10000000
-                | board.green >>> 42
-                & 0b01000000
-                | board.green >>> 35 & 0b00100000 | board.green >>> 28
-                & 0b00010000
-                | board.green >>> 21 & 0b00001000 | board.green >>> 14
-                & 0b00000100
-                | board.green >>> 7 & 0b00000010 | board.green);
+        short edgeTopGreen = (short) (board.green >>> 56);
+        short edgeBotGreen = (short) (board.green & 0xFF);
+        bitboard = board.green & 0x0101010101010101L;
+        bitboard |= bitboard >>> 28;
+        bitboard |= bitboard >>> 14;
+        bitboard |= bitboard >>> 7;
+        short edgeLeftGreen = (short) (bitboard & 0xFF);
+        bitboard = (board.green >>> 7) & 0x0101010101010101L;
+        bitboard |= bitboard >>> 28;
+        bitboard |= bitboard >>> 14;
+        bitboard |= bitboard >>> 7;
+        short edgeRightGreen = (short) (bitboard & 0xFF);
 
-        int indexTop = 0;
-        int indexBot = 0;
-        int indexLeft = 0;
-        int indexRight = 0;
-        int multiplier = 1;
         if(player){
-            for (int z = 0; z < 8; z++){
-                if((edgeTopRed & (1 << z)) != 0){
-                    indexTop += multiplier;
-                }
-                else if((edgeTopGreen & (1 << z)) != 0){
-                    indexTop += multiplier * 2;
-                }
-
-                if((edgeBotRed & (1 << z)) != 0){
-                    indexBot += multiplier;
-                }
-                else if((edgeBotGreen & (1 << z)) != 0){
-                    indexBot += multiplier * 2;
-                }
-
-                if((edgeLeftRed & (1 << z)) != 0){
-                    indexLeft += multiplier;
-                }
-                else if((edgeLeftGreen & (1 << z)) != 0){
-                    indexLeft += multiplier * 2;
-                }
-
-                if((edgeRightRed & (1 << z)) != 0){
-                    indexRight += multiplier;
-                }
-                else if((edgeRightGreen & (1 << z)) != 0){
-                    indexRight += multiplier * 2;
-                }
-            }
+            return (short) (edgeTable[(edgeTopRed << 8) & edgeTopGreen]
+                    + edgeTable[(edgeBotRed << 8) & edgeBotGreen]
+                    + edgeTable[(edgeLeftRed << 8) & edgeLeftGreen] + edgeTable[(edgeRightRed << 8)
+                    & edgeRightGreen]);
         }
         else{
-            for (int z = 0; z < 8; z++){
-                if((edgeTopRed & (1 << z)) != 0){
-                    indexTop += multiplier * 2;
-                }
-                else if((edgeTopGreen & (1 << z)) != 0){
-                    indexTop += multiplier;
-                }
-
-                if((edgeBotRed & (1 << z)) != 0){
-                    indexBot += multiplier * 2;
-                }
-                else if((edgeBotGreen & (1 << z)) != 0){
-                    indexBot += multiplier;
-                }
-
-                if((edgeLeftRed & (1 << z)) != 0){
-                    indexLeft += multiplier * 2;
-                }
-                else if((edgeLeftGreen & (1 << z)) != 0){
-                    indexLeft += multiplier;
-                }
-
-                if((edgeRightRed & (1 << z)) != 0){
-                    indexRight += multiplier * 2;
-                }
-                else if((edgeRightGreen & (1 << z)) != 0){
-                    indexRight += multiplier;
-                }
-            }
+            return (short) (edgeTable[(edgeTopGreen << 8) & edgeTopRed]
+                    + edgeTable[(edgeBotGreen << 8) & edgeBotRed]
+                    + edgeTable[(edgeLeftGreen << 8) & edgeLeftRed] + edgeTable[(edgeRightGreen << 8)
+                    & edgeRightRed]);
         }
-
-        return (short) (edgeTable[indexTop] + edgeTable[indexBot]
-                + edgeTable[indexLeft] + edgeTable[indexRight]);
 
     }
 
