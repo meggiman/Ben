@@ -160,8 +160,8 @@ public class StrategicEvaluatorNoah implements IEvaluator{
     public short evaluate(Bitboard gb, long possibleMoves, boolean player){
         double discs = gb.getDiscCount();
         double EC = 3.5;
-        double MC = 3.5 * 200;
-        double MC2 = 3.5 * 150;
+        double MC = 70;
+        double MC2 = 60;
         double SC = 2;
 
         possibleMoves = Long.bitCount(possibleMoves);
@@ -169,9 +169,9 @@ public class StrategicEvaluatorNoah implements IEvaluator{
         long potentialMoves = Long.bitCount(getPotentialMobility(gb, !player));
         long potentialMovesEnemy = Long.bitCount(getPotentialMobility(gb, player));
 
-        int edgeAdvantage = (int) (stability.getEdgeValue(gb, player) / 8);
+        int edgeAdvantage = (int) (stability.getEdgeValue(gb, player));
 
-        int mobilityAdvantage = (int) ((possibleMoves + possibleMovesEnemy) == 0 ? 0
+        float mobilityAdvantage = ((possibleMoves + possibleMovesEnemy) == 0 ? 0
                 : ((float) (possibleMoves - possibleMovesEnemy)
                 / (possibleMoves + possibleMovesEnemy)));
 
@@ -193,12 +193,12 @@ public class StrategicEvaluatorNoah implements IEvaluator{
             System.out.println("ALERT!SWEG!11ELF!!");
         }
         // gb.print();
-        // System.out.println("EdgeAdvantage: " + edgeAdvantage);
-        // System.out.println("MobilityAdvantage: " + mobilityAdvantage);
-        // System.out.println("occupiedSquareAdvantage: "
-        // + occupiedSquareAdvantage);
-        // System.out.println(score);
-        // System.out.println("------------------------");
+        System.out.println("EdgeAdvantage: " + edgeAdvantage);
+        System.out.println("MobilityAdvantage: " + mobilityAdvantage);
+        System.out.println("occupiedSquareAdvantage: "
+                + occupiedSquareAdvantage);
+        System.out.println(score);
+        System.out.println("------------------------");
 
         return (short) score;
     }

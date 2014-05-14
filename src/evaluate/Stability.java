@@ -45,50 +45,50 @@ public class Stability{
             float score = 0;
 
             // Score red
-            score += Integer.bitCount(maskC & unstableRed) * -50;
-            score += Integer.bitCount(maskA & unstableRed) * 20;
-            score += Integer.bitCount(maskB & unstableRed) * 15;
+            score += Integer.bitCount(maskC & unstableRed) * -5;
+            score += Integer.bitCount(maskA & unstableRed) * 2;
+            score += Integer.bitCount(maskB & unstableRed) * 1.5;
 
-            score += Integer.bitCount(maskA & unanchoredRed) * 300;
-            score += Integer.bitCount(maskB & unanchoredRed) * 200;
+            score += Integer.bitCount(maskA & unanchoredRed) * 30;
+            score += Integer.bitCount(maskB & unanchoredRed) * 20;
 
-            score += Integer.bitCount(maskC & aloneRed) * -75;
-            score += Integer.bitCount(maskA & aloneRed) * -25;
-            score += Integer.bitCount(maskB & aloneRed) * -50;
+            score += Integer.bitCount(maskC & aloneRed) * -7.5;
+            score += Integer.bitCount(maskA & aloneRed) * -2.5;
+            score += Integer.bitCount(maskB & aloneRed) * -5.0;
 
-            score += Integer.bitCount(stable1Red) * 800;
+            score += Integer.bitCount(stable1Red) * 80;
 
-            score += Integer.bitCount(maskC & stable3Red) * 1200;
-            score += Integer.bitCount(maskA & stable3Red) * 1000;
-            score += Integer.bitCount(maskB & stable3Red) * 1000;
-            score += Integer.bitCount(0b10000001 & stable3Red) * 800;
+            score += Integer.bitCount(maskC & stable3Red) * 120;
+            score += Integer.bitCount(maskA & stable3Red) * 100;
+            score += Integer.bitCount(maskB & stable3Red) * 100;
+            score += Integer.bitCount(0b10000001 & stable3Red) * 80;
 
-            score += Integer.bitCount(maskC & semiRed) * -125;
-            score += Integer.bitCount(maskA & semiRed) * 100;
-            score += Integer.bitCount(maskB & semiRed) * 100;
+            score += Integer.bitCount(maskC & semiRed) * -12.5;
+            score += Integer.bitCount(maskA & semiRed) * 10;
+            score += Integer.bitCount(maskB & semiRed) * 10;
 
             // Negative score Green
-            score -= Integer.bitCount(maskC & unstableGreen) * -50 * 1.2;
-            score -= Integer.bitCount(maskA & unstableGreen) * 20 * 1.2;
-            score -= Integer.bitCount(maskB & unstableGreen) * 15 * 1.2;
+            score -= Integer.bitCount(maskC & unstableGreen) * -5 * 1.2;
+            score -= Integer.bitCount(maskA & unstableGreen) * 2 * 1.2;
+            score -= Integer.bitCount(maskB & unstableGreen) * 1.5 * 1.2;
 
-            score -= Integer.bitCount(maskA & unanchoredGreen) * 300 * 1.2;
-            score -= Integer.bitCount(maskB & unanchoredGreen) * 200 * 1.2;
+            score -= Integer.bitCount(maskA & unanchoredGreen) * 30 * 1.2;
+            score -= Integer.bitCount(maskB & unanchoredGreen) * 20 * 1.2;
 
-            score -= Integer.bitCount(maskC & aloneGreen) * -75 * 1.2;
-            score -= Integer.bitCount(maskA & aloneGreen) * -25 * 1.2;
-            score -= Integer.bitCount(maskB & aloneGreen) * -50 * 1.2;
+            score -= Integer.bitCount(maskC & aloneGreen) * -7.5 * 1.2;
+            score -= Integer.bitCount(maskA & aloneGreen) * -2.5 * 1.2;
+            score -= Integer.bitCount(maskB & aloneGreen) * -5 * 1.2;
 
-            score -= Integer.bitCount(stable1Green) * 800 * 1.2;
+            score -= Integer.bitCount(stable1Green) * 80 * 1.2;
 
-            score -= Integer.bitCount(maskC & stable3Green) * 1200 * 1.2;
-            score -= Integer.bitCount(maskA & stable3Green) * 1000 * 1.2;
-            score -= Integer.bitCount(maskB & stable3Green) * 1000 * 1.2;
-            score -= Integer.bitCount(0b10000001 & stable3Green) * 800 * 1.2;
+            score -= Integer.bitCount(maskC & stable3Green) * 120 * 1.2;
+            score -= Integer.bitCount(maskA & stable3Green) * 100 * 1.2;
+            score -= Integer.bitCount(maskB & stable3Green) * 100 * 1.2;
+            score -= Integer.bitCount(0b10000001 & stable3Green) * 80 * 1.2;
 
-            score -= Integer.bitCount(maskC & semiGreen) * -125 * 1.2;
-            score -= Integer.bitCount(maskA & semiGreen) * 100 * 1.2;
-            score -= Integer.bitCount(maskB & semiGreen) * 100 * 1.2;
+            score -= Integer.bitCount(maskC & semiGreen) * -12.5 * 1.2;
+            score -= Integer.bitCount(maskA & semiGreen) * 10 * 1.2;
+            score -= Integer.bitCount(maskB & semiGreen) * 10 * 1.2;
 
             edgeTable[(board[1] << 8) | board[2]] = (short) score;
             // System.out.println(k);
