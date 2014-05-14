@@ -4,7 +4,7 @@ import Gameboard.Bitboard;
 
 public class Stability{
 
-    short[] edgeTable = new short[59049];
+    short[] edgeTable = new short[65536];
 
     byte    maskC     = 0b01000010;
     byte    maskA     = 0b00100100;
@@ -79,7 +79,7 @@ public class Stability{
             score -= Integer.bitCount(maskA & aloneGreen) * -25;
             score -= Integer.bitCount(maskB & aloneGreen) * -50;
 
-            score -= Integer.bitCount(stable1Green) * 800;
+            score -= Integer.bitCount(stable1Green) * 1800;
 
             score -= Integer.bitCount(maskC & stable3Green) * 1200;
             score -= Integer.bitCount(maskA & stable3Green) * 1000;
@@ -90,7 +90,7 @@ public class Stability{
             score -= Integer.bitCount(maskA & semiGreen) * 100;
             score -= Integer.bitCount(maskB & semiGreen) * 100;
 
-            edgeTable[(board[1] << 8) & board[2]] = score;
+            edgeTable[(board[1] << 8) | board[2]] = score;
             System.out.println(k);
             System.out.println(String.format("%8s",
                     Integer.toBinaryString(0xFF & board[1])).replace(' ', '0'));
@@ -136,16 +136,16 @@ public class Stability{
         short edgeRightGreen = (short) (bitboard & 0xFF);
 
         if(player){
-            return (short) (edgeTable[(edgeTopRed << 8) & edgeTopGreen]
-                    + edgeTable[(edgeBotRed << 8) & edgeBotGreen]
-                    + edgeTable[(edgeLeftRed << 8) & edgeLeftGreen] + edgeTable[(edgeRightRed << 8)
-                    & edgeRightGreen]);
+            return (short) (edgeTable[(edgeTopRed << 8) | edgeTopGreen]
+                    + edgeTable[(edgeBotRed << 8) | edgeBotGreen]
+                    + edgeTable[(edgeLeftRed << 8) | edgeLeftGreen] + edgeTable[(edgeRightRed << 8)
+                    | edgeRightGreen]);
         }
         else{
-            return (short) (edgeTable[(edgeTopGreen << 8) & edgeTopRed]
-                    + edgeTable[(edgeBotGreen << 8) & edgeBotRed]
-                    + edgeTable[(edgeLeftGreen << 8) & edgeLeftRed] + edgeTable[(edgeRightGreen << 8)
-                    & edgeRightRed]);
+            return (short) (edgeTable[(edgeTopGreen << 8) | edgeTopRed]
+                    + edgeTable[(edgeBotGreen << 8) | edgeBotRed]
+                    + edgeTable[(edgeLeftGreen << 8) | edgeLeftRed] + edgeTable[(edgeRightGreen << 8)
+                    | edgeRightRed]);
         }
 
     }

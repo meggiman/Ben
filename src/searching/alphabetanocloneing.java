@@ -2,15 +2,12 @@ package searching;
 
 import reversi.GameBoard;
 import Gameboard.Bitboard;
-import evaluate.IEvaluator;
-import evaluate.StrategicEvaluator;
 
 public class AlphaBetaNoCloneing extends Searchalgorithm{
-    public IEvaluator evaluator    = new StrategicEvaluator();
     // private static TranspositionTable table = new TranspositionTable(2000000,
     // replaceStrategy);
-    private boolean   cancel       = false;
-    private byte      countOfMoves = 0;
+    private boolean cancel       = false;
+    private byte    countOfMoves = 0;
 
     public long nextMove(Bitboard gb){
         countOfMoves++;
@@ -34,7 +31,7 @@ public class AlphaBetaNoCloneing extends Searchalgorithm{
                 long coord = possibleMoves[j];
                 nextBoard = (Bitboard) gb.clone();
                 nextBoard.makeMove(true, coord);
-                value = min(nextBoard, -20065, 200065, i - 1);
+                value = min(nextBoard, -20065, 20065, i - 1);
                 if(value > bestValue){
                     bestValue = value;
                     tmpBestMove = coord;

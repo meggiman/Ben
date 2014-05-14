@@ -15,6 +15,7 @@ public class AlphaBetaNoah extends Searchalgorithm{
 
     private byte               MAXDEPTH        = 10;
     private static short       TOPBORDER       = 32767;
+    private static short       BOTBORDER       = -32767;
     private Bitboard           board;
     private long               startingTime;
     private long               timeLimit;
@@ -103,7 +104,7 @@ public class AlphaBetaNoah extends Searchalgorithm{
         if(player == PLAYER)
             value = TOPBORDER;
         else
-            value = 0;
+            value = BOTBORDER;
 
         // Set position to null as default
         byte position = 127;
@@ -164,7 +165,7 @@ public class AlphaBetaNoah extends Searchalgorithm{
         }
         // Calculate value of the board when depth 0 is reached
         else{
-            value = (short) evaluator.evaluate(board, 0, player);
+            value = (short) evaluator.evaluate(board, board.getPossibleMoves(player), player);
         }
         // System.out.println(player + "/" + depth + "/" + value
         // + " ----- normal exit NORMAL PLAYER");

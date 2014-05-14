@@ -4,7 +4,116 @@ import Gameboard.Bitboard;
 
 public class StrategicEvaluatorNoah implements IEvaluator{
 
-    Stability stability = new Stability();
+    Stability                 stability       = new Stability();
+
+    /*
+     * 012
+     * 7 3
+     * 654
+     */
+    // bitmasks for every line
+    private static long       LINES15[]       = {
+                                              // vertical 15
+            0x0101010101010101L,
+            0x0202020202020202L,
+            0x0404040404040404L,
+            0x0808080808080808L,
+            0x1010101010101010L,
+            0x2020202020202020L,
+            0x4040404040404040L,
+            0x8080808080808080L              };
+    private static long       LINES37[]       = {
+                                              // horizontal 37
+            0x00000000000000ffL,
+            0x000000000000ff00L,
+            0x0000000000ff0000L,
+            0x00000000ff000000L,
+            0x000000ff00000000L,
+            0x0000ff0000000000L,
+            0x00ff000000000000L,
+            0xff00000000000000L              };
+    private static long       LINES04[]       = {
+                                              // diagonal 04
+            0x8040201008040201L,
+            0x0080402010080402L,
+            0x0000804020100804L,
+            0x0000008040201008L,
+            0x0000000080402010L,
+            0x0000000000804020L,
+            0x4020100804020100L,
+            0x2010080402010000L,
+            0x1008040201000000L,
+            0x0804020100000000L,
+            0x0402010000000000L              };
+    private static long       LINES26[]       = {
+                                              // diagonal 26
+            0x0102040810204080L,
+            0x0001020408102040L,
+            0x0000010204081020L,
+            0x0000000102040810L,
+            0x0000000001020408L,
+            0x0000000000010204L,
+            0x0204081020408000L,
+            0x0408102040800000L,
+            0x0810204080000000L,
+            0x1020408000000000L,
+            0x2040800000000000L              };
+
+    // bitedges top
+    private final static long TOPEDGE         = 0x00000000000000FFL;
+    // bitedges bottom
+    private final static long BOTTOMEDGE      = 0xFF00000000000000L;
+    // bitedges top & bottom
+    private final static long VERTICALEDGES   = TOPEDGE | BOTTOMEDGE;
+    // bitedges left
+    private final static long LEFTEDGE        = 0x0101010101010101L;
+    // bitedges right
+    private final static long RIGHTEDGE       = 0x8080808080808080L;
+    // bitedges left & right
+    private final static long HORIZONTALEDGES = LEFTEDGE | RIGHTEDGE;
+    // bitedges left & right
+    private final static long EDGES           = VERTICALEDGES | HORIZONTALEDGES;
+
+    private long getStableDisks(Bitboard board, boolean player){
+        long red;
+        long green;
+        if(player){
+            red = board.red;
+            green = board.green;
+        }
+        else{
+            green = board.red;
+            red = board.green;
+        }
+        long current = 0, before = red | green, filled04 = EDGES, filled15 = VERTICALEDGES, filled26 = EDGES, filled37 = HORIZONTALEDGES;
+        int i;
+        for (i = 0; i < 8; i++){
+            if((before & LINES15[i]) == LINES15[i]){
+                filled15 |= LINES15[i];
+            }
+            if((before & LINES37[i]) == LINES37[i]){
+                filled37 |= LINES37[i];
+            }
+        }
+        for (i = 0; i < 11; i++){
+            if((before & LINES04[i]) == LINES04[i]){
+                filled04 |= LINES04[i];
+            }
+            if((before & LINES26[i]) == LINES26[i]){
+                filled26 |= LINES26[i];
+            }
+        }
+
+        while(current != before){
+            before = current;
+            current |= red
+                    & ((current << 8) | (current >>> 8) | filled15) // 15
+                    & ((current << 1) | (current >>> 1) | filled37) // 37
+                    & ((current << 9) | (current >>> 9) | filled04) // 04
+                    & ((current << 7) | (current >>> 7) | filled26); // 26
+        }
+        return current;
+    }
 
     public StrategicEvaluatorNoah(){
     }
@@ -13,30 +122,16 @@ public class StrategicEvaluatorNoah implements IEvaluator{
     public short evaluate(Bitboard gb, long possibleMoves, boolean player){
         double discs = gb.getDiscCount();
         double EC = 5;
-        double MC = (3.5 - discs / 50);
-        double SC;
-        if(discs < 10){
-            SC = (2 - discs / 100);
-        }
-        else if(discs < 20){
-            SC = (1.9 - (discs - 10) / 50);
-        }
-        else if(discs < 40){
-            SC = (1.7 - (discs - 20) / 20);
-        }
-        else if(discs < 50){
-            SC = (0.7 - 7 * (discs - 40) / 100);
-        }
-        else{
-            SC = 0;
-        }
+        double MC = 3.5;
+        double SC = 7;
 
         long possibleMovesEnemy = gb.getPossibleMoves(!player);
         short edgeAdvantage = (short) (stability.getEdgeValue(gb, player) / 32);
         short mobilityAdvantage = (short) ((possibleMoves + possibleMovesEnemy) == 0 ? 0
                 : ((float) (possibleMoves - possibleMovesEnemy)
-                        / (possibleMoves + possibleMovesEnemy) * 1000));
-        short occupiedSquareAdvantage = 0;
+                        / (possibleMoves + possibleMovesEnemy) * 200));
+        short occupiedSquareAdvantage = (short) (Long.bitCount(getStableDisks(gb, player))
+                - Long.bitCount(getStableDisks(gb, !player)));
 
         return (short) (EC * edgeAdvantage + MC * mobilityAdvantage + SC
                 * occupiedSquareAdvantage);

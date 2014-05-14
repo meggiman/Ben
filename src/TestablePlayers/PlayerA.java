@@ -60,7 +60,9 @@ public class PlayerA implements ITestablePlayer{
         searchalgorithm.deadline = System.nanoTime() + timeLimit * 1000000
                 - 20000000;
         System.out.println("Player A searching...");
-        return searchalgorithm.nextMove(gb);
+        long coord = searchalgorithm.nextMove(gb);
+        System.out.println(searchalgorithm.searchedNodesCount);
+        return coord;
     }
 
     @Override

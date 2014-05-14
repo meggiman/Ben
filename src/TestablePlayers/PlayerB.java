@@ -2,28 +2,23 @@ package TestablePlayers;
 
 import reversi.Coordinates;
 import reversi.GameBoard;
-import searching.AlphabetaTT;
 import searching.Searchalgorithm;
 import Gameboard.Bitboard;
 import Testing.ITestablePlayer;
-import Versuche.Tables;
-import evaluate.IEvaluator;
-import evaluate.StrategicEvaluator;
+import evaluate.StrategicEvaluatorNoah;
 
 public class PlayerB implements ITestablePlayer{
     private int            myColor;
     private long           timeLimit;
-    public Searchalgorithm searchalgorithm = new AlphabetaTT();
-    public IEvaluator      evaluator       = new StrategicEvaluator();
-    public String          name            = "alphabetaTT";
+    public Searchalgorithm searchalgorithm;
+    public String          name = "alphabetaNC";
 
     @Override
     public void initialize(int myColor, long timeLimit){
         this.myColor = myColor;
         this.timeLimit = timeLimit;
         searchalgorithm = new searching.AlphaBetaNoCloneing();
-        searchalgorithm.evaluator = evaluator;
-        Tables.generateTables();
+        searchalgorithm.evaluator = new StrategicEvaluatorNoah();
     }
 
     @Override
@@ -42,6 +37,8 @@ public class PlayerB implements ITestablePlayer{
         System.out.println("Player B searching...");
         long coord = searchalgorithm.nextMove(gb);
         System.out.println(searchalgorithm.searchedNodesCount);
+        System.out.println(searchalgorithm.reachedDepth);
+        System.out.println(searchalgorithm.valueOfLastMove);
         return coord;
     }
 
