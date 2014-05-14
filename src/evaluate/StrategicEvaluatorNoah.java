@@ -75,17 +75,7 @@ public class StrategicEvaluatorNoah implements IEvaluator{
     private final static long EDGES           = VERTICALEDGES | HORIZONTALEDGES;
 
     private long getStableDisks(Bitboard board, boolean player){
-        long red;
-        long green;
-        if(player){
-            red = board.red;
-            green = board.green;
-        }
-        else{
-            green = board.red;
-            red = board.green;
-        }
-        long current = 0, before = red | green, filled04 = EDGES, filled15 = VERTICALEDGES, filled26 = EDGES, filled37 = HORIZONTALEDGES;
+        long current = 0, before = board.red | board.green, filled04 = EDGES, filled15 = VERTICALEDGES, filled26 = EDGES, filled37 = HORIZONTALEDGES;
         int i;
         for (i = 0; i < 8; i++){
             if((before & LINES15[i]) == LINES15[i]){
@@ -106,7 +96,7 @@ public class StrategicEvaluatorNoah implements IEvaluator{
 
         while(current != before){
             before = current;
-            current |= red
+            current |= board.red
                     & ((current << 8) | (current >>> 8) | filled15) // 15
                     & ((current << 1) | (current >>> 1) | filled37) // 37
                     & ((current << 9) | (current >>> 9) | filled04) // 04
@@ -121,9 +111,9 @@ public class StrategicEvaluatorNoah implements IEvaluator{
     @Override
     public short evaluate(Bitboard gb, long possibleMoves, boolean player){
         double discs = gb.getDiscCount();
-        double EC = 5;
+        double EC = 6;
         double MC = 3.5;
-        double SC = 7;
+        double SC = 2;
 
         long possibleMovesEnemy = gb.getPossibleMoves(!player);
         short edgeAdvantage = (short) (stability.getEdgeValue(gb, player) / 32);

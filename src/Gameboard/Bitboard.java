@@ -838,6 +838,26 @@ public class Bitboard implements GameBoard{
         makeMove(player == RED, coordinatesToLong(coord));
     }
 
+    boolean get(boolean player, byte x, byte y){
+        if(x > 7 || x < 0 || y > 7 || y < 0)
+            return false;
+        return (((player ? red : green) >>> (63 - y * 8 - x)) & 1) == 1;
+    }
+
+    void print(){
+        for (byte i = 0; i < 8; i++){
+            for (byte k = 0; k < 8; k++){
+                if(get(true, k, i))
+                    System.out.print("1 ");
+                else if(get(false, k, i))
+                    System.out.print("2 ");
+                else
+                    System.out.print("0 ");
+            }
+            System.out.println("");
+        }
+    }
+
     public void refreshZobristHash(long flippedDisks, long moveCoordinates, boolean player){
         int index;
         while(flippedDisks != 0){
