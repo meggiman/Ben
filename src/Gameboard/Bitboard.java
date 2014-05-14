@@ -844,7 +844,7 @@ public class Bitboard implements GameBoard{
         return (((player ? red : green) >>> (63 - y * 8 - x)) & 1) == 1;
     }
 
-    void print(){
+    public void print(){
         for (byte i = 0; i < 8; i++){
             for (byte k = 0; k < 8; k++){
                 if(get(true, k, i))

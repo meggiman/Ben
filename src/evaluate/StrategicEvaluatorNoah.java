@@ -6,6 +6,21 @@ public class StrategicEvaluatorNoah implements IEvaluator{
 
     Stability                 stability       = new Stability();
 
+    /**
+     * Bitmask used for Leftshifts of the Bitboard.
+     */
+    private static final long leftshiftMask   = 0xFEFEFEFEFEFEFEFEL;
+
+    /**
+     * Bitmask used for Rightshifts of the whole Bitboard.
+     */
+    private static final long rightshiftMask  = 0x7F7F7F7F7F7F7F7FL;
+
+    /**
+     * Bitmask used for shifting correction.
+     */
+    private static final long shiftMask       = 0x7E7E7E7E7E7E7E7EL;
+
     /*
      * 012
      * 7 3
@@ -59,6 +74,8 @@ public class StrategicEvaluatorNoah implements IEvaluator{
             0x1020408000000000L,
             0x2040800000000000L              };
 
+    private final static long CORNERS         = 0x8100000000000081L;
+
     // bitedges top
     private final static long TOPEDGE         = 0x00000000000000FFL;
     // bitedges bottom
@@ -96,7 +113,7 @@ public class StrategicEvaluatorNoah implements IEvaluator{
 
         while(current != before){
             before = current;
-            current |= board.red
+            current |= (player ? board.red : board.green)
                     & ((current << 8) | (current >>> 8) | filled15) // 15
                     & ((current << 1) | (current >>> 1) | filled37) // 37
                     & ((current << 9) | (current >>> 9) | filled04) // 04
@@ -105,25 +122,79 @@ public class StrategicEvaluatorNoah implements IEvaluator{
         return current;
     }
 
+    private long getPotentialMobility(Bitboard board, boolean player){
+        long emptyFields = ~(board.red | board.green);
+        long potentialMoves;
+        long playerFields;
+        if(player){
+            playerFields = board.red;
+        }
+        else{
+            playerFields = board.green;
+        }
+        // leftshift
+        potentialMoves = (playerFields << 1) & leftshiftMask & emptyFields;
+        // rightshift
+        potentialMoves |= (playerFields >>> 1) & rightshiftMask & emptyFields;
+        // upshift
+        potentialMoves |= (playerFields << 8) & emptyFields;
+        // downshift
+        potentialMoves |= (playerFields >>> 8) & emptyFields;
+        // upleftshift
+        potentialMoves |= (playerFields << 9) & leftshiftMask & emptyFields;
+        // uprightshift
+        potentialMoves |= (playerFields << 7) & rightshiftMask & emptyFields;
+        // downrightshift
+        potentialMoves |= (playerFields >>> 9) & rightshiftMask & emptyFields;
+        // downleftshift
+        potentialMoves |= (playerFields >>> 7) & leftshiftMask & emptyFields;
+
+        return potentialMoves;
+
+    }
+
     public StrategicEvaluatorNoah(){
     }
 
     @Override
     public short evaluate(Bitboard gb, long possibleMoves, boolean player){
         double discs = gb.getDiscCount();
-        double EC = 6;
-        double MC = 3.5;
+        double EC = 3.5;
+        double MC = 3.5 * 200;
+        double MC2 = 3.5 * 150;
         double SC = 2;
 
         long possibleMovesEnemy = gb.getPossibleMoves(!player);
+        long potentialMoves = getPotentialMobility(gb, !player);
+        long potentialMovesEnemy = getPotentialMobility(gb, player);
+
         short edgeAdvantage = (short) (stability.getEdgeValue(gb, player) / 32);
+
         short mobilityAdvantage = (short) ((possibleMoves + possibleMovesEnemy) == 0 ? 0
                 : ((float) (possibleMoves - possibleMovesEnemy)
-                        / (possibleMoves + possibleMovesEnemy) * 200));
+                / (possibleMoves + possibleMovesEnemy)));
+
+        short potentialMobilityAdvantage = (short) ((potentialMoves + potentialMovesEnemy) == 0 ? 0
+                : ((float) (potentialMoves - potentialMovesEnemy)
+                / (potentialMoves + potentialMovesEnemy)));
+
         short occupiedSquareAdvantage = (short) (Long.bitCount(getStableDisks(gb, player))
                 - Long.bitCount(getStableDisks(gb, !player)));
 
-        return (short) (EC * edgeAdvantage + MC * mobilityAdvantage + SC
-                * occupiedSquareAdvantage);
+        short score = (short) (
+                EC * edgeAdvantage
+                        + MC * mobilityAdvantage
+                        + MC2 * potentialMobilityAdvantage
+                        + SC * occupiedSquareAdvantage
+                );
+        // gb.print();
+        // System.out.println("EdgeAdvantage: " + edgeAdvantage);
+        // System.out.println("MobilityAdvantage: " + mobilityAdvantage);
+        // System.out.println("occupiedSquareAdvantage: "
+        // + occupiedSquareAdvantage);
+        // System.out.println(score);
+        // System.out.println("------------------------");
+
+        return score;
     }
 }

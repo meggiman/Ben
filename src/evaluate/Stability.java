@@ -135,18 +135,10 @@ public class Stability{
         bitboard |= bitboard >>> 7;
         short edgeRightGreen = (short) (bitboard & 0xFF);
 
-        if(player){
-            return (short) (edgeTable[(edgeTopRed << 8) | edgeTopGreen]
-                    + edgeTable[(edgeBotRed << 8) | edgeBotGreen]
-                    + edgeTable[(edgeLeftRed << 8) | edgeLeftGreen] + edgeTable[(edgeRightRed << 8)
-                    | edgeRightGreen]);
-        }
-        else{
-            return (short) (edgeTable[(edgeTopGreen << 8) | edgeTopRed]
-                    + edgeTable[(edgeBotGreen << 8) | edgeBotRed]
-                    + edgeTable[(edgeLeftGreen << 8) | edgeLeftRed] + edgeTable[(edgeRightGreen << 8)
-                    | edgeRightRed]);
-        }
+        return (short) (edgeTable[(edgeTopRed << 8) | edgeTopGreen]
+                + edgeTable[(edgeBotRed << 8) | edgeBotGreen]
+                + edgeTable[(edgeLeftRed << 8) | edgeLeftGreen] + edgeTable[(edgeRightRed << 8)
+                | edgeRightGreen]);
 
     }
 
