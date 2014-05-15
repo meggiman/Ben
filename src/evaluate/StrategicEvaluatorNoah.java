@@ -129,8 +129,8 @@ public class StrategicEvaluatorNoah implements IEvaluator{
     public short evaluate(Bitboard gb, long possibleMovesLong, boolean player){
         double discs = gb.getDiscCount();
         double EC = 3.5;
-        double MC = 750;
-        double MC2 = 50;
+        double MC = 3000;
+        double MC2 = 3000;
         double SC = 20;
 
         // Mobility
@@ -146,10 +146,10 @@ public class StrategicEvaluatorNoah implements IEvaluator{
         }
 
         // Potential mobility
-        int potentialMovesRed = Long.bitCount(Bitboard.fillAdjacent(gb.red)
-                & ~gb.green);
-        int potentialMovesEnemyGreen = Long.bitCount(Bitboard.fillAdjacent(gb.green)
+        int potentialMovesRed = Long.bitCount(Bitboard.fillAdjacent(gb.green)
                 & ~gb.red);
+        int potentialMovesEnemyGreen = Long.bitCount(Bitboard.fillAdjacent(gb.red)
+                & ~gb.green);
 
         // Edge advantage
         int edgeAdvantage = (int) (stability.getEdgeValue(gb));
