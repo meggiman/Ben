@@ -609,6 +609,20 @@ public class Xiaolong implements ReversiPlayer{
                 + 24 * (parallelCount(p1 & (PMO)) - parallelCount(p2 & PMO));
     }
 
+    private int evaluate(){
+        long p1 = BB[player], p2 = BB[player ^ 1];
+        return (((p1 | p2) & PMO) == 0 ? (realDepth - parallelCount(p2) < 2 ? -30
+                : 0)
+                : 36 * parallelCount(getStableDisks(p1, p2))
+                        - 38 * parallelCount(getStableDisks(p2, p1)))
+                + 8 * (parallelCount(getBorders(p2, p1)))
+                - 10 * (parallelCount(getBorders(p1, p2)))
+                + 4 * (parallelCount(getMoves(p1, p2)))
+                - 5 * (parallelCount(getMoves(p2, p1)))
+                + 1 * (parallelCount(p1 & PME) - parallelCount(p2 & PME))
+                + 24 * (parallelCount(p1 & (PMO)) - parallelCount(p2 & PMO));
+    }
+
     public void initialize(int i, long l){
         if(l < 25){
             l = 50;

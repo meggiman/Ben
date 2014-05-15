@@ -145,16 +145,16 @@ public class StrategicEvaluatorNoah implements IEvaluator{
             possibleMovesGreen = Long.bitCount(tmp);
         }
         else{
-            long tmp = gb.getPossibleMoves(player);
+            long tmp = gb.getPossibleMoves(!player);
             possibleMovesRed = Long.bitCount(tmp);
             possibleMovesGreen = Long.bitCount(possibleMovesLong);
         }
 
         // Potential mobility
-        int potentialMovesRed = Long.bitCount(Bitboard.fillAdjacent(gb.red)
-                & ~gb.green);
-        int potentialMovesEnemyGreen = Long.bitCount(Bitboard.fillAdjacent(gb.green)
+        int potentialMovesRed = Long.bitCount(Bitboard.fillAdjacent(gb.green)
                 & ~gb.red);
+        int potentialMovesEnemyGreen = Long.bitCount(Bitboard.fillAdjacent(gb.red)
+                & ~gb.green);
 
         // Edge advantage
         int edgeAdvantage = (int) (stability.getEdgeValue(gb));
