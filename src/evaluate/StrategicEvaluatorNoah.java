@@ -131,10 +131,10 @@ public class StrategicEvaluatorNoah implements IEvaluator{
     @Override
     public short evaluate(Bitboard gb, long possibleMovesLong, boolean player){
         double discs = gb.getDiscCount();
-        double EC = 3.5;
-        double MC = 750;
-        double MC2 = 50;
-        double SC = 20;
+        double EC = 4;
+        double MC = 270;
+        double MC2 = 330;
+        double SC = 180;
 
         // Mobility
         int possibleMovesRed;
@@ -160,14 +160,11 @@ public class StrategicEvaluatorNoah implements IEvaluator{
         int edgeAdvantage = (int) (stability.getEdgeValue(gb));
 
         // Mobility advantage
-        float mobilityAdvantage = ((possibleMovesRed + possibleMovesGreen) == 0 ? 0
-                : ((float) (possibleMovesRed - possibleMovesGreen)
-                / (possibleMovesRed + possibleMovesGreen)));
+        float mobilityAdvantage = (possibleMovesRed - 1.2f * possibleMovesGreen);
 
         // Potential mobility advantage
-        float potentialMobilityAdvantage = (float) ((potentialMovesRed + potentialMovesEnemyGreen) == 0 ? 0
-                : ((float) (potentialMovesRed - potentialMovesEnemyGreen)
-                / (potentialMovesRed + potentialMovesEnemyGreen)));
+        float potentialMobilityAdvantage = potentialMovesRed - 1.2F
+                * potentialMovesEnemyGreen;
 
         int occupiedSquareAdvantage = (int) (Long.bitCount(getStableDisks(gb, player))
                 - Long.bitCount(getStableDisks(gb, !player)));
@@ -181,18 +178,18 @@ public class StrategicEvaluatorNoah implements IEvaluator{
         if(score > 32767 || score < -32768){
             System.out.println("ALERT!SWEG!11ELF!!");
         }
-        gb.print();
-        System.out.println("Evaluator Noah");
-        System.out.println("EdgeAdvantage: " + edgeAdvantage);
-        System.out.println("MobilityAdvantage: " + (MC * mobilityAdvantage));
-        System.out.println("PotentialMobility: "
-                + (MC2 * potentialMobilityAdvantage));
-        System.out.println("occupiedSquareAdvantage: "
-                + occupiedSquareAdvantage);
-        System.out.println(score);
-        System.out.println("------------------------");
-        System.out.println("Evaluator Xiaolon");
-        System.out.println(testXiaolong.evaluate(gb.red, gb.green));
+        // gb.print();
+        // System.out.println("Evaluator Noah");
+        // System.out.println("EdgeAdvantage: " + EC * edgeAdvantage);
+        // System.out.println("MobilityAdvantage: " + (MC * mobilityAdvantage));
+        // System.out.println("PotentialMobility: "
+        // + (MC2 * potentialMobilityAdvantage));
+        // System.out.println("occupiedSquareAdvantage: "
+        // + SC * occupiedSquareAdvantage);
+        // System.out.println(score);
+        // System.out.println("------------------------");
+        // System.out.println("Evaluator Xiaolon");
+        // System.out.println(testXiaolong.evaluate(gb.red, gb.green));
         return (short) score;
     }
 }
