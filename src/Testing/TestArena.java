@@ -24,7 +24,8 @@ import Testing.TestArena.TestResult.GameResult;
  * automatisiert gegeneinander antreten und lernen zu lassen.
  * Die Klasse benutzt nur einen Thread. Die Einhaltung der Timelimits wird erst
  * nach R�ckgabe eines Zuges durch die {@code ReversiPlayer} gepr�ft.
- * Die Testprogramme k�nnen also durch zu lange Berrechnungen stark ausgebremst
+ * Die Testprogramme k�nnen also durch zu lange Berrechnungen stark
+ * ausgebremst
  * oder zum Absturz gebracht werden.
  * 
  */
@@ -278,8 +279,8 @@ public class TestArena{
         time = System.currentTimeMillis() - time;
         if(time > ((playercode == PLAYER1) ? timelimitplayer1
                 : timelimitplayer2)){
-            throw new TimeLimitExceededException("Die Zeit wurde um " + time
-                    + "ms �berschritten.");
+            // throw new TimeLimitExceededException("Die Zeit wurde um " + time
+            // + "ms �berschritten.");
         }
         if(coord == null){
             return null;
