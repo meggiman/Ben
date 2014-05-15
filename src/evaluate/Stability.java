@@ -61,7 +61,7 @@ public class Stability{
             score += Integer.bitCount(maskC & stable3Red) * 120;
             score += Integer.bitCount(maskA & stable3Red) * 100;
             score += Integer.bitCount(maskB & stable3Red) * 100;
-            score += Integer.bitCount(0b10000001 & stable3Red) * 200;
+            score += Integer.bitCount(0b10000001 & stable3Red) * 400;
 
             score += Integer.bitCount(maskC & semiRed) * -12.5;
             score += Integer.bitCount(maskA & semiRed) * 10;
@@ -84,7 +84,7 @@ public class Stability{
             score -= Integer.bitCount(maskC & stable3Green) * 120 * 1.2;
             score -= Integer.bitCount(maskA & stable3Green) * 100 * 1.2;
             score -= Integer.bitCount(maskB & stable3Green) * 100 * 1.2;
-            score -= Integer.bitCount(0b10000001 & stable3Green) * 200 * 1.6;
+            score -= Integer.bitCount(0b10000001 & stable3Green) * 400 * 1.6;
 
             score -= Integer.bitCount(maskC & semiGreen) * -12.5 * 1.2;
             score -= Integer.bitCount(maskA & semiGreen) * 10 * 1.2;
