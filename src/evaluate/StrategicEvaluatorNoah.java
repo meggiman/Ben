@@ -122,63 +122,44 @@ public class StrategicEvaluatorNoah implements IEvaluator{
         return current;
     }
 
-    private long getPotentialMobility(Bitboard board, boolean player){
-        long emptyFields = ~(board.red | board.green);
-        long potentialMoves;
-        long playerFields;
-        if(player){
-            playerFields = board.red;
-        }
-        else{
-            playerFields = board.green;
-        }
-        // leftshift
-        potentialMoves = (playerFields << 1) & leftshiftMask & emptyFields;
-        // rightshift
-        potentialMoves |= (playerFields >>> 1) & rightshiftMask & emptyFields;
-        // upshift
-        potentialMoves |= (playerFields << 8) & emptyFields;
-        // downshift
-        potentialMoves |= (playerFields >>> 8) & emptyFields;
-        // upleftshift
-        potentialMoves |= (playerFields << 9) & leftshiftMask & emptyFields;
-        // uprightshift
-        potentialMoves |= (playerFields << 7) & rightshiftMask & emptyFields;
-        // downrightshift
-        potentialMoves |= (playerFields >>> 9) & rightshiftMask & emptyFields;
-        // downleftshift
-        potentialMoves |= (playerFields >>> 7) & leftshiftMask & emptyFields;
-
-        return potentialMoves;
-
-    }
-
     public StrategicEvaluatorNoah(){
     }
 
     @Override
-    public short evaluate(Bitboard gb, long possibleMoves, boolean player){
+    public short evaluate(Bitboard gb, long possibleMovesLong, boolean player){
         double discs = gb.getDiscCount();
         double EC = 3.5;
-        double MC = 70;
-        double MC2 = 60;
+        double MC = 750;
+        double MC2 = 50;
         double SC = 2;
 
-        possibleMoves = Long.bitCount(possibleMoves);
-        long possibleMovesEnemy = Long.bitCount(gb.getPossibleMoves(!player));
-        long potentialMoves = Long.bitCount(getPotentialMobility(gb, !player));
-        long potentialMovesEnemy = Long.bitCount(getPotentialMobility(gb, player));
+        if(player){
 
-        int edgeAdvantage = (int) (stability.getEdgeValue(gb, player));
+        }
+        int possibleMoves;
+        int possibleMovesEnemy;
+        if(player){
+            possibleMoves = Long.bitCount(possibleMovesLong);
+            possibleMovesEnemy = Long.bitCount(gb.getPossibleMoves(!player));
+        }
+        else{
+            possibleMoves = Long.bitCount(gb.getPossibleMoves(player));
+            possibleMovesEnemy = Long.bitCount(possibleMovesLong);
+        }
+        int potentialMoves = Long.bitCount(Bitboard.fillAdjacent(gb.red)
+                & ~gb.green);
+        int potentialMovesEnemy = Long.bitCount(Bitboard.fillAdjacent(gb.green)
+                & ~gb.red);
+
+        int edgeAdvantage = (int) (stability.getEdgeValue(gb));
 
         float mobilityAdvantage = ((possibleMoves + possibleMovesEnemy) == 0 ? 0
                 : ((float) (possibleMoves - possibleMovesEnemy)
                 / (possibleMoves + possibleMovesEnemy)));
 
-        int potentialMobilityAdvantage = (int) ((potentialMoves + potentialMovesEnemy) == 0 ? 0
+        float potentialMobilityAdvantage = (float) ((potentialMoves + potentialMovesEnemy) == 0 ? 0
                 : ((float) (potentialMoves - potentialMovesEnemy)
                 / (potentialMoves + potentialMovesEnemy)));
-        potentialMobilityAdvantage = 0;
 
         int occupiedSquareAdvantage = (int) (Long.bitCount(getStableDisks(gb, player))
                 - Long.bitCount(getStableDisks(gb, !player)));
@@ -192,13 +173,13 @@ public class StrategicEvaluatorNoah implements IEvaluator{
         if(score > 32767 || score < -32768){
             System.out.println("ALERT!SWEG!11ELF!!");
         }
-        // gb.print();
-        System.out.println("EdgeAdvantage: " + edgeAdvantage);
-        System.out.println("MobilityAdvantage: " + mobilityAdvantage);
-        System.out.println("occupiedSquareAdvantage: "
-                + occupiedSquareAdvantage);
-        System.out.println(score);
-        System.out.println("------------------------");
+        // // gb.print();
+        // System.out.println("EdgeAdvantage: " + edgeAdvantage);
+        // System.out.println("MobilityAdvantage: " + mobilityAdvantage);
+        // System.out.println("occupiedSquareAdvantage: "
+        // + occupiedSquareAdvantage);
+        // System.out.println(score);
+        // System.out.println("------------------------");
 
         return (short) score;
     }

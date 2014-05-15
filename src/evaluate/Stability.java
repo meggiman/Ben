@@ -61,7 +61,7 @@ public class Stability{
             score += Integer.bitCount(maskC & stable3Red) * 120;
             score += Integer.bitCount(maskA & stable3Red) * 100;
             score += Integer.bitCount(maskB & stable3Red) * 100;
-            score += Integer.bitCount(0b10000001 & stable3Red) * 80;
+            score += Integer.bitCount(0b10000001 & stable3Red) * 120;
 
             score += Integer.bitCount(maskC & semiRed) * -12.5;
             score += Integer.bitCount(maskA & semiRed) * 10;
@@ -84,7 +84,7 @@ public class Stability{
             score -= Integer.bitCount(maskC & stable3Green) * 120 * 1.2;
             score -= Integer.bitCount(maskA & stable3Green) * 100 * 1.2;
             score -= Integer.bitCount(maskB & stable3Green) * 100 * 1.2;
-            score -= Integer.bitCount(0b10000001 & stable3Green) * 80 * 1.2;
+            score -= Integer.bitCount(0b10000001 & stable3Green) * 120 * 1.6;
 
             score -= Integer.bitCount(maskC & semiGreen) * -12.5 * 1.2;
             score -= Integer.bitCount(maskA & semiGreen) * 10 * 1.2;
@@ -108,19 +108,19 @@ public class Stability{
         return (int) bitboard & 0xFF;
     }
 
-    final short getEdgeValue(Bitboard board, boolean player){
+    final short getEdgeValue(Bitboard board){
         short edgeTopRed = (short) (board.red >>> 56);
         short edgeBotRed = (short) (board.red & 0xFF);
         long bitboard = board.red & 0x0101010101010101L;
         bitboard |= bitboard >>> 28;
         bitboard |= bitboard >>> 14;
         bitboard |= bitboard >>> 7;
-        short edgeLeftRed = (short) (bitboard & 0xFF);
+        short edgeRightRed = (short) (bitboard & 0xFF);
         bitboard = (board.red >>> 7) & 0x0101010101010101L;
         bitboard |= bitboard >>> 28;
         bitboard |= bitboard >>> 14;
         bitboard |= bitboard >>> 7;
-        short edgeRightRed = (short) (bitboard & 0xFF);
+        short edgeLeftRed = (short) (bitboard & 0xFF);
 
         short edgeTopGreen = (short) (board.green >>> 56);
         short edgeBotGreen = (short) (board.green & 0xFF);
@@ -128,12 +128,12 @@ public class Stability{
         bitboard |= bitboard >>> 28;
         bitboard |= bitboard >>> 14;
         bitboard |= bitboard >>> 7;
-        short edgeLeftGreen = (short) (bitboard & 0xFF);
+        short edgeRightGreen = (short) (bitboard & 0xFF);
         bitboard = (board.green >>> 7) & 0x0101010101010101L;
         bitboard |= bitboard >>> 28;
         bitboard |= bitboard >>> 14;
         bitboard |= bitboard >>> 7;
-        short edgeRightGreen = (short) (bitboard & 0xFF);
+        short edgeLeftGreen = (short) (bitboard & 0xFF);
 
         return (short) (edgeTable[(edgeTopRed << 8) | edgeTopGreen]
                 + edgeTable[(edgeBotRed << 8) | edgeBotGreen]
@@ -276,7 +276,9 @@ public class Stability{
     }
 
     public static void main(String[] args){
-        // Stability s = new Stability();
+        Stability s = new Stability();
+        Bitboard board = new Bitboard(0x8000800080000000L, 0x80008000000000L);
+        s.getEdgeValue(board);
         // System.out.println(s.getStable1EdgePieces((byte) 0b10101000, (byte)
         // 84));
     }
