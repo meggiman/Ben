@@ -138,7 +138,7 @@ public class AlphaBetaNoCloneing extends Searchalgorithm{
         if(depth <= 0){
             searchedNodesCount++;
             evaluatedNodesCount++;
-            return evaluator.evaluate(gb, possibleMoves, true);
+            return evaluator.evaluate(gb, possibleMoves, false);
         }
         searchedNodesCount++;
         int value;
