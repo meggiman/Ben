@@ -130,31 +130,32 @@ public class StrategicEvaluatorNoah implements IEvaluator{
 
     @Override
     public short evaluate(Bitboard gb, long possibleMovesLong, boolean player){
-        double discs = gb.getDiscCount();
         double EC = 4;
         double MC = 270;
         double MC2 = 330;
         double SC = 180;
 
         // Mobility
+
+        long possibleMovesEnemy = gb.getPossibleMoves(!player);
+
         int possibleMovesRed;
         int possibleMovesGreen;
         if(player){
             possibleMovesRed = Long.bitCount(possibleMovesLong);
-            long tmp = gb.getPossibleMoves(!player);
-            possibleMovesGreen = Long.bitCount(tmp);
+            possibleMovesGreen = Long.bitCount(possibleMovesEnemy);
         }
         else{
-            long tmp = gb.getPossibleMoves(!player);
-            possibleMovesRed = Long.bitCount(tmp);
+            possibleMovesRed = Long.bitCount(possibleMovesEnemy);
             possibleMovesGreen = Long.bitCount(possibleMovesLong);
         }
 
         // Potential mobility
-        int potentialMovesRed = Long.bitCount(Bitboard.fillAdjacent(gb.green)
-                & ~gb.red);
-        int potentialMovesEnemyGreen = Long.bitCount(Bitboard.fillAdjacent(gb.red)
+        long empty = ~(gb.green | gb.red);
+        int potentialMovesRed = Long.bitCount(Bitboard.fillAdjacent(empty)
                 & ~gb.green);
+        int potentialMovesEnemyGreen = Long.bitCount(Bitboard.fillAdjacent(empty)
+                & ~gb.red);
 
         // Edge advantage
         int edgeAdvantage = (int) (stability.getEdgeValue(gb));
@@ -163,7 +164,7 @@ public class StrategicEvaluatorNoah implements IEvaluator{
         float mobilityAdvantage = (possibleMovesRed - 1.2f * possibleMovesGreen);
 
         // Potential mobility advantage
-        float potentialMobilityAdvantage = potentialMovesRed - 1.2F
+        float potentialMobilityAdvantage = potentialMovesRed - 1.2f
                 * potentialMovesEnemyGreen;
 
         int occupiedSquareAdvantage = (int) (Long.bitCount(getStableDisks(gb, player))
