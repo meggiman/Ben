@@ -131,35 +131,38 @@ public class StrategicEvaluatorNoah implements IEvaluator{
         double EC = 3.5;
         double MC = 750;
         double MC2 = 50;
-        double SC = 2;
+        double SC = 20;
 
+        // Mobility
+        int possibleMovesRed;
+        int possibleMovesGreen;
         if(player){
-
-        }
-        int possibleMoves;
-        int possibleMovesEnemy;
-        if(player){
-            possibleMoves = Long.bitCount(possibleMovesLong);
-            possibleMovesEnemy = Long.bitCount(gb.getPossibleMoves(!player));
+            possibleMovesRed = Long.bitCount(possibleMovesLong);
+            possibleMovesGreen = Long.bitCount(gb.getPossibleMoves(!player));
         }
         else{
-            possibleMoves = Long.bitCount(gb.getPossibleMoves(player));
-            possibleMovesEnemy = Long.bitCount(possibleMovesLong);
+            possibleMovesRed = Long.bitCount(gb.getPossibleMoves(player));
+            possibleMovesGreen = Long.bitCount(possibleMovesLong);
         }
-        int potentialMoves = Long.bitCount(Bitboard.fillAdjacent(gb.red)
+
+        // Potential mobility
+        int potentialMovesRed = Long.bitCount(Bitboard.fillAdjacent(gb.red)
                 & ~gb.green);
-        int potentialMovesEnemy = Long.bitCount(Bitboard.fillAdjacent(gb.green)
+        int potentialMovesEnemyGreen = Long.bitCount(Bitboard.fillAdjacent(gb.green)
                 & ~gb.red);
 
+        // Edge advantage
         int edgeAdvantage = (int) (stability.getEdgeValue(gb));
 
-        float mobilityAdvantage = ((possibleMoves + possibleMovesEnemy) == 0 ? 0
-                : ((float) (possibleMoves - possibleMovesEnemy)
-                / (possibleMoves + possibleMovesEnemy)));
+        // Mobility advantage
+        float mobilityAdvantage = ((possibleMovesRed + possibleMovesGreen) == 0 ? 0
+                : ((float) (possibleMovesRed - possibleMovesGreen)
+                / (possibleMovesRed + possibleMovesGreen)));
 
-        float potentialMobilityAdvantage = (float) ((potentialMoves + potentialMovesEnemy) == 0 ? 0
-                : ((float) (potentialMoves - potentialMovesEnemy)
-                / (potentialMoves + potentialMovesEnemy)));
+        // Potential mobility advantage
+        float potentialMobilityAdvantage = (float) ((potentialMovesRed + potentialMovesEnemyGreen) == 0 ? 0
+                : ((float) (potentialMovesRed - potentialMovesEnemyGreen)
+                / (potentialMovesRed + potentialMovesEnemyGreen)));
 
         int occupiedSquareAdvantage = (int) (Long.bitCount(getStableDisks(gb, player))
                 - Long.bitCount(getStableDisks(gb, !player)));

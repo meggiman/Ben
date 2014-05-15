@@ -100,12 +100,6 @@ public class Stability{
             // System.out.println("-------------------");
 
         }
-        System.out.println("bla");
-    }
-
-    public static int getfirstcolumn(long bitboard){
-
-        return (int) bitboard & 0xFF;
     }
 
     final short getEdgeValue(Bitboard board){
@@ -140,64 +134,6 @@ public class Stability{
                 + edgeTable[(edgeLeftRed << 8) | edgeLeftGreen] + edgeTable[(edgeRightRed << 8)
                 | edgeRightGreen]);
 
-    }
-
-    final static void fillEdge(){
-
-    }
-
-    final static byte makeMove(byte coords, byte[] board){
-        byte playerFields = board[0];
-        byte otherplayerFields = board[1];
-        byte cursor;
-        byte possiblyChangedFields = 0;
-        byte changedFields = 0;
-        // leftshift
-        cursor = (byte) (coords << 1);
-        while(cursor != 0){
-            cursor &= otherplayerFields;
-            possiblyChangedFields |= cursor;
-            cursor = (byte) (cursor << 1);
-            if((cursor & playerFields) != 0){
-                changedFields |= possiblyChangedFields;
-                break;
-            }
-        }
-        // rightshift
-        possiblyChangedFields = 0;
-        cursor = (byte) ((0xFF & coords) >>> 1);
-        while(cursor != 0){
-            cursor &= otherplayerFields;
-            possiblyChangedFields |= cursor;
-            cursor = (byte) (0xFF & cursor >>> 1);
-            if((cursor & playerFields) != 0){
-                changedFields |= possiblyChangedFields;
-                break;
-            }
-        }
-
-        return changedFields;
-    }
-
-    final static byte possibleMoves(byte playerFields, byte otherplayerFields){
-
-        byte emptyFields = (byte) ~(playerFields | otherplayerFields);
-        byte validMoves = 0;
-        byte potentialMoves;
-
-        // leftshift
-        potentialMoves = (byte) (((playerFields << 1) & otherplayerFields) << 1);
-        while(potentialMoves != 0){
-            validMoves |= (potentialMoves & emptyFields);
-            potentialMoves = (byte) ((potentialMoves & otherplayerFields) << 1);
-        }
-        // rightshift
-        potentialMoves = (byte) (((((0xFF & playerFields) >>> 1) & otherplayerFields) & 0xFF) >>> 1);
-        while(potentialMoves != 0){
-            validMoves |= (potentialMoves & emptyFields);
-            potentialMoves = (byte) ((potentialMoves & otherplayerFields & 0xFF) >>> 1);
-        }
-        return validMoves;
     }
 
     final static byte getStable3EdgePieces(byte borderRed, byte borderGreen){

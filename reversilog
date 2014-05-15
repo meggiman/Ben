@@ -9041,3 +9041,26 @@ id=TestGame time=1400165446915 Greenmove=null
 id=TestGame time=1400165446918 no moves left
 id=TestGame time=1400165446919 finished reds=56 greens=7
 id=TestGame time=1400165459423 quit button pressed
+id=TestGame time=1400166661186 new game
+id=TestGame time=1400166661186 red=OtherPlayers.Xiaolong green=TestablePlayers.PlayerB
+id=TestGame time=1400166662464 initialized
+id=TestGame time=1400166667504 Redmove=6,4
+id=TestGame time=1400166669906 Green failed: ArrayIndexOutOfBoundsException: -32704
+id=TestGame time=1400167578708 quit button pressed
+id=TestGame time=1400167626393 new game
+id=TestGame time=1400167626394 red=OtherPlayers.Xiaolong green=TestablePlayers.PlayerB
+id=TestGame time=1400167627402 initialized
+id=TestGame time=1400167632451 Redmove=6,4
+id=TestGame time=1400167639791 Greenmove=3,3
+id=TestGame time=1400167647133 Redmove=4,6
+id=TestGame time=1400167654470 Greenmove=6,6
+id=TestGame time=1400167661806 Redmove=5,6
+id=TestGame time=1400167669141 Greenmove=7,4
+id=TestGame time=1400167676482 Redmove=6,3
+id=TestGame time=1400167683823 Greenmove=3,7
+id=TestGame time=1400167691159 Redmove=4,3
+id=TestGame time=1400167698491 Greenmove=4,2
+id=TestGame time=1400167705824 Redmove=6,5
+id=TestGame time=1400167713166 Greenmove=4,7
+id=TestGame time=1400167720504 Redmove=5,7
+id=TestGame time=1400167727839 Greenmove=6,2
