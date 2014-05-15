@@ -24,14 +24,14 @@ public class AlphaBetaNoCloneing extends Searchalgorithm{
         int value;
         long bestMove = 0;
         for (int i = 1; !cancel; i++){
-            bestValue = -20065;
+            bestValue = -30065;
             long tmpBestMove = 0;
             int tmpMoveNr = 0;
             for (int j = 0; j < possibleMoves.length; j++){
                 long coord = possibleMoves[j];
                 nextBoard = (Bitboard) gb.clone();
                 nextBoard.makeMove(true, coord);
-                value = min(nextBoard, -20065, 20065, i - 1);
+                value = min(nextBoard, -30065, 30065, i - 1);
                 if(value > bestValue){
                     bestValue = value;
                     tmpBestMove = coord;
@@ -68,10 +68,10 @@ public class AlphaBetaNoCloneing extends Searchalgorithm{
                 int stonesGreen = gb.countStones(GameBoard.GREEN);
                 if(stonesRed > stonesGreen){
                     searchedNodesCount++;
-                    return 10000 + stonesRed - stonesGreen;
+                    return 30000 + stonesRed - stonesGreen;
                 }else if(stonesRed < stonesGreen){
                     searchedNodesCount++;
-                    return -10000 - stonesGreen + stonesRed;
+                    return -30000 - stonesGreen + stonesRed;
                 }else{
                     searchedNodesCount++;
                     return 0;
@@ -124,10 +124,10 @@ public class AlphaBetaNoCloneing extends Searchalgorithm{
                 int stonesGreen = gb.countStones(GameBoard.GREEN);
                 if(stonesRed > stonesGreen){
                     searchedNodesCount++;
-                    return 10000 + stonesRed - stonesGreen;
+                    return 30000 + stonesRed - stonesGreen;
                 }else if(stonesRed < stonesGreen){
                     searchedNodesCount++;
-                    return -10000 - stonesGreen + stonesRed;
+                    return -30000 - stonesGreen + stonesRed;
                 }else{
                     searchedNodesCount++;
                     return 0;
