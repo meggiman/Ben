@@ -583,8 +583,20 @@ public class Xiaolong implements ReversiPlayer{
     }
 
     // evaluate position of the current board state BB by counting disks
-    private int evaluate(){
-        long p1 = BB[player], p2 = BB[player ^ 1];
+    public int evaluate(long red, long green){
+        long p1 = red, p2 = green;
+        System.out.println("Stability: " + 36
+                * (parallelCount(getStableDisks(p1, p2))
+                - 38 * parallelCount(getStableDisks(p2, p1))));
+        System.out.println("Potential Mobility: "
+                + (8 * (parallelCount(getBorders(p2, p1)))
+                - 10 * (parallelCount(getBorders(p1, p2)))));
+        System.out.println("Mobility: "
+                + (4 * (parallelCount(getMoves(p1, p2)))
+                - 5 * (parallelCount(getMoves(p2, p1)))));
+        System.out.println("Corners and A Pieces: "
+                + (1 * (parallelCount(p1 & PME) - parallelCount(p2 & PME))
+                + 24 * (parallelCount(p1 & (PMO)) - parallelCount(p2 & PMO))));
         return (((p1 | p2) & PMO) == 0 ? (realDepth - parallelCount(p2) < 2 ? -30
                 : 0)
                 : 36 * parallelCount(getStableDisks(p1, p2))

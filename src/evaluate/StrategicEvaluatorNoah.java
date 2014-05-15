@@ -1,8 +1,11 @@
 package evaluate;
 
 import Gameboard.Bitboard;
+import OtherPlayers.Xiaolong;
 
 public class StrategicEvaluatorNoah implements IEvaluator{
+
+    private Xiaolong          testXiaolong    = new Xiaolong();
 
     Stability                 stability       = new Stability();
 
@@ -138,10 +141,12 @@ public class StrategicEvaluatorNoah implements IEvaluator{
         int possibleMovesGreen;
         if(player){
             possibleMovesRed = Long.bitCount(possibleMovesLong);
-            possibleMovesGreen = Long.bitCount(gb.getPossibleMoves(!player));
+            long tmp = gb.getPossibleMoves(!player);
+            possibleMovesGreen = Long.bitCount(tmp);
         }
         else{
-            possibleMovesRed = Long.bitCount(gb.getPossibleMoves(player));
+            long tmp = gb.getPossibleMoves(player);
+            possibleMovesRed = Long.bitCount(tmp);
             possibleMovesGreen = Long.bitCount(possibleMovesLong);
         }
 
@@ -176,14 +181,18 @@ public class StrategicEvaluatorNoah implements IEvaluator{
         if(score > 32767 || score < -32768){
             System.out.println("ALERT!SWEG!11ELF!!");
         }
-        // // gb.print();
-        // System.out.println("EdgeAdvantage: " + edgeAdvantage);
-        // System.out.println("MobilityAdvantage: " + mobilityAdvantage);
-        // System.out.println("occupiedSquareAdvantage: "
-        // + occupiedSquareAdvantage);
-        // System.out.println(score);
-        // System.out.println("------------------------");
-
+        gb.print();
+        System.out.println("Evaluator Noah");
+        System.out.println("EdgeAdvantage: " + edgeAdvantage);
+        System.out.println("MobilityAdvantage: " + (MC * mobilityAdvantage));
+        System.out.println("PotentialMobility: "
+                + (MC2 * potentialMobilityAdvantage));
+        System.out.println("occupiedSquareAdvantage: "
+                + occupiedSquareAdvantage);
+        System.out.println(score);
+        System.out.println("------------------------");
+        System.out.println("Evaluator Xiaolon");
+        System.out.println(testXiaolong.evaluate(gb.red, gb.green));
         return (short) score;
     }
 }
