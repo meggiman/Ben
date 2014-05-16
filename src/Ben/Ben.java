@@ -3,10 +3,9 @@ package Ben;
 import reversi.Coordinates;
 import reversi.GameBoard;
 import reversi.OutOfBoundsException;
-import reversi.ReversiPlayer;
 import Gameboard.Bitboard;
 
-public class Ben implements ReversiPlayer{
+public class Ben{
     /**
      * Bitmasks
      */
@@ -94,31 +93,6 @@ public class Ben implements ReversiPlayer{
                                                    };
 
     private static short[]      edgeTable          = new short[65536];
-
-    private final static short  INFINITY           = 32767;
-
-    /**
-     * Searched Nodes in last Search.
-     */
-    private static int          searchedNodes;
-    /**
-     * Evaluation Result of the best move found in last search.
-     */
-    private static int          resultOfSearch;
-
-    /**
-     * Boolean flag for Search Algorithms to determine if its time to return
-     * from recursion.
-     */
-    private static boolean      returnFromSearch;
-    /**
-     * Deadline for current Search Algorithm.
-     */
-    private static long         localDeadline;
-    /**
-     * Deadline for this Move.
-     */
-    private static long         globalDeadline;
 
     /**
      * Converts a {@code GameBoard} into a long array of size 2.
@@ -761,119 +735,5 @@ public class Ben implements ReversiPlayer{
         // System.out.println("Evaluator Xiaolon");
         // System.out.println(testXiaolong.evaluate(gb.red, gb.green));
         return (short) score;
-    }
-
-    @Override
-    public void initialize(int myColor, long timeLimit){
-        // TODO Automatisch generierter Methodenstub
-
-    }
-
-    @Override
-    public Coordinates nextMove(GameBoard gb){
-        // TODO Automatisch generierter Methodenstub
-        return null;
-    }
-
-    public final static long pvsSearch(long red, long green, int depth, boolean pvsMode){
-        searchedNodes = 0;
-        returnFromSearch = false;
-        long possibleMovesRed = Bitboard.possibleMovesRed(red, green);
-        if(possibleMovesRed == 0){
-            return 0;
-        }
-        long bestmove = Long.highestOneBit(possibleMovesRed);
-        int bestvalue = -INFINITY;
-        int value = -INFINITY;
-        do{
-            long coord = Long.highestOneBit(possibleMovesRed);
-            long flippedDisks = getFlippedDiskRed(red, green, coord);
-            possibleMovesRed ^= coord;
-            value = pvsMin(red ^ flippedDisks ^ coord, green ^ flippedDisks, value, INFINITY, depth - 1);
-            if(value > bestvalue){
-                if(value >= INFINITY){
-                    return coord;
-                }
-                bestvalue = value;
-                bestmove = coord;
-            }
-            if(returnFromSearch){
-                break;
-            }
-        }while(possibleMovesRed != 0);
-        resultOfSearch = bestvalue;
-        return bestmove;
-    }
-
-    private final static int pvsMin(long red, long green, int alpha, int beta, int depth){
-        searchedNodes++;
-        if(returnFromSearch){
-            return beta;
-        }
-        if(System.nanoTime() >= localDeadline){
-            returnFromSearch = true;
-        }
-        long possibleMovesGreen = possibleMovesRed(green, red);
-        if(possibleMovesGreen == 0){
-            if(possibleMovesRed(red, green) == 0){
-                return Long.bitCount(red) - Long.bitCount(green);
-            }
-            return pvsMax(red, green, alpha, beta, depth - 1);
-        }
-        if(depth <= 0){
-            long possibleMovesRed = possibleMovesRed(red, green);
-            // return Evaluation
-        }
-        int bestvalue = beta;
-        int value = beta;
-        do{
-            long coord = Long.highestOneBit(possibleMovesGreen);
-            possibleMovesGreen ^= coord;
-            long flipedDisks = getFlippedDiskRed(green, red, coord);
-            value = pvsMax(red ^ flipedDisks, green ^ flipedDisks ^ coord, alpha, value, depth - 1);
-            if(value < beta){
-                if(value <= alpha){
-                    return alpha;
-                }
-                bestvalue = value;
-            }
-        }while(possibleMovesGreen != 0);
-        return bestvalue;
-    }
-
-    private final static int pvsMax(long red, long green, int alpha, int beta, int depth){
-        searchedNodes++;
-        if(returnFromSearch){
-            return beta;
-        }
-        if(System.nanoTime() >= localDeadline){
-            returnFromSearch = true;
-        }
-        long possibleMovesRed = possibleMovesRed(red, green);
-        if(possibleMovesRed == 0){
-            if(Bitboard.possibleMovesRed(green, red) == 0){
-                return Long.bitCount(red) - Long.bitCount(green);
-            }
-            return pvsMin(red, green, alpha, beta, depth - 1);
-        }
-        if(depth <= 0){
-            long possibleMovesGreen = possibleMovesRed(green, red);
-            // return Evaluation
-        }
-        int bestvalue = alpha;
-        int value = alpha;
-        do{
-            long coord = Long.highestOneBit(possibleMovesRed);
-            possibleMovesRed ^= coord;
-            long flipedDisks = getFlippedDiskRed(red, green, coord);
-            value = pvsMin(red ^ flipedDisks ^ coord, green ^ flipedDisks, value, beta, depth - 1);
-            if(value > alpha){
-                if(value >= beta){
-                    return beta;
-                }
-                bestvalue = value;
-            }
-        }while(possibleMovesRed != 0);
-        return bestvalue;
     }
 }
