@@ -62,22 +62,22 @@ public class Bitboard implements GameBoard{
                                                    0xb1effad871ebfc7eL,
                                                    0x1a0140e9b3b4f9b1L,
                                                    0x3717a23db835e737L,
-            0x79c6039fc1149b5L,
-            0x5232f65d4634ab04L,
-            0xa7382a6bc45005a0L, 0x84df5634e6026379L, 0x49fb2991a7b8d155L,
-            0xbe66b547b3145c54L,
-            0x5a285e00e8e52ce9L, 0xb0023175a5dfd33L, 0x18eb9696bfc766ceL,
-            0x6898f099c66dfdcbL,
-            0x3c5f157a41176274L, 0x330c473b052343acL, 0xe331484b0c5eea6bL,
-            0xc8ec9114c856a3cbL,
-            0x77ea0c91db3b5df9L, 0x8fd55922b8489683L, 0x3006266598dc8ceL,
-            0x441c36d33f203effL,
-            0x34cc29731c5d4a3dL, 0x553bbe5df8f53190L, 0x17ea7878ae609e80L,
-            0x199cdc8e23095b40L,
-            0xc048ab76910b2c5aL, 0x5d11eefe79c29638L, 0x658cfdf9d3598681L,
-            0x66fa01853fe29ec3L,
-            0x8485961d728f09b5L, 0xcc1281bbe4c0cc6aL, 0x4d16571ec4e48e15L,
-            0x957c6ae1831d84faL                   };
+                                                   0x79c6039fc1149b5L,
+                                                   0x5232f65d4634ab04L,
+                                                   0xa7382a6bc45005a0L, 0x84df5634e6026379L, 0x49fb2991a7b8d155L,
+                                                   0xbe66b547b3145c54L,
+                                                   0x5a285e00e8e52ce9L, 0xb0023175a5dfd33L, 0x18eb9696bfc766ceL,
+                                                   0x6898f099c66dfdcbL,
+                                                   0x3c5f157a41176274L, 0x330c473b052343acL, 0xe331484b0c5eea6bL,
+                                                   0xc8ec9114c856a3cbL,
+                                                   0x77ea0c91db3b5df9L, 0x8fd55922b8489683L, 0x3006266598dc8ceL,
+                                                   0x441c36d33f203effL,
+                                                   0x34cc29731c5d4a3dL, 0x553bbe5df8f53190L, 0x17ea7878ae609e80L,
+                                                   0x199cdc8e23095b40L,
+                                                   0xc048ab76910b2c5aL, 0x5d11eefe79c29638L, 0x658cfdf9d3598681L,
+                                                   0x66fa01853fe29ec3L,
+                                                   0x8485961d728f09b5L, 0xcc1281bbe4c0cc6aL, 0x4d16571ec4e48e15L,
+                                                   0x957c6ae1831d84faL };
 
     /**
      * 64 random {@code long} constants used to generate zobrist-hashes.
@@ -116,22 +116,22 @@ public class Bitboard implements GameBoard{
                                                    0x1429b01059ebf8e5L,
                                                    0x4f88106b9ba1df0aL,
                                                    0x1db20740fe57146bL,
-            0x31a6735b4c7ed329L,
-            0x585b8735e1b17690L,
-            0xbfa84f02a44a5049L, 0x63171824e0effc88L, 0x631b3be1593ed5bL,
-            0xf1de88b282db9797L,
-            0xfe8d2d1068b805eeL, 0x50cb563ecbeb5579L, 0x63a11efffddd4fcdL,
-            0x809e06c8b3685961L,
-            0x5e4ce0db3a503bacL, 0x44d3e0caf0edac32L, 0x91853bc5766968dfL,
-            0xc2f3279e4b68386fL,
-            0x9a198dcd2f4d33acL, 0x34374ee42f26df21L, 0xc22fcb599ce87fe0L,
-            0xd70fd9d9fa5ab8acL,
-            0xd481fdc67f3a56eeL, 0xb175cfd246232343L, 0x5224d059741530cL,
-            0xf7af6dd1d43b0ebcL,
-            0xfb3305942dec8e66L, 0x11e08678051046b9L, 0x971dcb32e7d6ecd4L,
-            0x30873bfc1c5ef92dL,
-            0xc7cfaac0a8ac0dcbL, 0xbc4e99466f54709aL, 0x5ac95c64d48d5682L,
-            0x455000a14de5437L                    };
+                                                   0x31a6735b4c7ed329L,
+                                                   0x585b8735e1b17690L,
+                                                   0xbfa84f02a44a5049L, 0x63171824e0effc88L, 0x631b3be1593ed5bL,
+                                                   0xf1de88b282db9797L,
+                                                   0xfe8d2d1068b805eeL, 0x50cb563ecbeb5579L, 0x63a11efffddd4fcdL,
+                                                   0x809e06c8b3685961L,
+                                                   0x5e4ce0db3a503bacL, 0x44d3e0caf0edac32L, 0x91853bc5766968dfL,
+                                                   0xc2f3279e4b68386fL,
+                                                   0x9a198dcd2f4d33acL, 0x34374ee42f26df21L, 0xc22fcb599ce87fe0L,
+                                                   0xd70fd9d9fa5ab8acL,
+                                                   0xd481fdc67f3a56eeL, 0xb175cfd246232343L, 0x5224d059741530cL,
+                                                   0xf7af6dd1d43b0ebcL,
+                                                   0xfb3305942dec8e66L, 0x11e08678051046b9L, 0x971dcb32e7d6ecd4L,
+                                                   0x30873bfc1c5ef92dL,
+                                                   0xc7cfaac0a8ac0dcbL, 0xbc4e99466f54709aL, 0x5ac95c64d48d5682L,
+                                                   0x455000a14de5437L };
 
     /**
      * This variable is used by {@code hashCode()} to incrementally calculate
@@ -797,7 +797,7 @@ public class Bitboard implements GameBoard{
         // uprightshift
         cursor = (coord << 7) & green;
         if(cursor != 0){
-            tmpindex = index + 9;
+            tmpindex = index + 7;
             possiblychangedfields = 0;
             possibleHash = 0;
             do{
