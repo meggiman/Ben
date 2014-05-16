@@ -130,9 +130,9 @@ public class StrategicEvaluatorNoah implements IEvaluator{
 
     @Override
     public short evaluate(Bitboard gb, long possibleMovesLong, boolean player){
-        double EC = 4;
-        double MC = 230;
-        double MC2 = 300;
+        double EC = 3;
+        double MC = 400;
+        double MC2 = 800;
         double SC = 180;
 
         // Mobility
