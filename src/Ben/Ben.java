@@ -92,33 +92,74 @@ public class Ben implements ReversiPlayer{
                                                    0xb3305942dec8e66L, 0x1e08678051046b9L, 0x71dcb32e7d6ecd4L, 0x0873bfc1c5ef92dL,
                                                    0x7cfaac0a8ac0dcbL, 0xc4e99466f54709aL, 0xac95c64d48d5682L, 0x55000a14de5437L
                                                    };
+    // Transposition Table
+    private final static byte   PVNODE             = (byte) 8, EXACTVALUE = (byte) 4, UPPERBOUND = (byte) 2, LOWERBOUND = (byte) 1;
+    private final static int    NOTFOUND           = -1;
+    private final static int    TTsize             = (0x80000000 >>> Integer.numberOfLeadingZeros(10000000));
+    private final static long   TTindexMask        = ~(0x8000000000000000L >> (32 - Integer.numberOfLeadingZeros(TTsize)));
+    private static long[]       TTkeys             = new long[TTsize];
+    private static short[]      TTvalues           = new short[TTsize];
+    private static byte[]       TTdepths           = new byte[TTsize];
+    private static byte[]       TTtypes             = new byte[TTsize];
+    private static byte[]       TTplayedStones     = new byte[TTsize];
 
-    private static short[]      edgeTable          = new short[65536];
+    private final static void TTput(long key, short value, byte depth, byte type, byte playedStones){
+        int index = (int) (key & TTindexMask);
+        if(TTkeys[index] == key){
+            if(TTdepths[index] >= depth){
+                TTvalues[index] = value;
+                TTdepths[index] = depth;
+                TTtypes[index] = type;
+                TTplayedStones[index] = playedStones;
+            }
+        }
+        else{
+            if(TTplayedStones[index] < playedStones || TTtypes[index] < type){
+                TTkeys[index] = key;
+                TTvalues[index] = value;
+                TTdepths[index] = depth;
+                TTtypes[index] = type;
+                TTplayedStones[index] = playedStones;
+            }
+        }
+    }
 
-    private final static short  INFINITY           = 32767;
+    private final static int TTget(long key){
+        int index = (int) (key & TTindexMask);
+        if(TTkeys[index] == key){
+            return index;
+        }
+        else{
+            return NOTFOUND;
+        }
+    }
+
+    private static short[]     edgeTable = new short[65536];
+
+    private final static short INFINITY  = 32767;
 
     /**
      * Searched Nodes in last Search.
      */
-    private static int          searchedNodes;
+    private static int         searchedNodes;
     /**
      * Evaluation Result of the best move found in last search.
      */
-    private static int          resultOfSearch;
+    private static int         resultOfSearch;
 
     /**
      * Boolean flag for Search Algorithms to determine if its time to return
      * from recursion.
      */
-    private static boolean      returnFromSearch;
+    private static boolean     returnFromSearch;
     /**
      * Deadline for current Search Algorithm.
      */
-    private static long         localDeadline;
+    private static long        localDeadline;
     /**
      * Deadline for this Move.
      */
-    private static long         globalDeadline;
+    private static long        globalDeadline;
 
     /**
      * Converts a {@code GameBoard} into a long array of size 2.
