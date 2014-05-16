@@ -103,6 +103,15 @@ public class Ben implements ReversiPlayer{
     private static byte[]       TTtypes            = new byte[TTsize];
     private static byte[]       TTplayedStones     = new byte[TTsize];
 
+    private static long         hash;
+
+    private static long[][]     SboardsRed         = new long[30][30];
+    private static long[][]     SboardsGreen       = new long[30][30];
+    private static int[][]      Svalues            = new int[30][30];
+    private static int[][]      Sindices           = new int[30][30];
+    private static int[]        Ssize              = new int[30];
+    private static long[][]     Shashes            = new long[30][30];
+
     private final static void TTput(long key, short value, byte depth, byte type, byte playedStones){
         int index = (int) (key & TTindexMask);
         if(TTkeys[index] == key){
@@ -919,13 +928,168 @@ public class Ben implements ReversiPlayer{
         return bestmove;
     }
 
-    /**
-     * Creates an Array of long values with one single bit set each.
-     * 
-     * @param bitboard
-     *            the bitboard to serialize.
-     * @return the serialized long variable; {@code null} if bitboard is 0
-     */
+    public final static long getflippedDiskRedHash(long red, long green, final long coord){
+        long cursor;
+        long possiblychangedfields = 0;
+        long possibleHash = 0;
+        long changedfields = 0;
+        int index = Long.numberOfTrailingZeros(coord);
+        int tmpindex = index + 8;
+
+        // upshift
+        cursor = (coord << 8) & green;
+        if(cursor != 0){
+            do{
+                possiblychangedfields |= cursor;
+                possibleHash ^= zobristRandomGreen[tmpindex]
+                        ^ zobristRandomRed[tmpindex];
+                tmpindex += 8;
+                cursor = (cursor << 8);
+            }while((cursor & green) != 0);
+            if((cursor & red) != 0){
+                changedfields |= possiblychangedfields;
+                hash ^= possibleHash;
+            }
+        }
+        // downshift
+        cursor = (coord >>> 8) & green;
+        if(cursor != 0){
+            tmpindex = index - 8;
+            possiblychangedfields = 0;
+            possibleHash = 0;
+            do{
+                possiblychangedfields |= cursor;
+                possibleHash ^= zobristRandomGreen[tmpindex]
+                        ^ zobristRandomRed[tmpindex];
+                tmpindex -= 8;
+                cursor = (cursor >>> 8);
+            }while((cursor & green) != 0);
+            if((cursor & red) != 0){
+                changedfields |= possiblychangedfields;
+                hash ^= possibleHash;
+            }
+        }
+
+        // shift correction
+        green &= shiftMask;
+
+        // leftshift
+        cursor = (coord << 1) & green;
+        if(cursor != 0){
+            tmpindex = index + 1;
+            possiblychangedfields = 0;
+            possibleHash = 0;
+            do{
+                possiblychangedfields |= cursor;
+                possibleHash ^= zobristRandomGreen[tmpindex]
+                        ^ zobristRandomRed[tmpindex];
+                tmpindex += 1;
+                cursor = (cursor << 1);
+            }while((cursor & green) != 0);
+            if((cursor & red) != 0){
+                changedfields |= possiblychangedfields;
+                hash ^= possibleHash;
+            }
+        }
+
+        // rightshift
+        cursor = (coord >>> 1) & green;
+        if(cursor != 0){
+            tmpindex = index - 1;
+            possiblychangedfields = 0;
+            possibleHash = 0;
+            do{
+                possiblychangedfields |= cursor;
+                possibleHash ^= zobristRandomGreen[tmpindex]
+                        ^ zobristRandomRed[tmpindex];
+                tmpindex -= 1;
+                cursor = (cursor >>> 1);
+            }while((cursor & green) != 0);
+            if((cursor & red) != 0){
+                changedfields |= possiblychangedfields;
+                hash ^= possibleHash;
+            }
+        }
+
+        // upleftshift
+        cursor = (coord << 9) & green;
+        if(cursor != 0){
+            tmpindex = index + 9;
+            possiblychangedfields = 0;
+            possibleHash = 0;
+            do{
+                possiblychangedfields |= cursor;
+                possibleHash ^= zobristRandomGreen[tmpindex]
+                        ^ zobristRandomRed[tmpindex];
+                tmpindex += 9;
+                cursor = (cursor << 9);
+            }while((cursor & green) != 0);
+            if((cursor & red) != 0){
+                changedfields |= possiblychangedfields;
+                hash ^= possibleHash;
+            }
+        }
+
+        // uprightshift
+        cursor = (coord << 7) & green;
+        if(cursor != 0){
+            tmpindex = index + 7;
+            possiblychangedfields = 0;
+            possibleHash = 0;
+            do{
+                possiblychangedfields |= cursor;
+                possibleHash ^= zobristRandomGreen[tmpindex]
+                        ^ zobristRandomRed[tmpindex];
+                tmpindex += 7;
+                cursor = (cursor << 7);
+            }while((cursor & green) != 0);
+            if((cursor & red) != 0){
+                changedfields |= possiblychangedfields;
+                hash ^= possibleHash;
+            }
+        }
+
+        // downleftshift
+        cursor = (coord >>> 7) & green;
+        if(cursor != 0){
+            tmpindex = index - 7;
+            possiblychangedfields = 0;
+            possibleHash = 0;
+            do{
+                possiblychangedfields |= cursor;
+                possibleHash ^= zobristRandomGreen[tmpindex]
+                        ^ zobristRandomRed[tmpindex];
+                tmpindex -= 7;
+                cursor = (cursor >>> 7);
+            }while((cursor & green) != 0);
+            if((cursor & red) != 0){
+                changedfields |= possiblychangedfields;
+                hash ^= possibleHash;
+            }
+        }
+
+        // downrightshift
+        cursor = (coord >>> 9) & green;
+        if(cursor != 0){
+            tmpindex = index - 9;
+            possiblychangedfields = 0;
+            possibleHash = 0;
+            do{
+                possiblychangedfields |= cursor;
+                possibleHash ^= zobristRandomGreen[tmpindex]
+                        ^ zobristRandomRed[tmpindex];
+                tmpindex -= 9;
+                cursor = (cursor >>> 9);
+            }while((cursor & green) != 0);
+            if((cursor & red) != 0){
+                changedfields |= possiblychangedfields;
+                hash ^= possibleHash;
+            }
+        }
+        hash ^= zobristRandomGreen[index] ^ zobristRandomRed[index];
+        return changedfields;
+    }
+
     private static final long[] serializeBitboard(long bitboard){
         int bitcount = Long.bitCount(bitboard);
         long tmp;
@@ -936,6 +1100,92 @@ public class Ben implements ReversiPlayer{
             bitboard ^= tmp;
         }
         return bitboards;
+    }
+
+    /**
+     * 
+     * MOVE ORDERING
+     * 
+     */
+
+    private static final int sortMovesDesc(long red, long green, long possibleMoves, int depth, long oldHash){
+        hash = oldHash;
+        int i = 0;
+        while(possibleMoves != 0){
+            long move = Long.highestOneBit(possibleMoves);
+            possibleMoves ^= move;
+            long flippedDisks = getflippedDiskRedHash(red, green, move);
+            SboardsRed[depth][i] = red ^ flippedDisks ^ move;
+            SboardsGreen[depth][i] = green ^ flippedDisks;
+            Shashes[depth][i] = hash;
+
+            int index = TTget(hash);
+            if(index == NOTFOUND){
+                Svalues[depth][i] = -32768;
+            }
+            else{
+                Svalues[depth][i] = TTvalues[index] | (TTtypes[index] << 14);
+            }
+            Sindices[depth][i] = i;
+            i++;
+        }
+        insertionSortDesc(Svalues[depth], Sindices[depth], i);
+        return Ssize[depth] = i;
+    }
+
+    private static final int sortMovesAsc(long red, long green, long possibleMoves, int depth, long oldHash){
+        hash = oldHash;
+        int i = 0;
+        while(possibleMoves != 0){
+            long move = Long.highestOneBit(possibleMoves);
+            possibleMoves ^= move;
+            long flippedDisks = getflippedDiskRedHash(red, green, move);
+            SboardsRed[depth][i] = red ^ flippedDisks ^ move;
+            SboardsGreen[depth][i] = green ^ flippedDisks;
+            Shashes[depth][i] = hash;
+
+            int index = TTget(hash);
+            if(index == NOTFOUND){
+                Svalues[depth][i] = 32768;
+            }
+            else{
+                Svalues[depth][i] = (-TTvalues[index]) | (TTtypes[index] << 14);
+            }
+            Sindices[depth][i] = i;
+            i++;
+        }
+        insertionSortDesc(Svalues[depth], Sindices[depth], i);
+        return Ssize[depth] = i;
+    }
+
+    private final static void insertionSortDesc(int[] orderedScore, int[] orderedIndices, int size){
+        for (int i = 1; i < size; i++){
+            int j;
+            int tempScore = orderedScore[i];
+            int tempIndex = orderedIndices[i];
+            for (j = i - 1; j >= 0 && tempScore > orderedScore[j]; j--){
+                orderedScore[j + 1] = orderedScore[j];
+                orderedIndices[j + 1] = orderedIndices[j];
+            }
+            j++;
+            orderedScore[j] = tempScore;
+            orderedIndices[j] = tempIndex;
+        }
+    }
+
+    private final static void insertionSortAsc(int[] orderedScore, int[] orderedIndices, int size){
+        for (int i = 1; i < size; i++){
+            int j;
+            int tempScore = orderedScore[i];
+            int tempIndex = orderedIndices[i];
+            for (j = i - 1; j >= 0 && tempScore < orderedScore[j]; j--){
+                orderedScore[j + 1] = orderedScore[j];
+                orderedIndices[j + 1] = orderedIndices[j];
+            }
+            j++;
+            orderedScore[j] = tempScore;
+            orderedIndices[j] = tempIndex;
+        }
     }
 
     @Override
