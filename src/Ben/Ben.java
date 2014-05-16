@@ -287,7 +287,7 @@ public class Ben{
         return new Coordinates(1 + (Long.numberOfLeadingZeros(coords) >>> 3), 1 + Long.numberOfLeadingZeros(coords) % 8);
     }
 
-    private static final long possibleMovesRed(final long red, long green){
+    private static final long getPossibleMovesRed(final long red, long green){
         long emptyFields = ~(red | green);
         long validMoves = 0;
         long potentialMoves;
@@ -407,80 +407,6 @@ public class Ben{
     }
 
     /**
-     * @param player
-     *            The player to move; use {@code true} for red or {@code false}
-     *            for green.
-     * @return returns a long containing all possible moves. If there is no
-     *         legal moves 0 is returned
-     */
-    private static final long getPossibleMoves(final long red, final long green){
-        long emptyFields = ~(red | green);
-        long validMoves = 0;
-        long potentialMoves;
-        // leftshift
-        potentialMoves = (((red << 1) & leftshiftMask & green) << 1)
-                & leftshiftMask;
-        while(potentialMoves != 0){
-            validMoves |= (potentialMoves & emptyFields);
-            potentialMoves = (potentialMoves & green) << 1
-                    & leftshiftMask;
-        }
-        // rightshift
-        potentialMoves = (((red >>> 1) & rightshiftMask & green) >>> 1)
-                & rightshiftMask;
-        while(potentialMoves != 0){
-            validMoves |= (potentialMoves & emptyFields);
-            potentialMoves = (potentialMoves & green) >>> 1
-                    & rightshiftMask;
-        }
-        // upshift
-        potentialMoves = (((red << 8) & green) << 8);
-        while(potentialMoves != 0){
-            validMoves |= (potentialMoves & emptyFields);
-            potentialMoves = (potentialMoves & green) << 8;
-        }
-        // downshift
-        potentialMoves = (((red >>> 8) & green) >>> 8);
-        while(potentialMoves != 0){
-            validMoves |= (potentialMoves & emptyFields);
-            potentialMoves = (potentialMoves & green) >>> 8;
-        }
-        // upleftshift
-        potentialMoves = (((red << 9) & leftshiftMask & green) << 9)
-                & leftshiftMask;
-        while(potentialMoves != 0){
-            validMoves |= (potentialMoves & emptyFields);
-            potentialMoves = (potentialMoves & green) << 9
-                    & leftshiftMask;
-        }
-        // uprightshift
-        potentialMoves = (((red << 7) & rightshiftMask & green) << 7)
-                & rightshiftMask;
-        while(potentialMoves != 0){
-            validMoves |= (potentialMoves & emptyFields);
-            potentialMoves = (potentialMoves & green) << 7
-                    & rightshiftMask;
-        }
-        // downleftshift
-        potentialMoves = (((red >>> 7) & leftshiftMask & green) >>> 7)
-                & leftshiftMask;
-        while(potentialMoves != 0){
-            validMoves |= (potentialMoves & emptyFields);
-            potentialMoves = (potentialMoves & green) >>> 7
-                    & leftshiftMask;
-        }
-        // downrightshift
-        potentialMoves = (((red >>> 9) & rightshiftMask & green) >>> 9)
-                & rightshiftMask;
-        while(potentialMoves != 0){
-            validMoves |= (potentialMoves & emptyFields);
-            potentialMoves = (potentialMoves & green) >>> 9
-                    & rightshiftMask;
-        }
-        return validMoves;
-    }
-
-    /**
      * get the occupation of a field for {@code player}
      * 
      * @param player
@@ -510,38 +436,6 @@ public class Ben{
             }
             System.out.println("");
         }
-    }
-
-    private static final long getStableDisks(final long red, final long green, final boolean player){
-        long current = 0, before = red | green, filled04 = EDGES, filled15 = VERTICALEDGES, filled26 = EDGES, filled37 = HORIZONTALEDGES;
-
-        int i;
-        for (i = 0; i < 8; i++){
-            if((before & LINES15[i]) == LINES15[i]){
-                filled15 |= LINES15[i];
-            }
-            if((before & LINES37[i]) == LINES37[i]){
-                filled37 |= LINES37[i];
-            }
-        }
-        for (i = 0; i < 11; i++){
-            if((before & LINES04[i]) == LINES04[i]){
-                filled04 |= LINES04[i];
-            }
-            if((before & LINES26[i]) == LINES26[i]){
-                filled26 |= LINES26[i];
-            }
-        }
-
-        while(current != before){
-            before = current;
-            current |= red
-                    & ((current << 8) | (current >>> 8) | filled15) // 15
-                    & ((current << 1) | (current >>> 1) | filled37) // 37
-                    & ((current << 9) | (current >>> 9) | filled04) // 04
-                    & ((current << 7) | (current >>> 7) | filled26); // 26
-        }
-        return current;
     }
 
     private static final long getStableDisks(long red, long green){
