@@ -94,13 +94,13 @@ public class Ben implements ReversiPlayer{
                                                    };
     // Transposition Table
     private final static byte   PVNODE             = (byte) 8, EXACTVALUE = (byte) 4, UPPERBOUND = (byte) 2, LOWERBOUND = (byte) 1;
-    private final static int    NOTFOUND           = -1;
+    private final static int    NOTFOUND           = -2147483648;
     private final static int    TTsize             = (0x80000000 >>> Integer.numberOfLeadingZeros(10000000));
     private final static long   TTindexMask        = ~(0x8000000000000000L >> (32 - Integer.numberOfLeadingZeros(TTsize)));
     private static long[]       TTkeys             = new long[TTsize];
     private static short[]      TTvalues           = new short[TTsize];
     private static byte[]       TTdepths           = new byte[TTsize];
-    private static byte[]       TTtypes             = new byte[TTsize];
+    private static byte[]       TTtypes            = new byte[TTsize];
     private static byte[]       TTplayedStones     = new byte[TTsize];
 
     private final static void TTput(long key, short value, byte depth, byte type, byte playedStones){
