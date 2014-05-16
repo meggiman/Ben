@@ -168,6 +168,79 @@ public class Ben implements ReversiPlayer{
     }
 
     /**
+     * 
+     * @param player
+     *            board in view of the player whose stones are to be count
+     * @return the amount of stones for the player which was given in
+     *         {@code player}
+     */
+
+    private static final int countStones(long player){
+        return Long.bitCount(player);
+    }
+
+    /**
+     * 
+     * EVALUATION
+     * 
+     */
+
+    private static final short evaluate(long red, long green, long possibleMovesRedLong, long possibleMovesGreenLong){
+        double EC = 3;
+        double MC = 400;
+        double MC2 = 800;
+        double SC = 180;
+
+        // Mobility
+
+        int possibleMovesRed = Long.bitCount(possibleMovesRedLong);
+        int possibleMovesGreen = Long.bitCount(possibleMovesGreenLong);
+
+        // Potential mobility
+        long empty = ~(red | green);
+        int potentialMovesRed = Long.bitCount(Bitboard.fillAdjacent(empty)
+                & green);
+        int potentialMovesEnemyGreen = Long.bitCount(Bitboard.fillAdjacent(empty)
+                & red);
+
+        // Edge advantage
+        int edgeAdvantage = (int) (getEdgeValue(red, green));
+
+        // Mobility advantage
+        float mobilityAdvantage = (possibleMovesRed - 1.2f * possibleMovesGreen);
+
+        // Potential mobility advantage
+        float potentialMobilityAdvantage = potentialMovesRed - 1.2f
+                * potentialMovesEnemyGreen;
+
+        int occupiedSquareAdvantage = (int) (Long.bitCount(getStableDisks(red, green))
+                - Long.bitCount(getStableDisks(green, red)));
+
+        int score = (int) (
+                EC * edgeAdvantage
+                        + MC * mobilityAdvantage
+                        + MC2 * potentialMobilityAdvantage
+                        + SC * occupiedSquareAdvantage
+                );
+        if(score > 32767 || score < -32768){
+            System.out.println("ALERT!SWEG!11ELF!!");
+        }
+        // gb.print();
+        // System.out.println("Evaluator Noah");
+        // System.out.println("EdgeAdvantage: " + EC * edgeAdvantage);
+        // System.out.println("MobilityAdvantage: " + (MC * mobilityAdvantage));
+        // System.out.println("PotentialMobility: "
+        // + (MC2 * potentialMobilityAdvantage));
+        // System.out.println("occupiedSquareAdvantage: "
+        // + SC * occupiedSquareAdvantage);
+        // System.out.println(score);
+        // System.out.println("------------------------");
+        // System.out.println("Evaluator Xiaolon");
+        // System.out.println(testXiaolong.evaluate(gb.red, gb.green));
+        return (short) score;
+    }
+
+    /**
      * Masks all the adjacent fields of all set bits in the bitboard
      * 
      * @param bitboard
@@ -182,6 +255,189 @@ public class Ben implements ReversiPlayer{
         filledbitboard |= filledbitboard << 1 & 0xfefefefefefefefeL;
         filledbitboard |= filledbitboard << 8;
         return filledbitboard ^ bitboard;
+    }
+
+    /**
+     * 
+     * EDGE TABLES
+     * 
+     */
+
+    private static final void generateEdgeTable(){
+        for (int k = 0; k < 6561; k++){
+            int c = k;
+            short[] board = new short[3];
+            for (int z = 0; z < 8; z++){
+                board[c % 3] |= (short) (1 << z);
+                // System.out.print(c % 3);
+                c /= 3;
+            }
+
+            // Red values
+            byte unstableRed = getUnstableEdgePieces((byte) (0xFF & board[1]), (byte) (0xFF & board[2]));
+            byte unanchoredRed = getUnanchoredStableEdgePieces((byte) (0xFF & board[1]), getUnstableEdgePieces((byte) (0xFF & board[2]), (byte) (0xFF & board[1])));
+            byte aloneRed = getAloneEdgePieces((byte) (0xFF & board[1]), (byte) (0xFF & board[2]));
+            byte stable1Red = getStable1EdgePieces((byte) (0xFF & board[1]), (byte) (0xFF & board[2]));
+            byte stable3Red = getStable3EdgePieces((byte) (0xFF & board[1]), (byte) (0xFF & board[2]));
+            byte semiRed = (byte) ((0b11111111 ^ unstableRed ^ unanchoredRed
+                    ^ aloneRed
+                    ^ stable1Red
+                    ^ stable3Red) & board[1]);
+
+            // Green values
+            byte unstableGreen = getUnstableEdgePieces((byte) (0xFF & board[2]), (byte) (0xFF & board[1]));
+            byte unanchoredGreen = getUnanchoredStableEdgePieces((byte) (0xFF & board[2]), getUnstableEdgePieces((byte) (0xFF & board[1]), (byte) (0xFF & board[2])));
+            byte aloneGreen = getAloneEdgePieces((byte) (0xFF & board[2]), (byte) (0xFF & board[1]));
+            byte stable1Green = getStable1EdgePieces((byte) (0xFF & board[2]), (byte) (0xFF & board[1]));
+            byte stable3Green = getStable3EdgePieces((byte) (0xFF & board[2]), (byte) (0xFF & board[1]));
+            byte semiGreen = (byte) ((0b11111111 ^ unstableGreen
+                    ^ unanchoredGreen ^ aloneGreen
+                    ^ stable1Green
+                    ^ stable3Green) & board[2]);
+
+            float score = 0;
+
+            // Score red
+            score += Integer.bitCount(maskC & unstableRed) * -0.5;
+            score += Integer.bitCount(maskA & unstableRed) * 0.2;
+            score += Integer.bitCount(maskB & unstableRed) * 0.15;
+
+            score += Integer.bitCount(maskA & unanchoredRed) * 3;
+            score += Integer.bitCount(maskB & unanchoredRed) * 2;
+
+            score += Integer.bitCount(maskC & aloneRed) * -0.75;
+            score += Integer.bitCount(maskA & aloneRed) * -0.25;
+            score += Integer.bitCount(maskB & aloneRed) * -0.5;
+
+            score += Integer.bitCount(stable1Red) * 8;
+
+            score += Integer.bitCount(maskC & stable3Red) * 12;
+            score += Integer.bitCount(maskA & stable3Red) * 10;
+            score += Integer.bitCount(maskB & stable3Red) * 10;
+            score += Integer.bitCount(0b10000001 & stable3Red) * 80;
+
+            score += Integer.bitCount(maskC & semiRed) * -1.25;
+            score += Integer.bitCount(maskA & semiRed) * 1;
+            score += Integer.bitCount(maskB & semiRed) * 1;
+
+            // Negative score Green
+            score -= Integer.bitCount(maskC & unstableGreen) * -0.5 * 1.2;
+            score -= Integer.bitCount(maskA & unstableGreen) * 0.2 * 1.2;
+            score -= Integer.bitCount(maskB & unstableGreen) * 0.15 * 1.2;
+
+            score -= Integer.bitCount(maskA & unanchoredGreen) * 3 * 1.2;
+            score -= Integer.bitCount(maskB & unanchoredGreen) * 2 * 1.2;
+
+            score -= Integer.bitCount(maskC & aloneGreen) * -0.75 * 1.2;
+            score -= Integer.bitCount(maskA & aloneGreen) * -0.25 * 1.2;
+            score -= Integer.bitCount(maskB & aloneGreen) * -0.5 * 1.2;
+
+            score -= Integer.bitCount(stable1Green) * 8 * 1.2;
+
+            score -= Integer.bitCount(maskC & stable3Green) * 12 * 1.2;
+            score -= Integer.bitCount(maskA & stable3Green) * 10 * 1.2;
+            score -= Integer.bitCount(maskB & stable3Green) * 10 * 1.2;
+            score -= Integer.bitCount(0b10000001 & stable3Green) * 80 * 1.6;
+
+            score -= Integer.bitCount(maskC & semiGreen) * -10.25 * 1.2;
+            score -= Integer.bitCount(maskA & semiGreen) * 1 * 1.2;
+            score -= Integer.bitCount(maskB & semiGreen) * 1 * 1.2;
+
+            edgeTable[(board[1] << 8) | board[2]] = (short) score;
+            // System.out.println(k);
+            // System.out.println(String.format("%8s",
+            // Integer.toBinaryString(0xFF & board[1])).replace(' ', '0'));
+            // System.out.println(String.format("%8s",
+            // Integer.toBinaryString(0xFF & board[2])).replace(' ', '0'));
+            // System.out.println(score);
+            // System.out.println("-------------------");
+
+        }
+    }
+
+    /**
+     * 
+     * @param red
+     *            board in view of the red player
+     * @param green
+     *            board in view of the red player
+     * @return a hash to determine the position in the hashtable
+     */
+
+    private static final long generateZobristHash(final long red, final long green){
+        long value = 0;
+        for (long bit : serializeBitboard(red)){
+            value ^= zobristRandomRed[Long.numberOfTrailingZeros(bit)];
+        }
+        for (long bit : serializeBitboard(green)){
+            value ^= zobristRandomGreen[Long.numberOfTrailingZeros(bit)];
+        }
+        return value;
+    }
+
+    /**
+     * get the occupation of a field for {@code player}
+     * 
+     * @param player
+     *            the player which we talk of
+     * @param x
+     *            the x coordinate of the field
+     * @param y
+     *            the y coordinate of the field
+     * @return true if occupated, false if not
+     */
+
+    private static final boolean get(final long player, final byte x, final byte y){
+        if(x > 7 || x < 0 || y > 7 || y < 0)
+            return false;
+        return ((player >>> (63 - y * 8 - x)) & 1) == 1;
+    }
+
+    private static final byte getAloneEdgePieces(byte borderRed, byte borderGreen){
+        byte emptyEdge = (byte) ~(borderRed | borderGreen);
+        return (byte) (((((borderRed << 1) & emptyEdge) >>> 2) & emptyEdge) << 1);
+    }
+
+    /**
+     * @return the number of ALL stones on the field
+     */
+
+    private static final int getDiscCount(final long red, final long green){
+        return (byte) (Long.bitCount(red) + Long.bitCount(green));
+    }
+
+    private static final short getEdgeValue(long red, long green){
+        short edgeTopRed = (short) (red >>> 56);
+        short edgeBotRed = (short) (red & 0xFF);
+        long bitboard = red & 0x0101010101010101L;
+        bitboard |= bitboard >>> 28;
+        bitboard |= bitboard >>> 14;
+        bitboard |= bitboard >>> 7;
+        short edgeRightRed = (short) (bitboard & 0xFF);
+        bitboard = (red >>> 7) & 0x0101010101010101L;
+        bitboard |= bitboard >>> 28;
+        bitboard |= bitboard >>> 14;
+        bitboard |= bitboard >>> 7;
+        short edgeLeftRed = (short) (bitboard & 0xFF);
+
+        short edgeTopGreen = (short) (green >>> 56);
+        short edgeBotGreen = (short) (green & 0xFF);
+        bitboard = green & 0x0101010101010101L;
+        bitboard |= bitboard >>> 28;
+        bitboard |= bitboard >>> 14;
+        bitboard |= bitboard >>> 7;
+        short edgeRightGreen = (short) (bitboard & 0xFF);
+        bitboard = (green >>> 7) & 0x0101010101010101L;
+        bitboard |= bitboard >>> 28;
+        bitboard |= bitboard >>> 14;
+        bitboard |= bitboard >>> 7;
+        short edgeLeftGreen = (short) (bitboard & 0xFF);
+
+        return (short) (edgeTable[(edgeTopRed << 8) | edgeTopGreen]
+                + edgeTable[(edgeBotRed << 8) | edgeBotGreen]
+                + edgeTable[(edgeLeftRed << 8) | edgeLeftGreen] + edgeTable[(edgeRightRed << 8)
+                | edgeRightGreen]);
+
     }
 
     private static final long getFlippedDiskRed(final long red, long green, final long coord){
@@ -298,6 +554,139 @@ public class Ben implements ReversiPlayer{
         return changedFields;
     }
 
+    private static final byte getStable1EdgePieces(byte borderRed, byte borderGreen){
+        byte borderRedCopy = borderRed;
+        byte borderGreenCopy = borderGreen;
+        byte emptyEdge = (byte) ~(borderRed | borderGreen);
+        byte stable = 0;
+        byte potentiallyStable = (byte) ((0xFF & (borderRed << 1) & borderGreen) >>> 1);
+        emptyEdge = (byte) (emptyEdge << 1);
+        while(potentiallyStable != 0){
+            borderRed = (byte) (borderRed << 1);
+            borderGreen = (byte) (borderGreen << 1);
+            emptyEdge = (byte) (emptyEdge << 1);
+            potentiallyStable = (byte) (potentiallyStable & borderGreen);
+            stable |= potentiallyStable & emptyEdge;
+            stable |= potentiallyStable & (borderRed << 1);
+        }
+
+        borderRed = borderRedCopy;
+        borderGreen = borderGreenCopy;
+        emptyEdge = (byte) ~(borderRed | borderGreen);
+        potentiallyStable = (byte) ((((0xFF & borderRed) >>> 1) & borderGreen) << 1);
+        emptyEdge = (byte) ((0xFF & emptyEdge) >>> 1);
+        while(potentiallyStable != 0){
+            borderRed = (byte) ((0xFF & borderRed) >>> 1);
+            borderGreen = (byte) ((0xFF & borderGreen) >>> 1);
+            emptyEdge = (byte) ((0xFF & emptyEdge) >>> 1);
+            potentiallyStable = (byte) (potentiallyStable & borderGreen);
+            stable |= potentiallyStable & emptyEdge;
+            stable |= potentiallyStable & ((0xFF & borderRed) >>> 1);
+        }
+        return stable;
+    }
+
+    private static final byte getStable3EdgePieces(byte borderRed, byte borderGreen){
+        byte emptyEdge = (byte) ~(borderRed | borderGreen);
+        if(Integer.bitCount(emptyEdge) == 0){
+            return borderRed;
+        }
+        byte stable = (byte) (borderRed & 1);
+        byte potentiallyStable = (byte) (borderRed & 1);
+        byte tempBoard;
+        while(potentiallyStable != 0){
+            tempBoard = (byte) (potentiallyStable << 1);
+            potentiallyStable = (byte) (tempBoard & borderRed);
+            stable |= potentiallyStable;
+        }
+
+        stable |= (byte) (borderRed & 0b10000000);
+        potentiallyStable = (byte) (borderRed & 0b10000000);
+        while(potentiallyStable != 0){
+            tempBoard = (byte) ((potentiallyStable & 0xFF) >>> 1);
+            potentiallyStable = (byte) (tempBoard & borderRed);
+            stable |= potentiallyStable;
+        }
+
+        return stable;
+    }
+
+    private static final long getStableDisks(long red, long green){
+        long current = 0, before = red | green, filled04 = EDGES, filled15 = VERTICALEDGES, filled26 = EDGES, filled37 = HORIZONTALEDGES;
+        int i;
+        for (i = 0; i < 8; i++){
+            if((before & LINES15[i]) == LINES15[i]){
+                filled15 |= LINES15[i];
+            }
+            if((before & LINES37[i]) == LINES37[i]){
+                filled37 |= LINES37[i];
+            }
+        }
+        for (i = 0; i < 11; i++){
+            if((before & LINES04[i]) == LINES04[i]){
+                filled04 |= LINES04[i];
+            }
+            if((before & LINES26[i]) == LINES26[i]){
+                filled26 |= LINES26[i];
+            }
+        }
+
+        while(current != before){
+            before = current;
+            current |= red
+                    & ((current << 8) | (current >>> 8) | filled15) // 15
+                    & ((current << 1) | (current >>> 1) | filled37) // 37
+                    & ((current << 9) | (current >>> 9) | filled04) // 04
+                    & ((current << 7) | (current >>> 7) | filled26); // 26
+        }
+        return current;
+    }
+
+    private static final long getStableDisks(final long red, final long green, final boolean player){
+        long current = 0, before = red | green, filled04 = EDGES, filled15 = VERTICALEDGES, filled26 = EDGES, filled37 = HORIZONTALEDGES;
+
+        int i;
+        for (i = 0; i < 8; i++){
+            if((before & LINES15[i]) == LINES15[i]){
+                filled15 |= LINES15[i];
+            }
+            if((before & LINES37[i]) == LINES37[i]){
+                filled37 |= LINES37[i];
+            }
+        }
+        for (i = 0; i < 11; i++){
+            if((before & LINES04[i]) == LINES04[i]){
+                filled04 |= LINES04[i];
+            }
+            if((before & LINES26[i]) == LINES26[i]){
+                filled26 |= LINES26[i];
+            }
+        }
+
+        while(current != before){
+            before = current;
+            current |= red
+                    & ((current << 8) | (current >>> 8) | filled15) // 15
+                    & ((current << 1) | (current >>> 1) | filled37) // 37
+                    & ((current << 9) | (current >>> 9) | filled04) // 04
+                    & ((current << 7) | (current >>> 7) | filled26); // 26
+        }
+        return current;
+    }
+
+    private static final byte getUnanchoredStableEdgePieces(byte borderRed, byte unstableGreen){
+        return (byte) (((((borderRed << 1) & unstableGreen) >>> 2) & unstableGreen) << 1);
+    }
+
+    private static final byte getUnstableEdgePieces(byte borderRed, byte borderGreen){
+        byte emptyEdge = (byte) ~(borderRed | borderGreen);
+        byte potentiallyUnstable = (byte) ((borderRed << 1) & emptyEdge);
+        byte unstable = (byte) (((potentiallyUnstable >>> 2) & borderGreen) << 1);
+        potentiallyUnstable = (byte) ((borderRed >>> 1) & emptyEdge);
+        unstable |= (((potentiallyUnstable << 2) & borderGreen) >>> 1);
+        return (byte) unstable;
+    }
+
     /**
      * Converts a long coordinates bitboard-representation into its equivalent
      * {@link Coordinates} object.
@@ -313,7 +702,7 @@ public class Ben implements ReversiPlayer{
         return new Coordinates(1 + (Long.numberOfLeadingZeros(coords) >>> 3), 1 + Long.numberOfLeadingZeros(coords) % 8);
     }
 
-    private static final long getPossibleMovesRed(final long red, long green){
+    private static final long possibleMovesRed(final long red, long green){
         long emptyFields = ~(red | green);
         long validMoves = 0;
         long potentialMoves;
@@ -373,83 +762,6 @@ public class Ben implements ReversiPlayer{
         return validMoves;
     }
 
-    /**
-     * Creates an Array of long values with one single bit set each.
-     * 
-     * @param bitboard
-     *            the bitboard to serialize.
-     * @return the serialized long variable; {@code null} if bitboard is 0
-     */
-    private static final long[] serializeBitboard(long bitboard){
-        int bitcount = Long.bitCount(bitboard);
-        long tmp;
-        long[] bitboards = new long[bitcount];
-        for (int i = 0; i < bitcount; i++){
-            tmp = Long.highestOneBit(bitboard);
-            bitboards[i] = tmp;
-            bitboard ^= tmp;
-        }
-        return bitboards;
-    }
-
-    /**
-     * 
-     * @param player
-     *            board in view of the player whose stones are to be count
-     * @return the amount of stones for the player which was given in
-     *         {@code player}
-     */
-
-    private static final int countStones(long player){
-        return Long.bitCount(player);
-    }
-
-    /**
-     * 
-     * @param red
-     *            board in view of the red player
-     * @param green
-     *            board in view of the red player
-     * @return a hash to determine the position in the hashtable
-     */
-
-    private static final long generateZobristHash(final long red, final long green){
-        long value = 0;
-        for (long bit : serializeBitboard(red)){
-            value ^= zobristRandomRed[Long.numberOfTrailingZeros(bit)];
-        }
-        for (long bit : serializeBitboard(green)){
-            value ^= zobristRandomGreen[Long.numberOfTrailingZeros(bit)];
-        }
-        return value;
-    }
-
-    /**
-     * @return the number of ALL stones on the field
-     */
-
-    private static final int getDiscCount(final long red, final long green){
-        return (byte) (Long.bitCount(red) + Long.bitCount(green));
-    }
-
-    /**
-     * get the occupation of a field for {@code player}
-     * 
-     * @param player
-     *            the player which we talk of
-     * @param x
-     *            the x coordinate of the field
-     * @param y
-     *            the y coordinate of the field
-     * @return true if occupated, false if not
-     */
-
-    private static final boolean get(final long player, final byte x, final byte y){
-        if(x > 7 || x < 0 || y > 7 || y < 0)
-            return false;
-        return ((player >>> (63 - y * 8 - x)) & 1) == 1;
-    }
-
     private static final void print(final long red, final long green){
         for (byte i = 0; i < 8; i++){
             for (byte k = 0; k < 8; k++){
@@ -464,345 +776,40 @@ public class Ben implements ReversiPlayer{
         }
     }
 
-    private static final long getStableDisks(long red, long green){
-        long current = 0, before = red | green, filled04 = EDGES, filled15 = VERTICALEDGES, filled26 = EDGES, filled37 = HORIZONTALEDGES;
-        int i;
-        for (i = 0; i < 8; i++){
-            if((before & LINES15[i]) == LINES15[i]){
-                filled15 |= LINES15[i];
-            }
-            if((before & LINES37[i]) == LINES37[i]){
-                filled37 |= LINES37[i];
-            }
+    private final static int pvsMax(long red, long green, int alpha, int beta, int depth){
+        searchedNodes++;
+        if(returnFromSearch){
+            return beta;
         }
-        for (i = 0; i < 11; i++){
-            if((before & LINES04[i]) == LINES04[i]){
-                filled04 |= LINES04[i];
-            }
-            if((before & LINES26[i]) == LINES26[i]){
-                filled26 |= LINES26[i];
-            }
+        if(System.nanoTime() >= localDeadline){
+            returnFromSearch = true;
         }
-
-        while(current != before){
-            before = current;
-            current |= red
-                    & ((current << 8) | (current >>> 8) | filled15) // 15
-                    & ((current << 1) | (current >>> 1) | filled37) // 37
-                    & ((current << 9) | (current >>> 9) | filled04) // 04
-                    & ((current << 7) | (current >>> 7) | filled26); // 26
-        }
-        return current;
-    }
-
-    /**
-     * 
-     * EDGE TABLES
-     * 
-     */
-
-    private static final void generateEdgeTable(){
-        for (int k = 0; k < 6561; k++){
-            int c = k;
-            short[] board = new short[3];
-            for (int z = 0; z < 8; z++){
-                board[c % 3] |= (short) (1 << z);
-                // System.out.print(c % 3);
-                c /= 3;
-            }
-
-            // Red values
-            byte unstableRed = getUnstableEdgePieces((byte) (0xFF & board[1]), (byte) (0xFF & board[2]));
-            byte unanchoredRed = getUnanchoredStableEdgePieces((byte) (0xFF & board[1]), getUnstableEdgePieces((byte) (0xFF & board[2]), (byte) (0xFF & board[1])));
-            byte aloneRed = getAloneEdgePieces((byte) (0xFF & board[1]), (byte) (0xFF & board[2]));
-            byte stable1Red = getStable1EdgePieces((byte) (0xFF & board[1]), (byte) (0xFF & board[2]));
-            byte stable3Red = getStable3EdgePieces((byte) (0xFF & board[1]), (byte) (0xFF & board[2]));
-            byte semiRed = (byte) ((0b11111111 ^ unstableRed ^ unanchoredRed
-                    ^ aloneRed
-                    ^ stable1Red
-                    ^ stable3Red) & board[1]);
-
-            // Green values
-            byte unstableGreen = getUnstableEdgePieces((byte) (0xFF & board[2]), (byte) (0xFF & board[1]));
-            byte unanchoredGreen = getUnanchoredStableEdgePieces((byte) (0xFF & board[2]), getUnstableEdgePieces((byte) (0xFF & board[1]), (byte) (0xFF & board[2])));
-            byte aloneGreen = getAloneEdgePieces((byte) (0xFF & board[2]), (byte) (0xFF & board[1]));
-            byte stable1Green = getStable1EdgePieces((byte) (0xFF & board[2]), (byte) (0xFF & board[1]));
-            byte stable3Green = getStable3EdgePieces((byte) (0xFF & board[2]), (byte) (0xFF & board[1]));
-            byte semiGreen = (byte) ((0b11111111 ^ unstableGreen
-                    ^ unanchoredGreen ^ aloneGreen
-                    ^ stable1Green
-                    ^ stable3Green) & board[2]);
-
-            float score = 0;
-
-            // Score red
-            score += Integer.bitCount(maskC & unstableRed) * -0.5;
-            score += Integer.bitCount(maskA & unstableRed) * 0.2;
-            score += Integer.bitCount(maskB & unstableRed) * 0.15;
-
-            score += Integer.bitCount(maskA & unanchoredRed) * 3;
-            score += Integer.bitCount(maskB & unanchoredRed) * 2;
-
-            score += Integer.bitCount(maskC & aloneRed) * -0.75;
-            score += Integer.bitCount(maskA & aloneRed) * -0.25;
-            score += Integer.bitCount(maskB & aloneRed) * -0.5;
-
-            score += Integer.bitCount(stable1Red) * 8;
-
-            score += Integer.bitCount(maskC & stable3Red) * 12;
-            score += Integer.bitCount(maskA & stable3Red) * 10;
-            score += Integer.bitCount(maskB & stable3Red) * 10;
-            score += Integer.bitCount(0b10000001 & stable3Red) * 80;
-
-            score += Integer.bitCount(maskC & semiRed) * -1.25;
-            score += Integer.bitCount(maskA & semiRed) * 1;
-            score += Integer.bitCount(maskB & semiRed) * 1;
-
-            // Negative score Green
-            score -= Integer.bitCount(maskC & unstableGreen) * -0.5 * 1.2;
-            score -= Integer.bitCount(maskA & unstableGreen) * 0.2 * 1.2;
-            score -= Integer.bitCount(maskB & unstableGreen) * 0.15 * 1.2;
-
-            score -= Integer.bitCount(maskA & unanchoredGreen) * 3 * 1.2;
-            score -= Integer.bitCount(maskB & unanchoredGreen) * 2 * 1.2;
-
-            score -= Integer.bitCount(maskC & aloneGreen) * -0.75 * 1.2;
-            score -= Integer.bitCount(maskA & aloneGreen) * -0.25 * 1.2;
-            score -= Integer.bitCount(maskB & aloneGreen) * -0.5 * 1.2;
-
-            score -= Integer.bitCount(stable1Green) * 8 * 1.2;
-
-            score -= Integer.bitCount(maskC & stable3Green) * 12 * 1.2;
-            score -= Integer.bitCount(maskA & stable3Green) * 10 * 1.2;
-            score -= Integer.bitCount(maskB & stable3Green) * 10 * 1.2;
-            score -= Integer.bitCount(0b10000001 & stable3Green) * 80 * 1.6;
-
-            score -= Integer.bitCount(maskC & semiGreen) * -10.25 * 1.2;
-            score -= Integer.bitCount(maskA & semiGreen) * 1 * 1.2;
-            score -= Integer.bitCount(maskB & semiGreen) * 1 * 1.2;
-
-            edgeTable[(board[1] << 8) | board[2]] = (short) score;
-            // System.out.println(k);
-            // System.out.println(String.format("%8s",
-            // Integer.toBinaryString(0xFF & board[1])).replace(' ', '0'));
-            // System.out.println(String.format("%8s",
-            // Integer.toBinaryString(0xFF & board[2])).replace(' ', '0'));
-            // System.out.println(score);
-            // System.out.println("-------------------");
-
-        }
-    }
-
-    private static final short getEdgeValue(long red, long green){
-        short edgeTopRed = (short) (red >>> 56);
-        short edgeBotRed = (short) (red & 0xFF);
-        long bitboard = red & 0x0101010101010101L;
-        bitboard |= bitboard >>> 28;
-        bitboard |= bitboard >>> 14;
-        bitboard |= bitboard >>> 7;
-        short edgeRightRed = (short) (bitboard & 0xFF);
-        bitboard = (red >>> 7) & 0x0101010101010101L;
-        bitboard |= bitboard >>> 28;
-        bitboard |= bitboard >>> 14;
-        bitboard |= bitboard >>> 7;
-        short edgeLeftRed = (short) (bitboard & 0xFF);
-
-        short edgeTopGreen = (short) (green >>> 56);
-        short edgeBotGreen = (short) (green & 0xFF);
-        bitboard = green & 0x0101010101010101L;
-        bitboard |= bitboard >>> 28;
-        bitboard |= bitboard >>> 14;
-        bitboard |= bitboard >>> 7;
-        short edgeRightGreen = (short) (bitboard & 0xFF);
-        bitboard = (green >>> 7) & 0x0101010101010101L;
-        bitboard |= bitboard >>> 28;
-        bitboard |= bitboard >>> 14;
-        bitboard |= bitboard >>> 7;
-        short edgeLeftGreen = (short) (bitboard & 0xFF);
-
-        return (short) (edgeTable[(edgeTopRed << 8) | edgeTopGreen]
-                + edgeTable[(edgeBotRed << 8) | edgeBotGreen]
-                + edgeTable[(edgeLeftRed << 8) | edgeLeftGreen] + edgeTable[(edgeRightRed << 8)
-                | edgeRightGreen]);
-
-    }
-
-    private static final byte getStable3EdgePieces(byte borderRed, byte borderGreen){
-        byte emptyEdge = (byte) ~(borderRed | borderGreen);
-        if(Integer.bitCount(emptyEdge) == 0){
-            return borderRed;
-        }
-        byte stable = (byte) (borderRed & 1);
-        byte potentiallyStable = (byte) (borderRed & 1);
-        byte tempBoard;
-        while(potentiallyStable != 0){
-            tempBoard = (byte) (potentiallyStable << 1);
-            potentiallyStable = (byte) (tempBoard & borderRed);
-            stable |= potentiallyStable;
-        }
-
-        stable |= (byte) (borderRed & 0b10000000);
-        potentiallyStable = (byte) (borderRed & 0b10000000);
-        while(potentiallyStable != 0){
-            tempBoard = (byte) ((potentiallyStable & 0xFF) >>> 1);
-            potentiallyStable = (byte) (tempBoard & borderRed);
-            stable |= potentiallyStable;
-        }
-
-        return stable;
-    }
-
-    private static final byte getStable1EdgePieces(byte borderRed, byte borderGreen){
-        byte borderRedCopy = borderRed;
-        byte borderGreenCopy = borderGreen;
-        byte emptyEdge = (byte) ~(borderRed | borderGreen);
-        byte stable = 0;
-        byte potentiallyStable = (byte) ((0xFF & (borderRed << 1) & borderGreen) >>> 1);
-        emptyEdge = (byte) (emptyEdge << 1);
-        while(potentiallyStable != 0){
-            borderRed = (byte) (borderRed << 1);
-            borderGreen = (byte) (borderGreen << 1);
-            emptyEdge = (byte) (emptyEdge << 1);
-            potentiallyStable = (byte) (potentiallyStable & borderGreen);
-            stable |= potentiallyStable & emptyEdge;
-            stable |= potentiallyStable & (borderRed << 1);
-        }
-
-        borderRed = borderRedCopy;
-        borderGreen = borderGreenCopy;
-        emptyEdge = (byte) ~(borderRed | borderGreen);
-        potentiallyStable = (byte) ((((0xFF & borderRed) >>> 1) & borderGreen) << 1);
-        emptyEdge = (byte) ((0xFF & emptyEdge) >>> 1);
-        while(potentiallyStable != 0){
-            borderRed = (byte) ((0xFF & borderRed) >>> 1);
-            borderGreen = (byte) ((0xFF & borderGreen) >>> 1);
-            emptyEdge = (byte) ((0xFF & emptyEdge) >>> 1);
-            potentiallyStable = (byte) (potentiallyStable & borderGreen);
-            stable |= potentiallyStable & emptyEdge;
-            stable |= potentiallyStable & ((0xFF & borderRed) >>> 1);
-        }
-        return stable;
-    }
-
-    private static final byte getAloneEdgePieces(byte borderRed, byte borderGreen){
-        byte emptyEdge = (byte) ~(borderRed | borderGreen);
-        return (byte) (((((borderRed << 1) & emptyEdge) >>> 2) & emptyEdge) << 1);
-    }
-
-    private static final byte getUnstableEdgePieces(byte borderRed, byte borderGreen){
-        byte emptyEdge = (byte) ~(borderRed | borderGreen);
-        byte potentiallyUnstable = (byte) ((borderRed << 1) & emptyEdge);
-        byte unstable = (byte) (((potentiallyUnstable >>> 2) & borderGreen) << 1);
-        potentiallyUnstable = (byte) ((borderRed >>> 1) & emptyEdge);
-        unstable |= (((potentiallyUnstable << 2) & borderGreen) >>> 1);
-        return (byte) unstable;
-    }
-
-    private static final byte getUnanchoredStableEdgePieces(byte borderRed, byte unstableGreen){
-        return (byte) (((((borderRed << 1) & unstableGreen) >>> 2) & unstableGreen) << 1);
-    }
-
-    /**
-     * 
-     * EVALUATION
-     * 
-     */
-
-    private static final short evaluate(long red, long green, long possibleMovesRedLong, long possibleMovesGreenLong){
-        double EC = 3;
-        double MC = 400;
-        double MC2 = 800;
-        double SC = 180;
-
-        // Mobility
-
-        int possibleMovesRed = Long.bitCount(possibleMovesRedLong);
-        int possibleMovesGreen = Long.bitCount(possibleMovesGreenLong);
-
-        // Potential mobility
-        long empty = ~(red | green);
-        int potentialMovesRed = Long.bitCount(Bitboard.fillAdjacent(empty)
-                & green);
-        int potentialMovesEnemyGreen = Long.bitCount(Bitboard.fillAdjacent(empty)
-                & red);
-
-        // Edge advantage
-        int edgeAdvantage = (int) (getEdgeValue(red, green));
-
-        // Mobility advantage
-        float mobilityAdvantage = (possibleMovesRed - 1.2f * possibleMovesGreen);
-
-        // Potential mobility advantage
-        float potentialMobilityAdvantage = potentialMovesRed - 1.2f
-                * potentialMovesEnemyGreen;
-
-        int occupiedSquareAdvantage = (int) (Long.bitCount(getStableDisks(red, green))
-                - Long.bitCount(getStableDisks(green, red)));
-
-        int score = (int) (
-                EC * edgeAdvantage
-                        + MC * mobilityAdvantage
-                        + MC2 * potentialMobilityAdvantage
-                        + SC * occupiedSquareAdvantage
-                );
-        if(score > 32767 || score < -32768){
-            System.out.println("ALERT!SWEG!11ELF!!");
-        }
-        // gb.print();
-        // System.out.println("Evaluator Noah");
-        // System.out.println("EdgeAdvantage: " + EC * edgeAdvantage);
-        // System.out.println("MobilityAdvantage: " + (MC * mobilityAdvantage));
-        // System.out.println("PotentialMobility: "
-        // + (MC2 * potentialMobilityAdvantage));
-        // System.out.println("occupiedSquareAdvantage: "
-        // + SC * occupiedSquareAdvantage);
-        // System.out.println(score);
-        // System.out.println("------------------------");
-        // System.out.println("Evaluator Xiaolon");
-        // System.out.println(testXiaolong.evaluate(gb.red, gb.green));
-        return (short) score;
-    }
-
-    @Override
-    public void initialize(int myColor, long timeLimit){
-        // TODO Automatisch generierter Methodenstub
-
-    }
-
-    @Override
-    public Coordinates nextMove(GameBoard gb){
-        // TODO Automatisch generierter Methodenstub
-        return null;
-    }
-
-    public final static long pvsSearch(long red, long green, int depth, boolean pvsMode){
-        searchedNodes = 0;
-        returnFromSearch = false;
-        long possibleMovesRed = Bitboard.possibleMovesRed(red, green);
+        long possibleMovesRed = possibleMovesRed(red, green);
         if(possibleMovesRed == 0){
-            return 0;
+            if(Bitboard.possibleMovesRed(green, red) == 0){
+                return Long.bitCount(red) - Long.bitCount(green);
+            }
+            return pvsMin(red, green, alpha, beta, depth - 1);
         }
-        long bestmove = Long.highestOneBit(possibleMovesRed);
-        int bestvalue = -INFINITY;
-        int value = -INFINITY;
+        if(depth <= 0){
+            long possibleMovesGreen = possibleMovesRed(green, red);
+            // return Evaluation
+        }
+        int bestvalue = alpha;
+        int value = alpha;
         do{
             long coord = Long.highestOneBit(possibleMovesRed);
-            long flippedDisks = getFlippedDiskRed(red, green, coord);
             possibleMovesRed ^= coord;
-            value = pvsMin(red ^ flippedDisks ^ coord, green ^ flippedDisks, value, INFINITY, depth - 1);
-            if(value > bestvalue){
-                if(value >= INFINITY){
-                    return coord;
+            long flipedDisks = getFlippedDiskRed(red, green, coord);
+            value = pvsMin(red ^ flipedDisks ^ coord, green ^ flipedDisks, value, beta, depth - 1);
+            if(value > alpha){
+                if(value >= beta){
+                    return beta;
                 }
                 bestvalue = value;
-                bestmove = coord;
-            }
-            if(returnFromSearch){
-                break;
             }
         }while(possibleMovesRed != 0);
-        resultOfSearch = bestvalue;
-        return bestmove;
+        return bestvalue;
     }
 
     private final static int pvsMin(long red, long green, int alpha, int beta, int depth){
@@ -841,39 +848,64 @@ public class Ben implements ReversiPlayer{
         return bestvalue;
     }
 
-    private final static int pvsMax(long red, long green, int alpha, int beta, int depth){
-        searchedNodes++;
-        if(returnFromSearch){
-            return beta;
-        }
-        if(System.nanoTime() >= localDeadline){
-            returnFromSearch = true;
-        }
-        long possibleMovesRed = possibleMovesRed(red, green);
+    public final static long pvsSearch(long red, long green, int depth, boolean pvsMode){
+        searchedNodes = 0;
+        returnFromSearch = false;
+        long possibleMovesRed = Bitboard.possibleMovesRed(red, green);
         if(possibleMovesRed == 0){
-            if(Bitboard.possibleMovesRed(green, red) == 0){
-                return Long.bitCount(red) - Long.bitCount(green);
-            }
-            return pvsMin(red, green, alpha, beta, depth - 1);
+            return 0;
         }
-        if(depth <= 0){
-            long possibleMovesGreen = possibleMovesRed(green, red);
-            // return Evaluation
-        }
-        int bestvalue = alpha;
-        int value = alpha;
+        long bestmove = Long.highestOneBit(possibleMovesRed);
+        int bestvalue = -INFINITY;
+        int value = -INFINITY;
         do{
             long coord = Long.highestOneBit(possibleMovesRed);
+            long flippedDisks = getFlippedDiskRed(red, green, coord);
             possibleMovesRed ^= coord;
-            long flipedDisks = getFlippedDiskRed(red, green, coord);
-            value = pvsMin(red ^ flipedDisks ^ coord, green ^ flipedDisks, value, beta, depth - 1);
-            if(value > alpha){
-                if(value >= beta){
-                    return beta;
+            value = pvsMin(red ^ flippedDisks ^ coord, green ^ flippedDisks, value, INFINITY, depth - 1);
+            if(value > bestvalue){
+                if(value >= INFINITY){
+                    return coord;
                 }
                 bestvalue = value;
+                bestmove = coord;
+            }
+            if(returnFromSearch){
+                break;
             }
         }while(possibleMovesRed != 0);
-        return bestvalue;
+        resultOfSearch = bestvalue;
+        return bestmove;
+    }
+
+    /**
+     * Creates an Array of long values with one single bit set each.
+     * 
+     * @param bitboard
+     *            the bitboard to serialize.
+     * @return the serialized long variable; {@code null} if bitboard is 0
+     */
+    private static final long[] serializeBitboard(long bitboard){
+        int bitcount = Long.bitCount(bitboard);
+        long tmp;
+        long[] bitboards = new long[bitcount];
+        for (int i = 0; i < bitcount; i++){
+            tmp = Long.highestOneBit(bitboard);
+            bitboards[i] = tmp;
+            bitboard ^= tmp;
+        }
+        return bitboards;
+    }
+
+    @Override
+    public void initialize(int myColor, long timeLimit){
+        // TODO Automatisch generierter Methodenstub
+
+    }
+
+    @Override
+    public Coordinates nextMove(GameBoard gb){
+        // TODO Automatisch generierter Methodenstub
+        return null;
     }
 }
