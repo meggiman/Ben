@@ -111,6 +111,8 @@ public class Ben implements ReversiPlayer{
     private static int[][]      Sindices           = new int[30][30];
     private static int[]        Ssize              = new int[30];
     private static long[][]     Shashes            = new long[30][30];
+    private static long[][]     SpossibleMoves     = new long[30][30];
+    private static long[][]     Smoves             = new long[30][30];
 
     private final static void TTput(long key, short value, byte depth, byte type, byte playedStones){
         int index = (int) (key & TTindexMask);
@@ -234,6 +236,206 @@ public class Ben implements ReversiPlayer{
      * EVALUATION
      * 
      */
+    private final static long endGameSearch(long red, long green, int alpha, int beta){
+        searchedNodes = 0;
+        returnFromSearch = false;
+        int remainingStones = 64 - Long.bitCount(red) - Long.bitCount(green);
+        long possibleMoves = Bitboard.possibleMovesRed(red, green);
+        if(possibleMoves == 0){
+            long possibleMovesEnemy = Bitboard.possibleMovesRed(green, red);
+            if(possibleMovesEnemy != 0){
+                resultOfSearch = endGameMin(red, green, alpha, beta, remainingStones, Bitboard.possibleMovesRed(green, red));
+            }
+            return 0;
+        }
+        long bestmove = Long.highestOneBit(possibleMoves);
+        int bestvalue = alpha;
+        int value = alpha;
+        int moveListsize = endGameSortMoves(red, green, possibleMoves, remainingStones);
+        for (int i = 0; i < moveListsize; i++){
+            int index = Sindices[remainingStones][i];
+            value = endGameMin(SboardsRed[remainingStones][index], SboardsGreen[remainingStones][index], value, beta, remainingStones - 1, SpossibleMoves[remainingStones][index]);
+            if(value > bestvalue){
+                if(value >= beta){
+                    bestvalue = value;
+                    resultOfSearch = value;
+                    return Smoves[remainingStones][index];
+                }
+                bestvalue = value;
+                bestmove = Smoves[remainingStones][index];
+            }
+            possibleMoves ^= Smoves[remainingStones][index];
+        }
+        resultOfSearch = bestvalue;
+        if(returnFromSearch){
+            resultOfSearch = NOTFOUND;
+        }
+        return bestmove;
+    }
+
+    private final static int endGameMin(long red, long green, int alpha, int beta, int remainingStonestones, long possibleMoves){
+        searchedNodes++;
+        if(returnFromSearch){
+            return NOTFOUND;
+        }
+        if(remainingStonestones <= 4){
+            if(System.nanoTime() >= localDeadline){
+                returnFromSearch = true;
+            }
+            return endGameFewRemainingMin(red, green, alpha, beta, false);
+        }
+        if(possibleMoves == 0){
+            if(Bitboard.possibleMovesRed(red, green) == 0){
+                return Long.bitCount(red) - Long.bitCount(green);
+            }
+            return endGameMax(red, green, alpha, beta, remainingStonestones - 1, Bitboard.possibleMovesRed(red, green));
+        }
+        int bestvalue = beta;
+        int value = beta;
+        int moveListsize = endGameSortMoves(green, red, possibleMoves, remainingStonestones);
+        for (int i = 0; i < moveListsize; i++){
+            int index = Sindices[remainingStonestones][i];
+            value = endGameMax(SboardsGreen[remainingStonestones][index], SboardsRed[remainingStonestones][index], alpha, value, remainingStonestones - 1, SpossibleMoves[remainingStonestones][index]);
+            if(value < beta){
+                if(value <= alpha){
+                    return alpha;
+                }
+                bestvalue = value;
+            }
+        }
+        return bestvalue;
+    }
+
+    private final static int endGameMax(long red, long green, int alpha, int beta, int remainingStones, long possibleMoves){
+        searchedNodes++;
+        if(returnFromSearch){
+            return NOTFOUND;
+        }
+        if(remainingStones <= 4){
+            if(System.nanoTime() >= localDeadline){
+                returnFromSearch = true;
+                return NOTFOUND;
+            }
+            return endGameFewRemainingMax(red, green, alpha, beta, false);
+        }
+        if(possibleMoves == 0){
+            if(Bitboard.possibleMovesRed(green, red) == 0){
+                return Long.bitCount(red) - Long.bitCount(green);
+            }
+            return endGameMin(red, green, alpha, beta, remainingStones - 1, Bitboard.possibleMovesRed(green, red));
+        }
+        int bestvalue = alpha;
+        int value = alpha;
+        int moveListsize = endGameSortMoves(red, green, possibleMoves, remainingStones);
+        for (int i = 0; i < moveListsize; i++){
+            int index = Sindices[remainingStones][i];
+            value = endGameMin(SboardsRed[remainingStones][index], SboardsGreen[remainingStones][index], value, beta, remainingStones - 1, SpossibleMoves[remainingStones][index]);
+            if(value > alpha){
+                if(value >= beta){
+                    return beta;
+                }
+                bestvalue = value;
+            }
+        }
+        return bestvalue;
+    }
+
+    private static int endGameFewRemainingMin(long red, long green, int alpha, int beta, boolean passed){
+        searchedNodes++;
+        long emptyfields = ~(red | green);
+        long changedfields = 0;
+        long coord = 0;
+        int bestvalue = beta;
+        int value = beta;
+        boolean nomoveavailable = true;
+        while(emptyfields != 0){
+            coord = Long.highestOneBit(emptyfields);
+            changedfields = Bitboard.getflippedDiskRed(green, red, coord);
+            if(changedfields != 0){
+                value = endGameFewRemainingMax(red ^ changedfields, green
+                        ^ changedfields ^ coord, alpha, bestvalue, false);
+                if(value < beta){
+                    if(value <= alpha){
+                        return alpha;
+                    }
+                    bestvalue = value;
+                }
+                nomoveavailable = false;
+            }
+            emptyfields ^= coord;
+        }
+        if(nomoveavailable){
+            if(passed){
+                return Long.bitCount(red) - Long.bitCount(green);
+            }
+            return endGameFewRemainingMax(red, green, alpha, beta, true);
+        }
+        return bestvalue;
+    }
+
+    private static int endGameFewRemainingMax(long red, long green, int alpha, int beta, boolean passed){
+        searchedNodes++;
+        long emptyfields = ~(red | green);
+        long changedfields = 0;
+        long coord = 0;
+        int bestvalue = alpha;
+        int value = alpha;
+        boolean nomoveavailable = true;
+        while(emptyfields != 0){
+            coord = Long.highestOneBit(emptyfields);
+            changedfields = Bitboard.getflippedDiskRed(red, green, coord);
+            if(changedfields != 0){
+                value = endGameFewRemainingMin(red ^ changedfields
+                        ^ coord, green ^ changedfields, bestvalue, beta, false);
+                if(value > alpha){
+                    if(value >= beta){
+                        return beta;
+                    }
+                    bestvalue = value;
+                }
+                nomoveavailable = false;
+            }
+            emptyfields ^= coord;
+        }
+        if(nomoveavailable){
+            if(passed){
+                return Long.bitCount(red) - Long.bitCount(green);
+            }
+            return endGameFewRemainingMin(red, green, alpha, beta, true);
+        }
+        return bestvalue;
+    }
+
+    private final static int endGameSortMoves(long red, long green, long possibleMoves, int remainingStones){
+        int size = Long.bitCount(possibleMoves);
+        Ssize[remainingStones] = size;
+        for (int i = 0; i < size; i++){
+            Sindices[remainingStones][i] = i;
+            long coord = Long.highestOneBit(possibleMoves);
+            Smoves[remainingStones][i] = coord;
+            long flipeddisk = Bitboard.getflippedDiskRed(red, green, coord);
+            long newred = red ^ flipeddisk ^ coord;
+            long newgreen = green ^ flipeddisk;
+            SboardsRed[remainingStones][i] = newred;
+            SboardsGreen[remainingStones][i] = newgreen;
+            long newpossiblemoves = Bitboard.possibleMovesRed(newgreen, newred);
+            SpossibleMoves[remainingStones][i] = newpossiblemoves;
+            long occupiedCorners = newred & CORNERS;
+            long cornerstability = occupiedCorners;
+            cornerstability |= occupiedCorners >>> 1 & 0x7f7f7f7f7f7f7f7fL;
+            cornerstability |= occupiedCorners >>> 8;
+            cornerstability |= occupiedCorners << 1 & 0xfefefefefefefefeL;
+            cornerstability |= occupiedCorners << 8;
+            cornerstability &= newred;
+            int score = 8 * Long.bitCount(cornerstability) - 8
+                    * Long.bitCount(newpossiblemoves & CORNERS)
+                    - Long.bitCount(newpossiblemoves);
+            Svalues[remainingStones][i] = score;
+            possibleMoves ^= coord;
+        }
+        insertionSortDesc(Svalues[remainingStones], Sindices[remainingStones], size);
+        return size;
+    }
 
     private static final short evaluate(long red, long green, long possibleMovesRedLong, long possibleMovesGreenLong){
         double EC = 3;
@@ -1109,11 +1311,11 @@ public class Ben implements ReversiPlayer{
      */
 
     private static final int sortMovesDesc(long red, long green, long possibleMoves, int depth, long oldHash){
-        hash = oldHash;
         int i = 0;
         while(possibleMoves != 0){
             long move = Long.highestOneBit(possibleMoves);
             possibleMoves ^= move;
+            hash = oldHash;
             long flippedDisks = getflippedDiskRedHash(red, green, move);
             SboardsRed[depth][i] = red ^ flippedDisks ^ move;
             SboardsGreen[depth][i] = green ^ flippedDisks;
@@ -1134,11 +1336,11 @@ public class Ben implements ReversiPlayer{
     }
 
     private static final int sortMovesAsc(long red, long green, long possibleMoves, int depth, long oldHash){
-        hash = oldHash;
         int i = 0;
         while(possibleMoves != 0){
             long move = Long.highestOneBit(possibleMoves);
             possibleMoves ^= move;
+            hash = oldHash;
             long flippedDisks = getflippedDiskRedHash(red, green, move);
             SboardsRed[depth][i] = red ^ flippedDisks ^ move;
             SboardsGreen[depth][i] = green ^ flippedDisks;
