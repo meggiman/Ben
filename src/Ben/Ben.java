@@ -1317,10 +1317,10 @@ public class Ben implements ReversiPlayer{
 
             int index = TTget(hash);
             if(index == NOTFOUND){
-                Svalues[depth][i] = 32768;
+                Svalues[depth][i] = 32767;
             }
             else{
-                Svalues[depth][i] = (-TTvalues[index]) | (TTtypes[index] << 14);
+                Svalues[depth][i] = -(TTvalues[index] | (TTtypes[index] << 14));
             }
             Sindices[depth][i] = i;
             i++;
