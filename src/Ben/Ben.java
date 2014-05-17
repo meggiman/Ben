@@ -114,63 +114,34 @@ public class Ben implements ReversiPlayer{
     private static long[][]     SpossibleMoves     = new long[30][30];
     private static long[][]     Smoves             = new long[30][30];
 
-    private final static void TTput(long key, short value, byte depth, byte type, byte playedStones){
-        int index = (int) (key & TTindexMask);
-        if(TTkeys[index] == key){
-            if(TTdepths[index] >= depth){
-                TTvalues[index] = value;
-                TTdepths[index] = depth;
-                TTtypes[index] = type;
-                TTplayedStones[index] = playedStones;
-            }
-        }
-        else{
-            if(TTplayedStones[index] < playedStones || TTtypes[index] < type){
-                TTkeys[index] = key;
-                TTvalues[index] = value;
-                TTdepths[index] = depth;
-                TTtypes[index] = type;
-                TTplayedStones[index] = playedStones;
-            }
-        }
-    }
+    private static short[]      edgeTable          = new short[65536];
 
-    private final static int TTget(long key){
-        int index = (int) (key & TTindexMask);
-        if(TTkeys[index] == key){
-            return index;
-        }
-        else{
-            return NOTFOUND;
-        }
-    }
-
-    private static short[]     edgeTable = new short[65536];
-
-    private final static short INFINITY  = 32767;
+    private final static short  INFINITY           = 32767;
 
     /**
      * Searched Nodes in last Search.
      */
-    private static int         searchedNodes;
+    private static int          searchedNodes;
+
     /**
      * Evaluation Result of the best move found in last search.
      */
-    private static int         resultOfSearch;
+    private static int          resultOfSearch;
 
     /**
      * Boolean flag for Search Algorithms to determine if its time to return
      * from recursion.
      */
-    private static boolean     returnFromSearch;
+    private static boolean      returnFromSearch;
     /**
      * Deadline for current Search Algorithm.
      */
-    private static long        localDeadline;
+    private static long         localDeadline;
+
     /**
      * Deadline for this Move.
      */
-    private static long        globalDeadline;
+    private static long         globalDeadline;
 
     /**
      * Converts a {@code GameBoard} into a long array of size 2.
@@ -226,9 +197,141 @@ public class Ben implements ReversiPlayer{
      * @return the amount of stones for the player which was given in
      *         {@code player}
      */
-
     private static final int countStones(long player){
         return Long.bitCount(player);
+    }
+
+    private static int endGameFewRemainingMax(long red, long green, int alpha, int beta, boolean passed){
+        searchedNodes++;
+        long emptyfields = ~(red | green);
+        long changedfields = 0;
+        long coord = 0;
+        int bestvalue = alpha;
+        int value = alpha;
+        boolean nomoveavailable = true;
+        while(emptyfields != 0){
+            coord = Long.highestOneBit(emptyfields);
+            changedfields = Bitboard.getflippedDiskRed(red, green, coord);
+            if(changedfields != 0){
+                value = endGameFewRemainingMin(red ^ changedfields
+                        ^ coord, green ^ changedfields, bestvalue, beta, false);
+                if(value > alpha){
+                    if(value >= beta){
+                        return beta;
+                    }
+                    bestvalue = value;
+                }
+                nomoveavailable = false;
+            }
+            emptyfields ^= coord;
+        }
+        if(nomoveavailable){
+            if(passed){
+                return Long.bitCount(red) - Long.bitCount(green);
+            }
+            return endGameFewRemainingMin(red, green, alpha, beta, true);
+        }
+        return bestvalue;
+    }
+
+    private static int endGameFewRemainingMin(long red, long green, int alpha, int beta, boolean passed){
+        searchedNodes++;
+        long emptyfields = ~(red | green);
+        long changedfields = 0;
+        long coord = 0;
+        int bestvalue = beta;
+        int value = beta;
+        boolean nomoveavailable = true;
+        while(emptyfields != 0){
+            coord = Long.highestOneBit(emptyfields);
+            changedfields = Bitboard.getflippedDiskRed(green, red, coord);
+            if(changedfields != 0){
+                value = endGameFewRemainingMax(red ^ changedfields, green
+                        ^ changedfields ^ coord, alpha, bestvalue, false);
+                if(value < beta){
+                    if(value <= alpha){
+                        return alpha;
+                    }
+                    bestvalue = value;
+                }
+                nomoveavailable = false;
+            }
+            emptyfields ^= coord;
+        }
+        if(nomoveavailable){
+            if(passed){
+                return Long.bitCount(red) - Long.bitCount(green);
+            }
+            return endGameFewRemainingMax(red, green, alpha, beta, true);
+        }
+        return bestvalue;
+    }
+
+    private final static int endGameMax(long red, long green, int alpha, int beta, int remainingStones, long possibleMoves){
+        searchedNodes++;
+        if(returnFromSearch){
+            return NOTFOUND;
+        }
+        if(remainingStones <= 4){
+            if(System.nanoTime() >= localDeadline){
+                returnFromSearch = true;
+                return NOTFOUND;
+            }
+            return endGameFewRemainingMax(red, green, alpha, beta, false);
+        }
+        if(possibleMoves == 0){
+            if(Bitboard.possibleMovesRed(green, red) == 0){
+                return Long.bitCount(red) - Long.bitCount(green);
+            }
+            return endGameMin(red, green, alpha, beta, remainingStones - 1, Bitboard.possibleMovesRed(green, red));
+        }
+        int bestvalue = alpha;
+        int value = alpha;
+        int moveListsize = endGameSortMoves(red, green, possibleMoves, remainingStones);
+        for (int i = 0; i < moveListsize; i++){
+            int index = Sindices[remainingStones][i];
+            value = endGameMin(SboardsRed[remainingStones][index], SboardsGreen[remainingStones][index], value, beta, remainingStones - 1, SpossibleMoves[remainingStones][index]);
+            if(value > alpha){
+                if(value >= beta){
+                    return beta;
+                }
+                bestvalue = value;
+            }
+        }
+        return bestvalue;
+    }
+
+    private final static int endGameMin(long red, long green, int alpha, int beta, int remainingStonestones, long possibleMoves){
+        searchedNodes++;
+        if(returnFromSearch){
+            return NOTFOUND;
+        }
+        if(remainingStonestones <= 4){
+            if(System.nanoTime() >= localDeadline){
+                returnFromSearch = true;
+            }
+            return endGameFewRemainingMin(red, green, alpha, beta, false);
+        }
+        if(possibleMoves == 0){
+            if(Bitboard.possibleMovesRed(red, green) == 0){
+                return Long.bitCount(red) - Long.bitCount(green);
+            }
+            return endGameMax(red, green, alpha, beta, remainingStonestones - 1, Bitboard.possibleMovesRed(red, green));
+        }
+        int bestvalue = beta;
+        int value = beta;
+        int moveListsize = endGameSortMoves(green, red, possibleMoves, remainingStonestones);
+        for (int i = 0; i < moveListsize; i++){
+            int index = Sindices[remainingStonestones][i];
+            value = endGameMax(SboardsGreen[remainingStonestones][index], SboardsRed[remainingStonestones][index], alpha, value, remainingStonestones - 1, SpossibleMoves[remainingStonestones][index]);
+            if(value < beta){
+                if(value <= alpha){
+                    return alpha;
+                }
+                bestvalue = value;
+            }
+        }
+        return bestvalue;
     }
 
     /**
@@ -271,139 +374,6 @@ public class Ben implements ReversiPlayer{
             resultOfSearch = NOTFOUND;
         }
         return bestmove;
-    }
-
-    private final static int endGameMin(long red, long green, int alpha, int beta, int remainingStonestones, long possibleMoves){
-        searchedNodes++;
-        if(returnFromSearch){
-            return NOTFOUND;
-        }
-        if(remainingStonestones <= 4){
-            if(System.nanoTime() >= localDeadline){
-                returnFromSearch = true;
-            }
-            return endGameFewRemainingMin(red, green, alpha, beta, false);
-        }
-        if(possibleMoves == 0){
-            if(Bitboard.possibleMovesRed(red, green) == 0){
-                return Long.bitCount(red) - Long.bitCount(green);
-            }
-            return endGameMax(red, green, alpha, beta, remainingStonestones - 1, Bitboard.possibleMovesRed(red, green));
-        }
-        int bestvalue = beta;
-        int value = beta;
-        int moveListsize = endGameSortMoves(green, red, possibleMoves, remainingStonestones);
-        for (int i = 0; i < moveListsize; i++){
-            int index = Sindices[remainingStonestones][i];
-            value = endGameMax(SboardsGreen[remainingStonestones][index], SboardsRed[remainingStonestones][index], alpha, value, remainingStonestones - 1, SpossibleMoves[remainingStonestones][index]);
-            if(value < beta){
-                if(value <= alpha){
-                    return alpha;
-                }
-                bestvalue = value;
-            }
-        }
-        return bestvalue;
-    }
-
-    private final static int endGameMax(long red, long green, int alpha, int beta, int remainingStones, long possibleMoves){
-        searchedNodes++;
-        if(returnFromSearch){
-            return NOTFOUND;
-        }
-        if(remainingStones <= 4){
-            if(System.nanoTime() >= localDeadline){
-                returnFromSearch = true;
-                return NOTFOUND;
-            }
-            return endGameFewRemainingMax(red, green, alpha, beta, false);
-        }
-        if(possibleMoves == 0){
-            if(Bitboard.possibleMovesRed(green, red) == 0){
-                return Long.bitCount(red) - Long.bitCount(green);
-            }
-            return endGameMin(red, green, alpha, beta, remainingStones - 1, Bitboard.possibleMovesRed(green, red));
-        }
-        int bestvalue = alpha;
-        int value = alpha;
-        int moveListsize = endGameSortMoves(red, green, possibleMoves, remainingStones);
-        for (int i = 0; i < moveListsize; i++){
-            int index = Sindices[remainingStones][i];
-            value = endGameMin(SboardsRed[remainingStones][index], SboardsGreen[remainingStones][index], value, beta, remainingStones - 1, SpossibleMoves[remainingStones][index]);
-            if(value > alpha){
-                if(value >= beta){
-                    return beta;
-                }
-                bestvalue = value;
-            }
-        }
-        return bestvalue;
-    }
-
-    private static int endGameFewRemainingMin(long red, long green, int alpha, int beta, boolean passed){
-        searchedNodes++;
-        long emptyfields = ~(red | green);
-        long changedfields = 0;
-        long coord = 0;
-        int bestvalue = beta;
-        int value = beta;
-        boolean nomoveavailable = true;
-        while(emptyfields != 0){
-            coord = Long.highestOneBit(emptyfields);
-            changedfields = Bitboard.getflippedDiskRed(green, red, coord);
-            if(changedfields != 0){
-                value = endGameFewRemainingMax(red ^ changedfields, green
-                        ^ changedfields ^ coord, alpha, bestvalue, false);
-                if(value < beta){
-                    if(value <= alpha){
-                        return alpha;
-                    }
-                    bestvalue = value;
-                }
-                nomoveavailable = false;
-            }
-            emptyfields ^= coord;
-        }
-        if(nomoveavailable){
-            if(passed){
-                return Long.bitCount(red) - Long.bitCount(green);
-            }
-            return endGameFewRemainingMax(red, green, alpha, beta, true);
-        }
-        return bestvalue;
-    }
-
-    private static int endGameFewRemainingMax(long red, long green, int alpha, int beta, boolean passed){
-        searchedNodes++;
-        long emptyfields = ~(red | green);
-        long changedfields = 0;
-        long coord = 0;
-        int bestvalue = alpha;
-        int value = alpha;
-        boolean nomoveavailable = true;
-        while(emptyfields != 0){
-            coord = Long.highestOneBit(emptyfields);
-            changedfields = Bitboard.getflippedDiskRed(red, green, coord);
-            if(changedfields != 0){
-                value = endGameFewRemainingMin(red ^ changedfields
-                        ^ coord, green ^ changedfields, bestvalue, beta, false);
-                if(value > alpha){
-                    if(value >= beta){
-                        return beta;
-                    }
-                    bestvalue = value;
-                }
-                nomoveavailable = false;
-            }
-            emptyfields ^= coord;
-        }
-        if(nomoveavailable){
-            if(passed){
-                return Long.bitCount(red) - Long.bitCount(green);
-            }
-            return endGameFewRemainingMin(red, green, alpha, beta, true);
-        }
-        return bestvalue;
     }
 
     private final static int endGameSortMoves(long red, long green, long possibleMoves, int remainingStones){
@@ -806,6 +776,168 @@ public class Ben implements ReversiPlayer{
         return changedFields;
     }
 
+    public final static long getflippedDiskRedHash(long red, long green, final long coord){
+        long cursor;
+        long possiblychangedfields = 0;
+        long possibleHash = 0;
+        long changedfields = 0;
+        int index = Long.numberOfTrailingZeros(coord);
+        int tmpindex = index + 8;
+
+        // upshift
+        cursor = (coord << 8) & green;
+        if(cursor != 0){
+            do{
+                possiblychangedfields |= cursor;
+                possibleHash ^= zobristRandomGreen[tmpindex]
+                        ^ zobristRandomRed[tmpindex];
+                tmpindex += 8;
+                cursor = (cursor << 8);
+            }while((cursor & green) != 0);
+            if((cursor & red) != 0){
+                changedfields |= possiblychangedfields;
+                hash ^= possibleHash;
+            }
+        }
+        // downshift
+        cursor = (coord >>> 8) & green;
+        if(cursor != 0){
+            tmpindex = index - 8;
+            possiblychangedfields = 0;
+            possibleHash = 0;
+            do{
+                possiblychangedfields |= cursor;
+                possibleHash ^= zobristRandomGreen[tmpindex]
+                        ^ zobristRandomRed[tmpindex];
+                tmpindex -= 8;
+                cursor = (cursor >>> 8);
+            }while((cursor & green) != 0);
+            if((cursor & red) != 0){
+                changedfields |= possiblychangedfields;
+                hash ^= possibleHash;
+            }
+        }
+
+        // shift correction
+        green &= shiftMask;
+
+        // leftshift
+        cursor = (coord << 1) & green;
+        if(cursor != 0){
+            tmpindex = index + 1;
+            possiblychangedfields = 0;
+            possibleHash = 0;
+            do{
+                possiblychangedfields |= cursor;
+                possibleHash ^= zobristRandomGreen[tmpindex]
+                        ^ zobristRandomRed[tmpindex];
+                tmpindex += 1;
+                cursor = (cursor << 1);
+            }while((cursor & green) != 0);
+            if((cursor & red) != 0){
+                changedfields |= possiblychangedfields;
+                hash ^= possibleHash;
+            }
+        }
+
+        // rightshift
+        cursor = (coord >>> 1) & green;
+        if(cursor != 0){
+            tmpindex = index - 1;
+            possiblychangedfields = 0;
+            possibleHash = 0;
+            do{
+                possiblychangedfields |= cursor;
+                possibleHash ^= zobristRandomGreen[tmpindex]
+                        ^ zobristRandomRed[tmpindex];
+                tmpindex -= 1;
+                cursor = (cursor >>> 1);
+            }while((cursor & green) != 0);
+            if((cursor & red) != 0){
+                changedfields |= possiblychangedfields;
+                hash ^= possibleHash;
+            }
+        }
+
+        // upleftshift
+        cursor = (coord << 9) & green;
+        if(cursor != 0){
+            tmpindex = index + 9;
+            possiblychangedfields = 0;
+            possibleHash = 0;
+            do{
+                possiblychangedfields |= cursor;
+                possibleHash ^= zobristRandomGreen[tmpindex]
+                        ^ zobristRandomRed[tmpindex];
+                tmpindex += 9;
+                cursor = (cursor << 9);
+            }while((cursor & green) != 0);
+            if((cursor & red) != 0){
+                changedfields |= possiblychangedfields;
+                hash ^= possibleHash;
+            }
+        }
+
+        // uprightshift
+        cursor = (coord << 7) & green;
+        if(cursor != 0){
+            tmpindex = index + 7;
+            possiblychangedfields = 0;
+            possibleHash = 0;
+            do{
+                possiblychangedfields |= cursor;
+                possibleHash ^= zobristRandomGreen[tmpindex]
+                        ^ zobristRandomRed[tmpindex];
+                tmpindex += 7;
+                cursor = (cursor << 7);
+            }while((cursor & green) != 0);
+            if((cursor & red) != 0){
+                changedfields |= possiblychangedfields;
+                hash ^= possibleHash;
+            }
+        }
+
+        // downleftshift
+        cursor = (coord >>> 7) & green;
+        if(cursor != 0){
+            tmpindex = index - 7;
+            possiblychangedfields = 0;
+            possibleHash = 0;
+            do{
+                possiblychangedfields |= cursor;
+                possibleHash ^= zobristRandomGreen[tmpindex]
+                        ^ zobristRandomRed[tmpindex];
+                tmpindex -= 7;
+                cursor = (cursor >>> 7);
+            }while((cursor & green) != 0);
+            if((cursor & red) != 0){
+                changedfields |= possiblychangedfields;
+                hash ^= possibleHash;
+            }
+        }
+
+        // downrightshift
+        cursor = (coord >>> 9) & green;
+        if(cursor != 0){
+            tmpindex = index - 9;
+            possiblychangedfields = 0;
+            possibleHash = 0;
+            do{
+                possiblychangedfields |= cursor;
+                possibleHash ^= zobristRandomGreen[tmpindex]
+                        ^ zobristRandomRed[tmpindex];
+                tmpindex -= 9;
+                cursor = (cursor >>> 9);
+            }while((cursor & green) != 0);
+            if((cursor & red) != 0){
+                changedfields |= possiblychangedfields;
+                hash ^= possibleHash;
+            }
+        }
+        hash ^= zobristRandomGreen[index] ^ zobristRandomRed[index];
+        return changedfields;
+    }
+
     private static final byte getStable1EdgePieces(byte borderRed, byte borderGreen){
         byte borderRedCopy = borderRed;
         byte borderGreenCopy = borderGreen;
@@ -937,6 +1069,36 @@ public class Ben implements ReversiPlayer{
         potentiallyUnstable = (byte) ((borderRed >>> 1) & emptyEdge);
         unstable |= (((potentiallyUnstable << 2) & borderGreen) >>> 1);
         return (byte) unstable;
+    }
+
+    private final static void insertionSortAsc(int[] orderedScore, int[] orderedIndices, int size){
+        for (int i = 1; i < size; i++){
+            int j;
+            int tempScore = orderedScore[i];
+            int tempIndex = orderedIndices[i];
+            for (j = i - 1; j >= 0 && tempScore < orderedScore[j]; j--){
+                orderedScore[j + 1] = orderedScore[j];
+                orderedIndices[j + 1] = orderedIndices[j];
+            }
+            j++;
+            orderedScore[j] = tempScore;
+            orderedIndices[j] = tempIndex;
+        }
+    }
+
+    private final static void insertionSortDesc(int[] orderedScore, int[] orderedIndices, int size){
+        for (int i = 1; i < size; i++){
+            int j;
+            int tempScore = orderedScore[i];
+            int tempIndex = orderedIndices[i];
+            for (j = i - 1; j >= 0 && tempScore > orderedScore[j]; j--){
+                orderedScore[j + 1] = orderedScore[j];
+                orderedIndices[j + 1] = orderedIndices[j];
+            }
+            j++;
+            orderedScore[j] = tempScore;
+            orderedIndices[j] = tempIndex;
+        }
     }
 
     /**
@@ -1130,168 +1292,6 @@ public class Ben implements ReversiPlayer{
         return bestmove;
     }
 
-    public final static long getflippedDiskRedHash(long red, long green, final long coord){
-        long cursor;
-        long possiblychangedfields = 0;
-        long possibleHash = 0;
-        long changedfields = 0;
-        int index = Long.numberOfTrailingZeros(coord);
-        int tmpindex = index + 8;
-
-        // upshift
-        cursor = (coord << 8) & green;
-        if(cursor != 0){
-            do{
-                possiblychangedfields |= cursor;
-                possibleHash ^= zobristRandomGreen[tmpindex]
-                        ^ zobristRandomRed[tmpindex];
-                tmpindex += 8;
-                cursor = (cursor << 8);
-            }while((cursor & green) != 0);
-            if((cursor & red) != 0){
-                changedfields |= possiblychangedfields;
-                hash ^= possibleHash;
-            }
-        }
-        // downshift
-        cursor = (coord >>> 8) & green;
-        if(cursor != 0){
-            tmpindex = index - 8;
-            possiblychangedfields = 0;
-            possibleHash = 0;
-            do{
-                possiblychangedfields |= cursor;
-                possibleHash ^= zobristRandomGreen[tmpindex]
-                        ^ zobristRandomRed[tmpindex];
-                tmpindex -= 8;
-                cursor = (cursor >>> 8);
-            }while((cursor & green) != 0);
-            if((cursor & red) != 0){
-                changedfields |= possiblychangedfields;
-                hash ^= possibleHash;
-            }
-        }
-
-        // shift correction
-        green &= shiftMask;
-
-        // leftshift
-        cursor = (coord << 1) & green;
-        if(cursor != 0){
-            tmpindex = index + 1;
-            possiblychangedfields = 0;
-            possibleHash = 0;
-            do{
-                possiblychangedfields |= cursor;
-                possibleHash ^= zobristRandomGreen[tmpindex]
-                        ^ zobristRandomRed[tmpindex];
-                tmpindex += 1;
-                cursor = (cursor << 1);
-            }while((cursor & green) != 0);
-            if((cursor & red) != 0){
-                changedfields |= possiblychangedfields;
-                hash ^= possibleHash;
-            }
-        }
-
-        // rightshift
-        cursor = (coord >>> 1) & green;
-        if(cursor != 0){
-            tmpindex = index - 1;
-            possiblychangedfields = 0;
-            possibleHash = 0;
-            do{
-                possiblychangedfields |= cursor;
-                possibleHash ^= zobristRandomGreen[tmpindex]
-                        ^ zobristRandomRed[tmpindex];
-                tmpindex -= 1;
-                cursor = (cursor >>> 1);
-            }while((cursor & green) != 0);
-            if((cursor & red) != 0){
-                changedfields |= possiblychangedfields;
-                hash ^= possibleHash;
-            }
-        }
-
-        // upleftshift
-        cursor = (coord << 9) & green;
-        if(cursor != 0){
-            tmpindex = index + 9;
-            possiblychangedfields = 0;
-            possibleHash = 0;
-            do{
-                possiblychangedfields |= cursor;
-                possibleHash ^= zobristRandomGreen[tmpindex]
-                        ^ zobristRandomRed[tmpindex];
-                tmpindex += 9;
-                cursor = (cursor << 9);
-            }while((cursor & green) != 0);
-            if((cursor & red) != 0){
-                changedfields |= possiblychangedfields;
-                hash ^= possibleHash;
-            }
-        }
-
-        // uprightshift
-        cursor = (coord << 7) & green;
-        if(cursor != 0){
-            tmpindex = index + 7;
-            possiblychangedfields = 0;
-            possibleHash = 0;
-            do{
-                possiblychangedfields |= cursor;
-                possibleHash ^= zobristRandomGreen[tmpindex]
-                        ^ zobristRandomRed[tmpindex];
-                tmpindex += 7;
-                cursor = (cursor << 7);
-            }while((cursor & green) != 0);
-            if((cursor & red) != 0){
-                changedfields |= possiblychangedfields;
-                hash ^= possibleHash;
-            }
-        }
-
-        // downleftshift
-        cursor = (coord >>> 7) & green;
-        if(cursor != 0){
-            tmpindex = index - 7;
-            possiblychangedfields = 0;
-            possibleHash = 0;
-            do{
-                possiblychangedfields |= cursor;
-                possibleHash ^= zobristRandomGreen[tmpindex]
-                        ^ zobristRandomRed[tmpindex];
-                tmpindex -= 7;
-                cursor = (cursor >>> 7);
-            }while((cursor & green) != 0);
-            if((cursor & red) != 0){
-                changedfields |= possiblychangedfields;
-                hash ^= possibleHash;
-            }
-        }
-
-        // downrightshift
-        cursor = (coord >>> 9) & green;
-        if(cursor != 0){
-            tmpindex = index - 9;
-            possiblychangedfields = 0;
-            possibleHash = 0;
-            do{
-                possiblychangedfields |= cursor;
-                possibleHash ^= zobristRandomGreen[tmpindex]
-                        ^ zobristRandomRed[tmpindex];
-                tmpindex -= 9;
-                cursor = (cursor >>> 9);
-            }while((cursor & green) != 0);
-            if((cursor & red) != 0){
-                changedfields |= possiblychangedfields;
-                hash ^= possibleHash;
-            }
-        }
-        hash ^= zobristRandomGreen[index] ^ zobristRandomRed[index];
-        return changedfields;
-    }
-
     private static final long[] serializeBitboard(long bitboard){
         int bitcount = Long.bitCount(bitboard);
         long tmp;
@@ -1302,6 +1302,31 @@ public class Ben implements ReversiPlayer{
             bitboard ^= tmp;
         }
         return bitboards;
+    }
+
+    private static final int sortMovesAsc(long red, long green, long possibleMoves, int depth, long oldHash){
+        int i = 0;
+        while(possibleMoves != 0){
+            long move = Long.highestOneBit(possibleMoves);
+            possibleMoves ^= move;
+            hash = oldHash;
+            long flippedDisks = getflippedDiskRedHash(red, green, move);
+            SboardsRed[depth][i] = red ^ flippedDisks ^ move;
+            SboardsGreen[depth][i] = green ^ flippedDisks;
+            Shashes[depth][i] = hash;
+
+            int index = TTget(hash);
+            if(index == NOTFOUND){
+                Svalues[depth][i] = 32768;
+            }
+            else{
+                Svalues[depth][i] = (-TTvalues[index]) | (TTtypes[index] << 14);
+            }
+            Sindices[depth][i] = i;
+            i++;
+        }
+        insertionSortDesc(Svalues[depth], Sindices[depth], i);
+        return Ssize[depth] = i;
     }
 
     /**
@@ -1335,58 +1360,34 @@ public class Ben implements ReversiPlayer{
         return Ssize[depth] = i;
     }
 
-    private static final int sortMovesAsc(long red, long green, long possibleMoves, int depth, long oldHash){
-        int i = 0;
-        while(possibleMoves != 0){
-            long move = Long.highestOneBit(possibleMoves);
-            possibleMoves ^= move;
-            hash = oldHash;
-            long flippedDisks = getflippedDiskRedHash(red, green, move);
-            SboardsRed[depth][i] = red ^ flippedDisks ^ move;
-            SboardsGreen[depth][i] = green ^ flippedDisks;
-            Shashes[depth][i] = hash;
-
-            int index = TTget(hash);
-            if(index == NOTFOUND){
-                Svalues[depth][i] = 32768;
-            }
-            else{
-                Svalues[depth][i] = (-TTvalues[index]) | (TTtypes[index] << 14);
-            }
-            Sindices[depth][i] = i;
-            i++;
+    private final static int TTget(long key){
+        int index = (int) (key & TTindexMask);
+        if(TTkeys[index] == key){
+            return index;
         }
-        insertionSortDesc(Svalues[depth], Sindices[depth], i);
-        return Ssize[depth] = i;
-    }
-
-    private final static void insertionSortDesc(int[] orderedScore, int[] orderedIndices, int size){
-        for (int i = 1; i < size; i++){
-            int j;
-            int tempScore = orderedScore[i];
-            int tempIndex = orderedIndices[i];
-            for (j = i - 1; j >= 0 && tempScore > orderedScore[j]; j--){
-                orderedScore[j + 1] = orderedScore[j];
-                orderedIndices[j + 1] = orderedIndices[j];
-            }
-            j++;
-            orderedScore[j] = tempScore;
-            orderedIndices[j] = tempIndex;
+        else{
+            return NOTFOUND;
         }
     }
 
-    private final static void insertionSortAsc(int[] orderedScore, int[] orderedIndices, int size){
-        for (int i = 1; i < size; i++){
-            int j;
-            int tempScore = orderedScore[i];
-            int tempIndex = orderedIndices[i];
-            for (j = i - 1; j >= 0 && tempScore < orderedScore[j]; j--){
-                orderedScore[j + 1] = orderedScore[j];
-                orderedIndices[j + 1] = orderedIndices[j];
+    private final static void TTput(long key, short value, byte depth, byte type, byte playedStones){
+        int index = (int) (key & TTindexMask);
+        if(TTkeys[index] == key){
+            if(TTdepths[index] >= depth){
+                TTvalues[index] = value;
+                TTdepths[index] = depth;
+                TTtypes[index] = type;
+                TTplayedStones[index] = playedStones;
             }
-            j++;
-            orderedScore[j] = tempScore;
-            orderedIndices[j] = tempIndex;
+        }
+        else{
+            if(TTplayedStones[index] < playedStones || TTtypes[index] < type){
+                TTkeys[index] = key;
+                TTvalues[index] = value;
+                TTdepths[index] = depth;
+                TTtypes[index] = type;
+                TTplayedStones[index] = playedStones;
+            }
         }
     }
 
