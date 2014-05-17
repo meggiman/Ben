@@ -1304,8 +1304,9 @@ public class Ben implements ReversiPlayer{
         return bitboards;
     }
 
-    private static final int sortMovesAsc(long red, long green, long possibleMoves, int depth, long oldHash){
+    private static final boolean sortMovesAsc(long red, long green, long possibleMoves, int depth, long oldHash){
         int i = 0;
+        boolean hasPVorCutNode = false;
         while(possibleMoves != 0){
             long move = Long.highestOneBit(possibleMoves);
             possibleMoves ^= move;
@@ -1320,13 +1321,17 @@ public class Ben implements ReversiPlayer{
                 Svalues[depth][i] = 32767;
             }
             else{
-                Svalues[depth][i] = -(TTvalues[index] | (TTtypes[index] << 14));
+                if(TTtypes[index] > 1){
+                    hasPVorCutNode = true;
+                }
+                Svalues[depth][i] = -(TTvalues[index] | (TTtypes[index] << 15));
             }
             Sindices[depth][i] = i;
             i++;
         }
         insertionSortDesc(Svalues[depth], Sindices[depth], i);
-        return Ssize[depth] = i;
+        Ssize[depth] = i;
+        return hasPVorCutNode;
     }
 
     /**
@@ -1335,8 +1340,9 @@ public class Ben implements ReversiPlayer{
      * 
      */
 
-    private static final int sortMovesDesc(long red, long green, long possibleMoves, int depth, long oldHash){
+    private static final boolean sortMovesDesc(long red, long green, long possibleMoves, int depth, long oldHash){
         int i = 0;
+        boolean hasPVorCutNode = false;
         while(possibleMoves != 0){
             long move = Long.highestOneBit(possibleMoves);
             possibleMoves ^= move;
@@ -1351,13 +1357,17 @@ public class Ben implements ReversiPlayer{
                 Svalues[depth][i] = -32768;
             }
             else{
-                Svalues[depth][i] = TTvalues[index] | (TTtypes[index] << 14);
+                if(TTtypes[index] > 1){
+                    hasPVorCutNode = true;
+                }
+                Svalues[depth][i] = TTvalues[index] | (TTtypes[index] << 15);
             }
             Sindices[depth][i] = i;
             i++;
         }
         insertionSortDesc(Svalues[depth], Sindices[depth], i);
-        return Ssize[depth] = i;
+        Ssize[depth] = i;
+        return hasPVorCutNode;
     }
 
     private final static int TTget(long key){
