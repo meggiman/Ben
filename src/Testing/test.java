@@ -7,6 +7,7 @@ import javax.swing.JFileChooser;
 import javax.xml.stream.FactoryConfigurationError;
 import javax.xml.stream.XMLStreamException;
 
+import Ben.Ben;
 import Gameboard.Bitboard;
 
 public class test{
@@ -26,7 +27,7 @@ public class test{
         // long time = System.nanoTime();
         // coords = EndgameSearch.OutcomeSearch.nextMove(gb)-gb.green;
         // System.out.println("Zeit in ms: "+(System.nanoTime()-time)+"\n"+coords);
-        TestArena testArena = new TestArena(new TestablePlayers.PlayerA(), new TestablePlayers.PlayerB(), 200);
+        TestArena testArena = new TestArena(new OtherPlayers.Xiaolong(), new Ben(), 1000);
         TestArena.TestResult result = testArena.randomTimeGame(10, 50);
         JFileChooser fileChooser = new JFileChooser();
 

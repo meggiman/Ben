@@ -3,10 +3,10 @@ package Ben;
 import reversi.Coordinates;
 import reversi.GameBoard;
 import reversi.OutOfBoundsException;
-import reversi.ReversiPlayer;
 import Gameboard.Bitboard;
+import Testing.ITestablePlayer;
 
-public class Ben implements ReversiPlayer{
+public class Ben implements ITestablePlayer{
     /**
      * Bitmasks
      */
@@ -93,10 +93,10 @@ public class Ben implements ReversiPlayer{
                                                    0x7cfaac0a8ac0dcbL, 0xc4e99466f54709aL, 0xac95c64d48d5682L, 0x55000a14de5437L
                                                    };
     // Transposition Table
-    private final static byte   PVNODE             = (byte) 8, EXACTVALUE = (byte) 4, UPPERBOUND = (byte) 2, LOWERBOUND = (byte) 1;
+    private final static byte   CUTNODE            = (byte) 2, PVNODE = (byte) 4, ALLNODE = (byte) 1;
     private final static int    NOTFOUND           = -2147483648;
     private final static int    TTsize             = (0x80000000 >>> Integer.numberOfLeadingZeros(10000000));
-    private final static long   TTindexMask        = ~(0x8000000000000000L >> (32 - Integer.numberOfLeadingZeros(TTsize)));
+    private final static long   TTindexMask        = ~(0x8000000000000000L >> (32 + Integer.numberOfLeadingZeros(TTsize)));
     private static long[]       TTkeys             = new long[TTsize];
     private static short[]      TTvalues           = new short[TTsize];
     private static byte[]       TTdepths           = new byte[TTsize];
@@ -142,6 +142,13 @@ public class Ben implements ReversiPlayer{
      * Deadline for this Move.
      */
     private static long         globalDeadline;
+
+    private static byte         playedStones;
+
+    private static int          pvsFirstMoveIndex;
+
+    private static int          myColor;
+    private static long         timeLimit;
 
     /**
      * Converts a {@code GameBoard} into a long array of size 2.
@@ -408,9 +415,9 @@ public class Ben implements ReversiPlayer{
     }
 
     private static final short evaluate(long red, long green, long possibleMovesRedLong, long possibleMovesGreenLong){
-        double EC = 3;
+        double EC = 4;
         double MC = 400;
-        double MC2 = 800;
+        double MC2 = 600;
         double SC = 180;
 
         // Mobility
@@ -776,7 +783,7 @@ public class Ben implements ReversiPlayer{
         return changedFields;
     }
 
-    public final static long getflippedDiskRedHash(long red, long green, final long coord){
+    private final static long getflippedDiskRedHash(long red, long green, final long coord){
         long cursor;
         long possiblychangedfields = 0;
         long possibleHash = 0;
@@ -934,7 +941,169 @@ public class Ben implements ReversiPlayer{
                 hash ^= possibleHash;
             }
         }
-        hash ^= zobristRandomGreen[index] ^ zobristRandomRed[index];
+        hash ^= zobristRandomRed[index];
+        return changedfields;
+    }
+
+    private final static long getflippedDiskGreenHash(long red, long green, final long coord){
+        long cursor;
+        long possiblychangedfields = 0;
+        long possibleHash = 0;
+        long changedfields = 0;
+        int index = Long.numberOfTrailingZeros(coord);
+        int tmpindex = index + 8;
+
+        // upshift
+        cursor = (coord << 8) & red;
+        if(cursor != 0){
+            do{
+                possiblychangedfields |= cursor;
+                possibleHash ^= zobristRandomGreen[tmpindex]
+                        ^ zobristRandomRed[tmpindex];
+                tmpindex += 8;
+                cursor = (cursor << 8);
+            }while((cursor & red) != 0);
+            if((cursor & green) != 0){
+                changedfields |= possiblychangedfields;
+                hash ^= possibleHash;
+            }
+        }
+        // downshift
+        cursor = (coord >>> 8) & red;
+        if(cursor != 0){
+            tmpindex = index - 8;
+            possiblychangedfields = 0;
+            possibleHash = 0;
+            do{
+                possiblychangedfields |= cursor;
+                possibleHash ^= zobristRandomGreen[tmpindex]
+                        ^ zobristRandomRed[tmpindex];
+                tmpindex -= 8;
+                cursor = (cursor >>> 8);
+            }while((cursor & red) != 0);
+            if((cursor & green) != 0){
+                changedfields |= possiblychangedfields;
+                hash ^= possibleHash;
+            }
+        }
+
+        // shift correction
+        red &= shiftMask;
+
+        // leftshift
+        cursor = (coord << 1) & red;
+        if(cursor != 0){
+            tmpindex = index + 1;
+            possiblychangedfields = 0;
+            possibleHash = 0;
+            do{
+                possiblychangedfields |= cursor;
+                possibleHash ^= zobristRandomGreen[tmpindex]
+                        ^ zobristRandomRed[tmpindex];
+                tmpindex += 1;
+                cursor = (cursor << 1);
+            }while((cursor & red) != 0);
+            if((cursor & green) != 0){
+                changedfields |= possiblychangedfields;
+                hash ^= possibleHash;
+            }
+        }
+
+        // rightshift
+        cursor = (coord >>> 1) & red;
+        if(cursor != 0){
+            tmpindex = index - 1;
+            possiblychangedfields = 0;
+            possibleHash = 0;
+            do{
+                possiblychangedfields |= cursor;
+                possibleHash ^= zobristRandomGreen[tmpindex]
+                        ^ zobristRandomRed[tmpindex];
+                tmpindex -= 1;
+                cursor = (cursor >>> 1);
+            }while((cursor & red) != 0);
+            if((cursor & green) != 0){
+                changedfields |= possiblychangedfields;
+                hash ^= possibleHash;
+            }
+        }
+
+        // upleftshift
+        cursor = (coord << 9) & red;
+        if(cursor != 0){
+            tmpindex = index + 9;
+            possiblychangedfields = 0;
+            possibleHash = 0;
+            do{
+                possiblychangedfields |= cursor;
+                possibleHash ^= zobristRandomGreen[tmpindex]
+                        ^ zobristRandomRed[tmpindex];
+                tmpindex += 9;
+                cursor = (cursor << 9);
+            }while((cursor & red) != 0);
+            if((cursor & green) != 0){
+                changedfields |= possiblychangedfields;
+                hash ^= possibleHash;
+            }
+        }
+
+        // uprightshift
+        cursor = (coord << 7) & red;
+        if(cursor != 0){
+            tmpindex = index + 7;
+            possiblychangedfields = 0;
+            possibleHash = 0;
+            do{
+                possiblychangedfields |= cursor;
+                possibleHash ^= zobristRandomGreen[tmpindex]
+                        ^ zobristRandomRed[tmpindex];
+                tmpindex += 7;
+                cursor = (cursor << 7);
+            }while((cursor & red) != 0);
+            if((cursor & green) != 0){
+                changedfields |= possiblychangedfields;
+                hash ^= possibleHash;
+            }
+        }
+
+        // downleftshift
+        cursor = (coord >>> 7) & red;
+        if(cursor != 0){
+            tmpindex = index - 7;
+            possiblychangedfields = 0;
+            possibleHash = 0;
+            do{
+                possiblychangedfields |= cursor;
+                possibleHash ^= zobristRandomGreen[tmpindex]
+                        ^ zobristRandomRed[tmpindex];
+                tmpindex -= 7;
+                cursor = (cursor >>> 7);
+            }while((cursor & red) != 0);
+            if((cursor & green) != 0){
+                changedfields |= possiblychangedfields;
+                hash ^= possibleHash;
+            }
+        }
+
+        // downrightshift
+        cursor = (coord >>> 9) & red;
+        if(cursor != 0){
+            tmpindex = index - 9;
+            possiblychangedfields = 0;
+            possibleHash = 0;
+            do{
+                possiblychangedfields |= cursor;
+                possibleHash ^= zobristRandomGreen[tmpindex]
+                        ^ zobristRandomRed[tmpindex];
+                tmpindex -= 9;
+                cursor = (cursor >>> 9);
+            }while((cursor & red) != 0);
+            if((cursor & green) != 0){
+                changedfields |= possiblychangedfields;
+                hash ^= possibleHash;
+            }
+        }
+        hash ^= zobristRandomGreen[index];
         return changedfields;
     }
 
@@ -1190,7 +1359,7 @@ public class Ben implements ReversiPlayer{
         }
     }
 
-    private final static int pvsMax(long red, long green, int alpha, int beta, int depth){
+    private final static int pvsMax(long red, long green, int alpha, int beta, int depth, long hash, int stonesOnBoard){
         searchedNodes++;
         if(returnFromSearch){
             return beta;
@@ -1198,97 +1367,212 @@ public class Ben implements ReversiPlayer{
         if(System.nanoTime() >= localDeadline){
             returnFromSearch = true;
         }
+
+        // Transposition Query
+        int TTindex = TTget(hash);
+        if(TTindex != NOTFOUND){
+            if(TTdepths[TTindex] >= depth){
+                byte TTtype = TTtypes[TTindex];
+                if(TTtype == PVNODE){
+                    return TTvalues[TTindex];
+                }
+                short TTvalue = TTvalues[TTindex];
+                if(TTvalue >= beta && TTtype == CUTNODE){
+                    return beta;
+                }
+                if(TTvalue <= alpha){
+                    return alpha;
+                }
+            }
+        }
+
+        // Check for end of game
         long possibleMovesRed = possibleMovesRed(red, green);
         if(possibleMovesRed == 0){
             if(Bitboard.possibleMovesRed(green, red) == 0){
                 return Long.bitCount(red) - Long.bitCount(green);
             }
-            return pvsMin(red, green, alpha, beta, depth - 1);
+            return pvsMin(red, green, alpha, beta, depth - 1, hash, stonesOnBoard);
         }
+
+        // evaluate if depth == 0 reached
         if(depth <= 0){
             long possibleMovesGreen = possibleMovesRed(green, red);
-            // return Evaluation
+            return evaluate(red, green, possibleMovesRed, possibleMovesGreen);
         }
+
         int bestvalue = alpha;
         int value = alpha;
-        do{
-            long coord = Long.highestOneBit(possibleMovesRed);
-            possibleMovesRed ^= coord;
-            long flipedDisks = getFlippedDiskRed(red, green, coord);
-            value = pvsMin(red ^ flipedDisks ^ coord, green ^ flipedDisks, value, beta, depth - 1);
+        if(sortMovesDesc(red, green, possibleMovesRed, depth, hash)){
+            int index = Sindices[depth][0];
+            byte TTnodeType = ALLNODE;
+            value = pvsMin(SboardsRed[depth][index], SboardsGreen[depth][index], alpha, beta, depth - 1, Shashes[depth][index], stonesOnBoard + 1);
             if(value > alpha){
-                if(value >= beta){
-                    return beta;
+                alpha = value;
+                if(alpha >= beta){
+                    TTput(hash, (short) alpha, (byte) depth, CUTNODE, (byte) stonesOnBoard);
+                    return alpha;
                 }
-                bestvalue = value;
+                TTnodeType = PVNODE;
             }
-        }while(possibleMovesRed != 0);
-        return bestvalue;
+            for (int i = 1; i < Ssize[depth]; i++){
+                index = Sindices[depth][i];
+                value = pvsMin(SboardsRed[depth][index], SboardsGreen[depth][index], alpha, alpha + 1, depth - 1, Shashes[depth][index], stonesOnBoard + 1);
+                if(value > alpha){
+                    value = pvsMin(SboardsRed[depth][index], SboardsGreen[depth][index], alpha, beta, depth - 1, Shashes[depth][index], stonesOnBoard + 1);
+                    alpha = value;
+                    if(alpha >= beta){
+                        TTput(hash, (short) alpha, (byte) depth, CUTNODE, (byte) stonesOnBoard);
+                        return alpha;
+                    }
+                    TTnodeType = PVNODE;
+                }
+            }
+            TTput(hash, (short) alpha, (byte) depth, TTnodeType, (byte) stonesOnBoard);
+            return alpha;
+        }
+        else{
+            byte TTnodeType = ALLNODE;
+            for (int i = 0; i < Ssize[depth]; i++){
+                int index = Sindices[depth][i];
+                value = pvsMin(SboardsRed[depth][index], SboardsGreen[depth][index], bestvalue, beta, depth - 1, Shashes[depth][index], stonesOnBoard + 1);
+                if(value > bestvalue){
+                    if(value >= beta){
+                        TTput(hash, (short) value, (byte) depth, CUTNODE, (byte) stonesOnBoard);
+                        return beta;
+                    }
+                    TTnodeType = PVNODE;
+                    bestvalue = value;
+                }
+            }
+            TTput(hash, (short) bestvalue, (byte) depth, TTnodeType, (byte) stonesOnBoard);
+            return bestvalue;
+        }
     }
 
-    private final static int pvsMin(long red, long green, int alpha, int beta, int depth){
+    private final static int pvsMin(long red, long green, int alpha, int beta, int depth, long hash, int stonesOnBoad){
         searchedNodes++;
         if(returnFromSearch){
-            return beta;
+            return alpha;
         }
         if(System.nanoTime() >= localDeadline){
             returnFromSearch = true;
         }
+
+        // Transposition Query
+        int TTindex = TTget(hash);
+        if(TTindex != NOTFOUND){
+            if(TTdepths[TTindex] >= depth){
+                byte TTtype = TTtypes[TTindex];
+                if(TTtype == PVNODE){
+                    return TTvalues[TTindex];
+                }
+                short TTvalue = TTvalues[TTindex];
+                if(TTvalue <= alpha && TTtype == CUTNODE){
+                    return alpha;
+                }
+                if(TTvalue >= beta){
+                    return beta;
+                }
+            }
+        }
+
+        // Check for end of game
         long possibleMovesGreen = possibleMovesRed(green, red);
         if(possibleMovesGreen == 0){
             if(possibleMovesRed(red, green) == 0){
                 return Long.bitCount(red) - Long.bitCount(green);
             }
-            return pvsMax(red, green, alpha, beta, depth - 1);
+            return pvsMax(red, green, alpha, beta, depth - 1, hash, stonesOnBoad);
         }
+
+        // evaluate if depth == 0 reached
         if(depth <= 0){
             long possibleMovesRed = possibleMovesRed(red, green);
-            // return Evaluation
+            return evaluate(red, green, possibleMovesRed, possibleMovesGreen);
         }
+
         int bestvalue = beta;
         int value = beta;
-        do{
-            long coord = Long.highestOneBit(possibleMovesGreen);
-            possibleMovesGreen ^= coord;
-            long flipedDisks = getFlippedDiskRed(green, red, coord);
-            value = pvsMax(red ^ flipedDisks, green ^ flipedDisks ^ coord, alpha, value, depth - 1);
+        if(sortMovesAsc(red, green, possibleMovesGreen, depth, hash)){
+            byte TTnodeType = ALLNODE;
+            int index = Sindices[depth][0];
+            value = pvsMax(SboardsRed[depth][index], SboardsGreen[depth][index], alpha, beta, depth - 1, Shashes[depth][index], stonesOnBoad + 1);
             if(value < beta){
-                if(value <= alpha){
-                    return alpha;
+                beta = value;
+                if(beta <= alpha){
+                    TTput(hash, (short) alpha, (byte) depth, CUTNODE, (byte) stonesOnBoad);
+                    return beta;
                 }
-                bestvalue = value;
+                TTnodeType = PVNODE;
             }
-        }while(possibleMovesGreen != 0);
-        return bestvalue;
+            for (int i = 1; i < Ssize[depth]; i++){
+                index = Sindices[depth][i];
+                value = pvsMax(SboardsRed[depth][index], SboardsGreen[depth][index], beta - 1, beta, depth - 1, Shashes[depth][index], stonesOnBoad);
+                if(value < beta){
+                    value = pvsMax(SboardsRed[depth][index], SboardsGreen[depth][index], alpha, beta, depth - 1, Shashes[depth][index], stonesOnBoad);
+                    beta = value;
+                    if(beta <= alpha){
+                        TTput(hash, (short) beta, (byte) depth, CUTNODE, (byte) stonesOnBoad);
+                        return beta;
+                    }
+                    TTnodeType = PVNODE;
+                }
+            }
+            TTput(hash, (short) beta, (byte) depth, TTnodeType, (byte) stonesOnBoad);
+            return beta;
+        }
+        else{
+            byte TTnodeType = ALLNODE;
+            for (int i = 0; i < Ssize[depth]; i++){
+                int index = Sindices[depth][i];
+                value = pvsMax(SboardsRed[depth][index], SboardsGreen[depth][index], alpha, bestvalue, depth - 1, Shashes[depth][index], stonesOnBoad + 1);
+                if(value < bestvalue){
+                    if(value <= alpha){
+                        TTput(hash, (short) value, (byte) depth, CUTNODE, (byte) stonesOnBoad);
+                        return value;
+                    }
+                    TTnodeType = PVNODE;
+                    bestvalue = value;
+                }
+            }
+            TTput(hash, (short) bestvalue, (byte) depth, TTnodeType, (byte) stonesOnBoad);
+            return bestvalue;
+        }
     }
 
-    public final static long pvsSearch(long red, long green, int depth, boolean pvsMode){
+    private final static long pvsSearch(long red, long green, int depth){
         searchedNodes = 0;
-        returnFromSearch = false;
         long possibleMovesRed = Bitboard.possibleMovesRed(red, green);
         if(possibleMovesRed == 0){
             return 0;
         }
-        long bestmove = Long.highestOneBit(possibleMovesRed);
-        int bestvalue = -INFINITY;
+        int alpha = -INFINITY;
         int value = -INFINITY;
-        do{
-            long coord = Long.highestOneBit(possibleMovesRed);
-            long flippedDisks = getFlippedDiskRed(red, green, coord);
-            possibleMovesRed ^= coord;
-            value = pvsMin(red ^ flippedDisks ^ coord, green ^ flippedDisks, value, INFINITY, depth - 1);
-            if(value > bestvalue){
-                if(value >= INFINITY){
-                    return coord;
-                }
-                bestvalue = value;
-                bestmove = coord;
+        int beta = INFINITY;
+        sortMovesDesc(red, green, possibleMovesRed, depth, generateZobristHash(red, green));
+        int index = pvsFirstMoveIndex;
+        long bestmove = Smoves[depth][index];
+        alpha = pvsMin(SboardsRed[depth][index], SboardsGreen[depth][index], alpha, beta, depth - 1, Shashes[depth][index], playedStones + 1);
+        int alreadyCheckedIndex = index;
+        for (int i = 0; i < Ssize[depth]; i++){
+            index = Sindices[depth][i];
+            if(index == alreadyCheckedIndex){
+                continue;
             }
+            value = pvsMin(SboardsRed[depth][index], SboardsGreen[depth][index], alpha, alpha + 1, depth - 1, Shashes[depth][index], playedStones + 1);
             if(returnFromSearch){
-                break;
+                resultOfSearch = alpha;
+                return bestmove;
             }
-        }while(possibleMovesRed != 0);
-        resultOfSearch = bestvalue;
+            if(value > alpha){
+                value = pvsMin(SboardsRed[depth][index], SboardsGreen[depth][index], alpha, beta, depth - 1, Shashes[depth][index], playedStones + 1);
+                alpha = value;
+                pvsFirstMoveIndex = index;
+                bestmove = Smoves[depth][index];
+            }
+        }
+        resultOfSearch = alpha;
         return bestmove;
     }
 
@@ -1311,9 +1595,10 @@ public class Ben implements ReversiPlayer{
             long move = Long.highestOneBit(possibleMoves);
             possibleMoves ^= move;
             hash = oldHash;
-            long flippedDisks = getflippedDiskRedHash(red, green, move);
-            SboardsRed[depth][i] = red ^ flippedDisks ^ move;
-            SboardsGreen[depth][i] = green ^ flippedDisks;
+            long flippedDisks = getflippedDiskGreenHash(red, green, move);
+            SboardsRed[depth][i] = red ^ flippedDisks;
+            SboardsGreen[depth][i] = green ^ flippedDisks ^ move;
+            Smoves[depth][i] = move;
             Shashes[depth][i] = hash;
 
             int index = TTget(hash);
@@ -1321,10 +1606,10 @@ public class Ben implements ReversiPlayer{
                 Svalues[depth][i] = 32767;
             }
             else{
-                if(TTtypes[index] > 1){
+                if(TTtypes[index] > CUTNODE){
                     hasPVorCutNode = true;
                 }
-                Svalues[depth][i] = -(TTvalues[index] | (TTtypes[index] << 15));
+                Svalues[depth][i] = TTvalues[index] - (TTtypes[index] << 15);
             }
             Sindices[depth][i] = i;
             i++;
@@ -1350,6 +1635,7 @@ public class Ben implements ReversiPlayer{
             long flippedDisks = getflippedDiskRedHash(red, green, move);
             SboardsRed[depth][i] = red ^ flippedDisks ^ move;
             SboardsGreen[depth][i] = green ^ flippedDisks;
+            Smoves[depth][i] = move;
             Shashes[depth][i] = hash;
 
             int index = TTget(hash);
@@ -1357,10 +1643,10 @@ public class Ben implements ReversiPlayer{
                 Svalues[depth][i] = -32768;
             }
             else{
-                if(TTtypes[index] > 1){
+                if(TTtypes[index] > CUTNODE){
                     hasPVorCutNode = true;
                 }
-                Svalues[depth][i] = TTvalues[index] | (TTtypes[index] << 15);
+                Svalues[depth][i] = TTvalues[index] + (TTtypes[index] << 15);
             }
             Sindices[depth][i] = i;
             i++;
@@ -1380,14 +1666,14 @@ public class Ben implements ReversiPlayer{
         }
     }
 
-    private final static void TTput(long key, short value, byte depth, byte type, byte playedStones){
+    private final static void TTput(long key, short value, byte depth, byte type, byte stonesOnBoard){
         int index = (int) (key & TTindexMask);
         if(TTkeys[index] == key){
-            if(TTdepths[index] >= depth){
+            if(TTdepths[index] <= depth){
                 TTvalues[index] = value;
                 TTdepths[index] = depth;
                 TTtypes[index] = type;
-                TTplayedStones[index] = playedStones;
+                TTplayedStones[index] = stonesOnBoard;
             }
         }
         else{
@@ -1396,20 +1682,82 @@ public class Ben implements ReversiPlayer{
                 TTvalues[index] = value;
                 TTdepths[index] = depth;
                 TTtypes[index] = type;
-                TTplayedStones[index] = playedStones;
+                TTplayedStones[index] = stonesOnBoard;
             }
         }
     }
 
     @Override
     public void initialize(int myColor, long timeLimit){
-        // TODO Automatisch generierter Methodenstub
-
+        Ben.myColor = myColor;
+        Ben.timeLimit = timeLimit;
+        playedStones = (myColor == GameBoard.RED) ? (byte) 2 : (byte) 3;
+        generateEdgeTable();
     }
 
     @Override
     public Coordinates nextMove(GameBoard gb){
-        // TODO Automatisch generierter Methodenstub
-        return null;
+        // ACHTUNG TIMELIMIT NICHT AKTIV!!!
+        globalDeadline = System.nanoTime() + timeLimit * 1000000 - 20000000;
+        playedStones += 2;
+        long[] bitboard = convertToBitboard(gb);
+        long red;
+        long green;
+        if(myColor == GameBoard.RED){
+            red = bitboard[0];
+            green = bitboard[1];
+        }
+        else{
+            red = bitboard[1];
+            green = bitboard[0];
+        }
+        pvsFirstMoveIndex = 0;
+        searchedNodes = 0;
+        returnFromSearch = false;
+        localDeadline = globalDeadline;
+        long bestmove = 0;
+        int depth = 1;
+        while(!returnFromSearch && depth < 30){
+            bestmove = pvsSearch(red, green, depth);
+            depth++;
+        }
+        System.out.println("-----------------Ben-----------------");
+        System.out.println("Searched: " + searchedNodes + " Depth: " + depth + " Evaluationresult: " + resultOfSearch);
+        return longToCoordinates(bestmove);
+    }
+
+    @Override
+    public String getName(){
+        return "Ben";
+    }
+
+    @Override
+    public long getNodesCount(){
+        return searchedNodes;
+    }
+
+    @Override
+    public long getEvaluatedNodesCount(){
+        return 0;
+    }
+
+    @Override
+    public int getDepthOfLatestSearch(){
+        return 0;
+    }
+
+    @Override
+    public int getValueOfLatestSearch(){
+        return resultOfSearch;
+    }
+
+    @Override
+    public int getMoveNrOfLatestSearch(){
+        return 0;
+    }
+
+    @Override
+    public long getNrOfTTHits(){
+        return 0;
     }
 }

@@ -258,6 +258,7 @@ public class TestArena{
                     System.out.println("Draw.");
                     break;
             }
+            System.out.println(game.result1 + ":" + game.result2);
             System.out.println(i);
             int tmp = this.player1colour;
             this.player1colour = this.player2colour;
@@ -271,11 +272,11 @@ public class TestArena{
         int playercode = (player == player1) ? PLAYER1 : PLAYER2;
         Coordinates coord = null;
         long time = System.currentTimeMillis();
-        try{
-            coord = player.nextMove(gb);
-        }catch(Exception e){
-            throw new PlayerException(e, playercode, gb);
-        }
+        // try{
+        coord = player.nextMove(gb);
+        // }catch(Exception e){
+        // throw new PlayerException(e, playercode, gb);
+        // }
         time = System.currentTimeMillis() - time;
         if(time > ((playercode == PLAYER1) ? timelimitplayer1
                 : timelimitplayer2)){
@@ -287,6 +288,7 @@ public class TestArena{
         }
         int playercolour = (player == player1) ? player1colour : player2colour;
         if(!gb.checkMove(playercolour, coord)){
+            System.out.println("Illegal move");
             throw new IllegalMoveException();
         }
 
@@ -301,6 +303,7 @@ public class TestArena{
         move.NrofsearchedNodes = player.getNodesCount();
         move.NrofTTHits = player.getNrOfTTHits();
         move.value = player.getValueOfLatestSearch();
+        ((Bitboard) gb).print();
         return move;
     }
 
@@ -856,7 +859,7 @@ public class TestArena{
 
         public class GameResult{
             public static final int    REGULARRESULT              = 0,
-                    TIMEEXCEEDED = 1, ILLEGALMOVE = 2, EXCEPTION = 3;
+                                                                  TIMEEXCEEDED = 1, ILLEGALMOVE = 2, EXCEPTION = 3;
             PlayerException            exception;
             boolean                    isfinished                 = false;
             private int                resultcode                 = REGULARRESULT;

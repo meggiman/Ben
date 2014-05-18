@@ -6,13 +6,13 @@ import java.util.Random;
 import reversi.Coordinates;
 import reversi.GameBoard;
 import reversi.OutOfBoundsException;
-import reversi.ReversiPlayer;
+import Testing.ITestablePlayer;
 
 /**
  * 
  * @author JMC fuchsha@student.ethz.ch
  */
-public class Xiaolong implements ReversiPlayer{
+public class Xiaolong implements ITestablePlayer{
     private long              BB[]            = new long[2];
     private long              LS[]            = new long[2];
     private int               player, color, realDepth;
@@ -121,15 +121,15 @@ public class Xiaolong implements ReversiPlayer{
     // private final static long PM2 = 0x0000182424180000L;
     private final static int  moveList[][]    = new int[64][64];
     private final static int  moveOrder[]     = { 0, 7, 56, 63, // 10
-            18, 21, 42, 45, // 2
-            2, 5, 16, 23, 40, 47, 58, 61, // 8
-            3, 4, 24, 31, 32, 39, 59, 60, // 7
-            19, 20, 26, 29, 34, 37, 43, 44, // 3
-            11, 12, 25, 30, 33, 38, 51, 52, // 6
-            10, 13, 17, 22, 41, 46, 50, 53, // 5
-            1, 6, 8, 15, 48, 55, 57, 62, // 9
-            9, 14, 49, 54, // 4
-            27, 28, 35, 36                   // 1
+                                              18, 21, 42, 45, // 2
+                                              2, 5, 16, 23, 40, 47, 58, 61, // 8
+                                              3, 4, 24, 31, 32, 39, 59, 60, // 7
+                                              19, 20, 26, 29, 34, 37, 43, 44, // 3
+                                              11, 12, 25, 30, 33, 38, 51, 52, // 6
+                                              10, 13, 17, 22, 41, 46, 50, 53, // 5
+                                              1, 6, 8, 15, 48, 55, 57, 62, // 9
+                                              9, 14, 49, 54, // 4
+                                              27, 28, 35, 36 // 1
                                               };
     /*
      * 012
@@ -139,50 +139,50 @@ public class Xiaolong implements ReversiPlayer{
     // bitmasks for every line
     private static long       LINES15[]       = {
                                               // vertical 15
-            0x0101010101010101L,
-            0x0202020202020202L,
-            0x0404040404040404L,
-            0x0808080808080808L,
-            0x1010101010101010L,
-            0x2020202020202020L,
-            0x4040404040404040L,
-            0x8080808080808080L              };
+                                              0x0101010101010101L,
+                                              0x0202020202020202L,
+                                              0x0404040404040404L,
+                                              0x0808080808080808L,
+                                              0x1010101010101010L,
+                                              0x2020202020202020L,
+                                              0x4040404040404040L,
+                                              0x8080808080808080L };
     private static long       LINES37[]       = {
                                               // horizontal 37
-            0x00000000000000ffL,
-            0x000000000000ff00L,
-            0x0000000000ff0000L,
-            0x00000000ff000000L,
-            0x000000ff00000000L,
-            0x0000ff0000000000L,
-            0x00ff000000000000L,
-            0xff00000000000000L              };
+                                              0x00000000000000ffL,
+                                              0x000000000000ff00L,
+                                              0x0000000000ff0000L,
+                                              0x00000000ff000000L,
+                                              0x000000ff00000000L,
+                                              0x0000ff0000000000L,
+                                              0x00ff000000000000L,
+                                              0xff00000000000000L };
     private static long       LINES04[]       = {
                                               // diagonal 04
-            0x8040201008040201L,
-            0x0080402010080402L,
-            0x0000804020100804L,
-            0x0000008040201008L,
-            0x0000000080402010L,
-            0x0000000000804020L,
-            0x4020100804020100L,
-            0x2010080402010000L,
-            0x1008040201000000L,
-            0x0804020100000000L,
-            0x0402010000000000L              };
+                                              0x8040201008040201L,
+                                              0x0080402010080402L,
+                                              0x0000804020100804L,
+                                              0x0000008040201008L,
+                                              0x0000000080402010L,
+                                              0x0000000000804020L,
+                                              0x4020100804020100L,
+                                              0x2010080402010000L,
+                                              0x1008040201000000L,
+                                              0x0804020100000000L,
+                                              0x0402010000000000L };
     private static long       LINES26[]       = {
                                               // diagonal 26
-            0x0102040810204080L,
-            0x0001020408102040L,
-            0x0000010204081020L,
-            0x0000000102040810L,
-            0x0000000001020408L,
-            0x0000000000010204L,
-            0x0204081020408000L,
-            0x0408102040800000L,
-            0x0810204080000000L,
-            0x1020408000000000L,
-            0x2040800000000000L              };
+                                              0x0102040810204080L,
+                                              0x0001020408102040L,
+                                              0x0000010204081020L,
+                                              0x0000000102040810L,
+                                              0x0000000001020408L,
+                                              0x0000000000010204L,
+                                              0x0204081020408000L,
+                                              0x0408102040800000L,
+                                              0x0810204080000000L,
+                                              0x1020408000000000L,
+                                              0x2040800000000000L };
 
     // origin in p1
     private static long getMoves(final long p1, final long p2){
@@ -1098,6 +1098,48 @@ public class Xiaolong implements ReversiPlayer{
             }
         }
         hashmisses++;
+        return 0;
+    }
+
+    @Override
+    public String getName(){
+        // TODO Automatisch generierter Methodenstub
+        return "Xialong";
+    }
+
+    @Override
+    public long getNodesCount(){
+        // TODO Automatisch generierter Methodenstub
+        return 0;
+    }
+
+    @Override
+    public long getEvaluatedNodesCount(){
+        // TODO Automatisch generierter Methodenstub
+        return 0;
+    }
+
+    @Override
+    public int getDepthOfLatestSearch(){
+        // TODO Automatisch generierter Methodenstub
+        return 0;
+    }
+
+    @Override
+    public int getValueOfLatestSearch(){
+        // TODO Automatisch generierter Methodenstub
+        return 0;
+    }
+
+    @Override
+    public int getMoveNrOfLatestSearch(){
+        // TODO Automatisch generierter Methodenstub
+        return 0;
+    }
+
+    @Override
+    public long getNrOfTTHits(){
+        // TODO Automatisch generierter Methodenstub
         return 0;
     }
 }
