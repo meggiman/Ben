@@ -13,10 +13,12 @@ import Gameboard.Bitboard;
 public class test{
 
     public static void main(String[] args){
-        Bitboard gb = new Bitboard(8655921825290661984L, 296389804679891980L);
+        Bitboard gb = new Bitboard(4415562190353L, 61813844082688L);
         long ps2 = Bitboard.possibleMovesRed(8962216103846544383L, 8954353875483648L);
         long ps = Bitboard.getflippedDiskRed(103079215104L, 402653184l, 1125899906842624L);
         long test = 0;
+        // Ben ben = new Ben();
+        // ben.nextMove(gb);
         // long time2 = System.nanoTime();
         // test = countnodes(103079215104L, 402653184L, 12);
         // System.out.println(System.nanoTime()-time2);

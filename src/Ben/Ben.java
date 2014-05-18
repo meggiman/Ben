@@ -1362,35 +1362,46 @@ public class Ben implements ITestablePlayer{
     private final static int pvsMax(long red, long green, int alpha, int beta, int depth, long hash, int stonesOnBoard){
         searchedNodes++;
         if(returnFromSearch){
-            return beta;
+            return NOTFOUND;
         }
         if(System.nanoTime() >= localDeadline){
             returnFromSearch = true;
         }
 
         // Transposition Query
-        int TTindex = TTget(hash);
-        if(TTindex != NOTFOUND){
-            if(TTdepths[TTindex] >= depth){
-                byte TTtype = TTtypes[TTindex];
-                if(TTtype == PVNODE){
-                    return TTvalues[TTindex];
-                }
-                short TTvalue = TTvalues[TTindex];
-                if(TTvalue >= beta && TTtype == CUTNODE){
-                    return beta;
-                }
-                if(TTvalue <= alpha){
-                    return alpha;
-                }
-            }
-        }
+        // int TTindex = TTget(hash);
+        // if(TTindex != NOTFOUND){
+        // if(TTdepths[TTindex] >= depth){
+        // byte TTtype = TTtypes[TTindex];
+        // if(TTtype == PVNODE){
+        // return TTvalues[TTindex];
+        // }
+        // short TTvalue = TTvalues[TTindex];
+        // if(TTvalue >= beta && TTtype == CUTNODE){
+        // return beta;
+        // }
+        // if(TTvalue <= alpha){
+        // return alpha;
+        // }
+        // }
+        // }
 
         // Check for end of game
         long possibleMovesRed = possibleMovesRed(red, green);
         if(possibleMovesRed == 0){
             if(Bitboard.possibleMovesRed(green, red) == 0){
-                return Long.bitCount(red) - Long.bitCount(green);
+                int stonesRed = Long.bitCount(red);
+                int stonesGreen = Long.bitCount(green);
+                if(stonesRed > stonesGreen){
+                    searchedNodes++;
+                    return 30000 + stonesRed - stonesGreen;
+                }else if(stonesRed < stonesGreen){
+                    searchedNodes++;
+                    return -30000 - stonesGreen + stonesRed;
+                }else{
+                    searchedNodes++;
+                    return 0;
+                }
             }
             return pvsMin(red, green, alpha, beta, depth - 1, hash, stonesOnBoard);
         }
@@ -1411,7 +1422,7 @@ public class Ben implements ITestablePlayer{
                 alpha = value;
                 if(alpha >= beta){
                     TTput(hash, (short) alpha, (byte) depth, CUTNODE, (byte) stonesOnBoard);
-                    return alpha;
+                    return beta;
                 }
                 TTnodeType = PVNODE;
             }
@@ -1423,7 +1434,7 @@ public class Ben implements ITestablePlayer{
                     alpha = value;
                     if(alpha >= beta){
                         TTput(hash, (short) alpha, (byte) depth, CUTNODE, (byte) stonesOnBoard);
-                        return alpha;
+                        return beta;
                     }
                     TTnodeType = PVNODE;
                 }
@@ -1450,40 +1461,51 @@ public class Ben implements ITestablePlayer{
         }
     }
 
-    private final static int pvsMin(long red, long green, int alpha, int beta, int depth, long hash, int stonesOnBoad){
+    private final static int pvsMin(long red, long green, int alpha, int beta, int depth, long hash, int stonesOnBoard){
         searchedNodes++;
         if(returnFromSearch){
-            return alpha;
+            return NOTFOUND;
         }
         if(System.nanoTime() >= localDeadline){
             returnFromSearch = true;
         }
 
         // Transposition Query
-        int TTindex = TTget(hash);
-        if(TTindex != NOTFOUND){
-            if(TTdepths[TTindex] >= depth){
-                byte TTtype = TTtypes[TTindex];
-                if(TTtype == PVNODE){
-                    return TTvalues[TTindex];
-                }
-                short TTvalue = TTvalues[TTindex];
-                if(TTvalue <= alpha && TTtype == CUTNODE){
-                    return alpha;
-                }
-                if(TTvalue >= beta){
-                    return beta;
-                }
-            }
-        }
+        // int TTindex = TTget(hash);
+        // if(TTindex != NOTFOUND){
+        // if(TTdepths[TTindex] >= depth){
+        // byte TTtype = TTtypes[TTindex];
+        // if(TTtype == PVNODE){
+        // return TTvalues[TTindex];
+        // }
+        // short TTvalue = TTvalues[TTindex];
+        // if(TTvalue <= alpha && TTtype == CUTNODE){
+        // return alpha;
+        // }
+        // if(TTvalue >= beta){
+        // return beta;
+        // }
+        // }
+        // }
 
         // Check for end of game
         long possibleMovesGreen = possibleMovesRed(green, red);
         if(possibleMovesGreen == 0){
             if(possibleMovesRed(red, green) == 0){
-                return Long.bitCount(red) - Long.bitCount(green);
+                int stonesRed = Long.bitCount(red);
+                int stonesGreen = Long.bitCount(green);
+                if(stonesRed > stonesGreen){
+                    searchedNodes++;
+                    return 30000 + stonesRed - stonesGreen;
+                }else if(stonesRed < stonesGreen){
+                    searchedNodes++;
+                    return -30000 - stonesGreen + stonesRed;
+                }else{
+                    searchedNodes++;
+                    return 0;
+                }
             }
-            return pvsMax(red, green, alpha, beta, depth - 1, hash, stonesOnBoad);
+            return pvsMax(red, green, alpha, beta, depth - 1, hash, stonesOnBoard);
         }
 
         // evaluate if depth == 0 reached
@@ -1497,52 +1519,51 @@ public class Ben implements ITestablePlayer{
         if(sortMovesAsc(red, green, possibleMovesGreen, depth, hash)){
             byte TTnodeType = ALLNODE;
             int index = Sindices[depth][0];
-            value = pvsMax(SboardsRed[depth][index], SboardsGreen[depth][index], alpha, beta, depth - 1, Shashes[depth][index], stonesOnBoad + 1);
+            value = pvsMax(SboardsRed[depth][index], SboardsGreen[depth][index], alpha, beta, depth - 1, Shashes[depth][index], stonesOnBoard + 1);
             if(value < beta){
                 beta = value;
                 if(beta <= alpha){
-                    TTput(hash, (short) alpha, (byte) depth, CUTNODE, (byte) stonesOnBoad);
-                    return beta;
+                    TTput(hash, (short) beta, (byte) depth, CUTNODE, (byte) stonesOnBoard);
+                    return alpha;
                 }
                 TTnodeType = PVNODE;
             }
             for (int i = 1; i < Ssize[depth]; i++){
                 index = Sindices[depth][i];
-                value = pvsMax(SboardsRed[depth][index], SboardsGreen[depth][index], beta - 1, beta, depth - 1, Shashes[depth][index], stonesOnBoad);
+                value = pvsMax(SboardsRed[depth][index], SboardsGreen[depth][index], beta - 1, beta, depth - 1, Shashes[depth][index], stonesOnBoard);
                 if(value < beta){
-                    value = pvsMax(SboardsRed[depth][index], SboardsGreen[depth][index], alpha, beta, depth - 1, Shashes[depth][index], stonesOnBoad);
+                    value = pvsMax(SboardsRed[depth][index], SboardsGreen[depth][index], alpha, beta, depth - 1, Shashes[depth][index], stonesOnBoard);
                     beta = value;
                     if(beta <= alpha){
-                        TTput(hash, (short) beta, (byte) depth, CUTNODE, (byte) stonesOnBoad);
-                        return beta;
+                        TTput(hash, (short) beta, (byte) depth, CUTNODE, (byte) stonesOnBoard);
+                        return alpha;
                     }
                     TTnodeType = PVNODE;
                 }
             }
-            TTput(hash, (short) beta, (byte) depth, TTnodeType, (byte) stonesOnBoad);
+            TTput(hash, (short) beta, (byte) depth, TTnodeType, (byte) stonesOnBoard);
             return beta;
         }
         else{
             byte TTnodeType = ALLNODE;
             for (int i = 0; i < Ssize[depth]; i++){
                 int index = Sindices[depth][i];
-                value = pvsMax(SboardsRed[depth][index], SboardsGreen[depth][index], alpha, bestvalue, depth - 1, Shashes[depth][index], stonesOnBoad + 1);
+                value = pvsMax(SboardsRed[depth][index], SboardsGreen[depth][index], alpha, bestvalue, depth - 1, Shashes[depth][index], stonesOnBoard + 1);
                 if(value < bestvalue){
                     if(value <= alpha){
-                        TTput(hash, (short) value, (byte) depth, CUTNODE, (byte) stonesOnBoad);
-                        return value;
+                        TTput(hash, (short) value, (byte) depth, CUTNODE, (byte) stonesOnBoard);
+                        return alpha;
                     }
                     TTnodeType = PVNODE;
                     bestvalue = value;
                 }
             }
-            TTput(hash, (short) bestvalue, (byte) depth, TTnodeType, (byte) stonesOnBoad);
+            TTput(hash, (short) bestvalue, (byte) depth, TTnodeType, (byte) stonesOnBoard);
             return bestvalue;
         }
     }
 
     private final static long pvsSearch(long red, long green, int depth){
-        searchedNodes = 0;
         long possibleMovesRed = Bitboard.possibleMovesRed(red, green);
         if(possibleMovesRed == 0){
             return 0;
@@ -1572,7 +1593,9 @@ public class Ben implements ITestablePlayer{
                 bestmove = Smoves[depth][index];
             }
         }
-        resultOfSearch = alpha;
+        if(alpha != NOTFOUND){
+            resultOfSearch = alpha;
+        }
         return bestmove;
     }
 
@@ -1698,7 +1721,7 @@ public class Ben implements ITestablePlayer{
     @Override
     public Coordinates nextMove(GameBoard gb){
         // ACHTUNG TIMELIMIT NICHT AKTIV!!!
-        globalDeadline = System.nanoTime() + timeLimit * 1000000 - 20000000;
+        globalDeadline = System.nanoTime() + timeLimit * 1000000 - 20000000L;
         playedStones += 2;
         long[] bitboard = convertToBitboard(gb);
         long red;
