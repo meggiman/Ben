@@ -1,12 +1,10 @@
-package Ben;
+package TestablePlayers;
 
 import reversi.Coordinates;
 import reversi.GameBoard;
 import reversi.OutOfBoundsException;
-import searching.AlphaBetaNoCloneing;
 import Gameboard.Bitboard;
 import Testing.ITestablePlayer;
-import evaluate.StrategicEvaluatorNoah;
 
 public class Ben implements ITestablePlayer{
     /**
@@ -418,9 +416,9 @@ public class Ben implements ITestablePlayer{
 
     private static final short evaluate(long red, long green, long possibleMovesRedLong, long possibleMovesGreenLong){
         double EC = 4;
-        double MC = 80;
-        double MC2 = 100;
-        double SC = 18;
+        double MC = 20;
+        double MC2 = 30;
+        double SC = 180;
 
         // Mobility
 
@@ -428,20 +426,20 @@ public class Ben implements ITestablePlayer{
         int possibleMovesGreen = Long.bitCount(possibleMovesGreenLong);
 
         // Potential mobility
-        long empty = ~(red | green);
-        int potentialMovesRed = Long.bitCount(Bitboard.fillAdjacent(empty)
-                & green);
-        int potentialMovesEnemyGreen = Long.bitCount(Bitboard.fillAdjacent(empty)
-                & red);
+        int potentialMovesRed = Long.bitCount(Bitboard.fillAdjacent(green)
+                & ~red);
+        int potentialMovesEnemyGreen = Long.bitCount(Bitboard.fillAdjacent(red)
+                & ~green);
 
         // Edge advantage
         int edgeAdvantage = (int) (getEdgeValue(red, green));
 
         // Mobility advantage
-        float mobilityAdvantage = (possibleMovesRed - possibleMovesGreen);
+        float mobilityAdvantage = (possibleMovesRed - 1.2f * possibleMovesGreen);
 
         // Potential mobility advantage
-        float potentialMobilityAdvantage = potentialMovesRed - potentialMovesEnemyGreen;
+        float potentialMobilityAdvantage = potentialMovesRed - 1.2f
+                * potentialMovesEnemyGreen;
 
         int occupiedSquareAdvantage = (int) (Long.bitCount(getStableDisks(red, green))
                 - Long.bitCount(getStableDisks(green, red)));
@@ -528,50 +526,50 @@ public class Ben implements ITestablePlayer{
             float score = 0;
 
             // Score red
-            score += Integer.bitCount(maskC & unstableRed) * -0.5;
-            score += Integer.bitCount(maskA & unstableRed) * 0.2;
-            score += Integer.bitCount(maskB & unstableRed) * 0.15;
+            score += Integer.bitCount(maskC & unstableRed) * -5;
+            score += Integer.bitCount(maskA & unstableRed) * 2;
+            score += Integer.bitCount(maskB & unstableRed) * 1.5;
 
-            score += Integer.bitCount(maskA & unanchoredRed) * 3;
-            score += Integer.bitCount(maskB & unanchoredRed) * 2;
+            score += Integer.bitCount(maskA & unanchoredRed) * 30;
+            score += Integer.bitCount(maskB & unanchoredRed) * 20;
 
-            score += Integer.bitCount(maskC & aloneRed) * -0.75;
-            score += Integer.bitCount(maskA & aloneRed) * -0.25;
-            score += Integer.bitCount(maskB & aloneRed) * -0.5;
+            score += Integer.bitCount(maskC & aloneRed) * -7.5;
+            score += Integer.bitCount(maskA & aloneRed) * -2.5;
+            score += Integer.bitCount(maskB & aloneRed) * -5.0;
 
-            score += Integer.bitCount(stable1Red) * 8;
+            score += Integer.bitCount(stable1Red) * 80;
 
-            score += Integer.bitCount(maskC & stable3Red) * 12;
-            score += Integer.bitCount(maskA & stable3Red) * 10;
-            score += Integer.bitCount(maskB & stable3Red) * 10;
-            score += Integer.bitCount(0b10000001 & stable3Red) * 80;
+            score += Integer.bitCount(maskC & stable3Red) * 120;
+            score += Integer.bitCount(maskA & stable3Red) * 100;
+            score += Integer.bitCount(maskB & stable3Red) * 100;
+            score += Integer.bitCount(0b10000001 & stable3Red) * 200;
 
-            score += Integer.bitCount(maskC & semiRed) * -1.25;
-            score += Integer.bitCount(maskA & semiRed) * 1;
-            score += Integer.bitCount(maskB & semiRed) * 1;
+            score += Integer.bitCount(maskC & semiRed) * -12.5;
+            score += Integer.bitCount(maskA & semiRed) * 10;
+            score += Integer.bitCount(maskB & semiRed) * 10;
 
             // Negative score Green
-            score -= Integer.bitCount(maskC & unstableGreen) * -0.5;
-            score -= Integer.bitCount(maskA & unstableGreen) * 0.2;
-            score -= Integer.bitCount(maskB & unstableGreen) * 0.15;
+            score -= Integer.bitCount(maskC & unstableGreen) * -5 * 1.2;
+            score -= Integer.bitCount(maskA & unstableGreen) * 2 * 1.2;
+            score -= Integer.bitCount(maskB & unstableGreen) * 1.5 * 1.2;
 
-            score -= Integer.bitCount(maskA & unanchoredGreen) * 3;
-            score -= Integer.bitCount(maskB & unanchoredGreen) * 2;
+            score -= Integer.bitCount(maskA & unanchoredGreen) * 30 * 1.2;
+            score -= Integer.bitCount(maskB & unanchoredGreen) * 20 * 1.2;
 
-            score -= Integer.bitCount(maskC & aloneGreen) * -0.75;
-            score -= Integer.bitCount(maskA & aloneGreen) * -0.25;
-            score -= Integer.bitCount(maskB & aloneGreen) * -0.5;
+            score -= Integer.bitCount(maskC & aloneGreen) * -7.5 * 1.2;
+            score -= Integer.bitCount(maskA & aloneGreen) * -2.5 * 1.2;
+            score -= Integer.bitCount(maskB & aloneGreen) * -5 * 1.2;
 
-            score -= Integer.bitCount(stable1Green) * 8;
+            score -= Integer.bitCount(stable1Green) * 80 * 1.2;
 
-            score -= Integer.bitCount(maskC & stable3Green) * 12;
-            score -= Integer.bitCount(maskA & stable3Green) * 10;
-            score -= Integer.bitCount(maskB & stable3Green) * 10;
-            score -= Integer.bitCount(0b10000001 & stable3Green) * 80;
+            score -= Integer.bitCount(maskC & stable3Green) * 120 * 1.2;
+            score -= Integer.bitCount(maskA & stable3Green) * 100 * 1.2;
+            score -= Integer.bitCount(maskB & stable3Green) * 100 * 1.2;
+            score -= Integer.bitCount(0b10000001 & stable3Green) * 200 * 1.6;
 
-            score -= Integer.bitCount(maskC & semiGreen) * -10.25;
-            score -= Integer.bitCount(maskA & semiGreen) * 1;
-            score -= Integer.bitCount(maskB & semiGreen) * 1;
+            score -= Integer.bitCount(maskC & semiGreen) * -12.5 * 1.2;
+            score -= Integer.bitCount(maskA & semiGreen) * 10 * 1.2;
+            score -= Integer.bitCount(maskB & semiGreen) * 10 * 1.2;
 
             edgeTable[(board[1] << 8) | board[2]] = (short) score;
             // System.out.println(k);
@@ -1360,8 +1358,8 @@ public class Ben implements ITestablePlayer{
         }
     }
 
-    private static Bitboard            testgb      = new Bitboard();
-    private static AlphaBetaNoCloneing validsearch = new AlphaBetaNoCloneing();
+    private static Bitboard        testgb      = new Bitboard();
+    private static ITestablePlayer validsearch = new PlayerB();
 
     private final static int pvsMax(long red, long green, int alpha, int beta, int depth, long hash, int stonesOnBoard){
         searchedNodes++;
@@ -1847,15 +1845,13 @@ public class Ben implements ITestablePlayer{
         Ben.timeLimit = timeLimit;
         playedStones = (myColor == GameBoard.RED) ? (byte) 2 : (byte) 3;
         generateEdgeTable();
-        validsearch.evaluator = new StrategicEvaluatorNoah();
+        validsearch.initialize(myColor, timeLimit);
     }
 
     @Override
     public Coordinates nextMove(GameBoard gb){
-        globalDeadline = System.nanoTime() + timeLimit * 1000000 - 20000000L;
+        globalDeadline = System.nanoTime() + timeLimit * 1000000 + 20000000L;
         playedStones += 2;
-        validsearch.cancel = false;
-        validsearch.deadline = globalDeadline;
         long[] bitboard = convertToBitboard(gb);
         long red;
         long green;
@@ -1879,14 +1875,10 @@ public class Ben implements ITestablePlayer{
         }
         System.out.println("-----------------Ben-----------------");
         System.out.println("Searched: " + searchedNodes + " Depth: " + depth + " Evaluationresult: " + resultOfSearch + " Move: " + bestmove);
-        // validsearch.cancel = false;
-        // validsearch.deadline = System.nanoTime() + timeLimit * 1000000 -
-        // 20000000L;
-        // long validbestmove = validsearch.nextMove(new Bitboard(red, green));
-        // System.out.println("-----------------alpha-beta--------------");
-        // System.out.println("Searched: " + validsearch.searchedNodesCount +
-        // " Depth: " + validsearch.reachedDepth + " Evaluationresult: "
-        // + validsearch.valueOfLastMove + " Move: " + validbestmove);
+        long validbestmove = coordinatesToLong(validsearch.nextMove(gb));
+        System.out.println("-----------------alpha-beta--------------");
+        System.out.println("Searched: " + validsearch.getNodesCount() + " Depth: " + validsearch.getDepthOfLatestSearch() + " Evaluationresult: "
+                + validsearch.getValueOfLatestSearch() + " Move: " + validbestmove);
         return longToCoordinates(bestmove);
     }
 
