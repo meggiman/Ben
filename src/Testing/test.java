@@ -15,7 +15,7 @@ import Gameboard.Bitboard;
 public class test{
 
     public static void main(String[] args){
-        Bitboard gb = new Bitboard(5644987253662720L, -42097928464496640L);
+        Bitboard gb = new Bitboard(34561852416L, 52983522918400L);
         Ben ben = new Ben();
         ben.initialize(GameBoard.RED, 1000);
         ben.nextMove(gb);

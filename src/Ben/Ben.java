@@ -224,7 +224,7 @@ public class Ben implements ITestablePlayer{
             if(changedfields != 0){
                 value = endGameFewRemainingMin(red ^ changedfields
                         ^ coord, green ^ changedfields, bestvalue, beta, false);
-                if(value > alpha){
+                if(value > bestvalue){
                     if(value >= beta){
                         return beta;
                     }
@@ -257,7 +257,7 @@ public class Ben implements ITestablePlayer{
             if(changedfields != 0){
                 value = endGameFewRemainingMax(red ^ changedfields, green
                         ^ changedfields ^ coord, alpha, bestvalue, false);
-                if(value < beta){
+                if(value < bestvalue){
                     if(value <= alpha){
                         return alpha;
                     }
@@ -1375,23 +1375,25 @@ public class Ben implements ITestablePlayer{
         }
 
         // Transposition Query
-        // int TTindex = TTget(hash);
-        // if(TTindex != NOTFOUND){
-        // if(TTdepths[TTindex] >= depth){
-        // byte TTtype = TTtypes[TTindex];
-        // if(TTtype == PVNODE){
-        // return TTvalues[TTindex];
-        // }
-        // short TTvalue = TTvalues[TTindex];
-        // if(TTvalue >= beta && TTtype == CUTNODE){
-        // return beta;
-        // }
-        // if(TTvalue <= alpha){
-        // return alpha;
-        // }
-        // }
-        // }
-
+        int TTindex = TTget(hash);
+        if(TTindex != NOTFOUND){
+            if(TTdepths[TTindex] >= depth){
+                byte TTtype = TTtypes[TTindex];
+                if(TTtype == PVNODE){
+                    return TTvalues[TTindex];
+                }
+                short TTvalue = TTvalues[TTindex];
+                if(TTvalue >= beta && TTtype == CUTNODE){
+                    return beta;
+                }
+                if(TTvalue <= alpha){
+                    return alpha;
+                }
+            }
+        }
+        if(depth < 5){
+            return pvsNearLeavesMax(red, green, alpha, beta, depth, false);
+        }
         // Check for end of game
         long possibleMovesRed = possibleMovesRed(red, green);
         if(possibleMovesRed == 0){
@@ -1413,10 +1415,10 @@ public class Ben implements ITestablePlayer{
         }
 
         // evaluate if depth == 0 reached
-        if(depth <= 0){
-            long possibleMovesGreen = possibleMovesRed(green, red);
-            return evaluate(red, green, possibleMovesRed, possibleMovesGreen);
-        }
+        // if(depth <= 0){
+        // long possibleMovesGreen = possibleMovesRed(green, red);
+        // return evaluate(red, green, possibleMovesRed, possibleMovesGreen);
+        // }
 
         int bestvalue = alpha;
         int value = alpha;
@@ -1424,6 +1426,9 @@ public class Ben implements ITestablePlayer{
             int index = Sindices[depth][0];
             byte TTnodeType = ALLNODE;
             value = pvsMin(SboardsRed[depth][index], SboardsGreen[depth][index], alpha, beta, depth - 1, Shashes[depth][index], stonesOnBoard + 1);
+            if(returnFromSearch){
+                return beta;
+            }
             if(value > alpha){
                 alpha = value;
                 if(alpha >= beta){
@@ -1435,8 +1440,14 @@ public class Ben implements ITestablePlayer{
             for (int i = 1; i < Ssize[depth]; i++){
                 index = Sindices[depth][i];
                 value = pvsMin(SboardsRed[depth][index], SboardsGreen[depth][index], alpha, alpha + 1, depth - 1, Shashes[depth][index], stonesOnBoard + 1);
+                if(returnFromSearch){
+                    return beta;
+                }
                 if(value > alpha){
                     value = pvsMin(SboardsRed[depth][index], SboardsGreen[depth][index], alpha, beta, depth - 1, Shashes[depth][index], stonesOnBoard + 1);
+                    if(returnFromSearch){
+                        return beta;
+                    }
                     alpha = value;
                     if(alpha >= beta){
                         TTput(hash, (short) alpha, (byte) depth, CUTNODE, (byte) stonesOnBoard);
@@ -1481,23 +1492,25 @@ public class Ben implements ITestablePlayer{
         }
 
         // Transposition Query
-        // int TTindex = TTget(hash);
-        // if(TTindex != NOTFOUND){
-        // if(TTdepths[TTindex] >= depth){
-        // byte TTtype = TTtypes[TTindex];
-        // if(TTtype == PVNODE){
-        // return TTvalues[TTindex];
-        // }
-        // short TTvalue = TTvalues[TTindex];
-        // if(TTvalue <= alpha && TTtype == CUTNODE){
-        // return alpha;
-        // }
-        // if(TTvalue >= beta){
-        // return beta;
-        // }
-        // }
-        // }
-
+        int TTindex = TTget(hash);
+        if(TTindex != NOTFOUND){
+            if(TTdepths[TTindex] >= depth){
+                byte TTtype = TTtypes[TTindex];
+                if(TTtype == PVNODE){
+                    return TTvalues[TTindex];
+                }
+                short TTvalue = TTvalues[TTindex];
+                if(TTvalue <= alpha && TTtype == CUTNODE){
+                    return alpha;
+                }
+                if(TTvalue >= beta){
+                    return beta;
+                }
+            }
+        }
+        if(depth < 5){
+            return pvsNearLeavesMin(red, green, alpha, beta, depth, false);
+        }
         // Check for end of game
         long possibleMovesGreen = possibleMovesRed(green, red);
         if(possibleMovesGreen == 0){
@@ -1519,10 +1532,10 @@ public class Ben implements ITestablePlayer{
         }
 
         // evaluate if depth == 0 reached
-        if(depth <= 0){
-            long possibleMovesRed = possibleMovesRed(red, green);
-            return evaluate(red, green, possibleMovesRed, possibleMovesGreen);
-        }
+        // if(depth <= 0){
+        // long possibleMovesRed = possibleMovesRed(red, green);
+        // return evaluate(red, green, possibleMovesRed, possibleMovesGreen);
+        // }
 
         int bestvalue = beta;
         int value = beta;
@@ -1530,6 +1543,9 @@ public class Ben implements ITestablePlayer{
             byte TTnodeType = ALLNODE;
             int index = Sindices[depth][0];
             value = pvsMax(SboardsRed[depth][index], SboardsGreen[depth][index], alpha, beta, depth - 1, Shashes[depth][index], stonesOnBoard + 1);
+            if(returnFromSearch){
+                return alpha;
+            }
             if(value < beta){
                 beta = value;
                 if(beta <= alpha){
@@ -1541,8 +1557,14 @@ public class Ben implements ITestablePlayer{
             for (int i = 1; i < Ssize[depth]; i++){
                 index = Sindices[depth][i];
                 value = pvsMax(SboardsRed[depth][index], SboardsGreen[depth][index], beta - 1, beta, depth - 1, Shashes[depth][index], stonesOnBoard);
+                if(returnFromSearch){
+                    return alpha;
+                }
                 if(value < beta){
                     value = pvsMax(SboardsRed[depth][index], SboardsGreen[depth][index], alpha, beta, depth - 1, Shashes[depth][index], stonesOnBoard);
+                    if(returnFromSearch){
+                        return alpha;
+                    }
                     beta = value;
                     if(beta <= alpha){
                         TTput(hash, (short) beta, (byte) depth, CUTNODE, (byte) stonesOnBoard);
@@ -1576,6 +1598,100 @@ public class Ben implements ITestablePlayer{
         }
     }
 
+    private final static int pvsNearLeavesMax(long red, long green, int alpha, int beta, int depth, boolean passed){
+        searchedNodes++;
+        if(returnFromSearch){
+            return beta;
+        }
+        else if(System.nanoTime() >= localDeadline){
+            returnFromSearch = true;
+            return beta;
+        }
+
+        // evaluate if depth == 0 reached
+        if(depth <= 0){
+            long possibleMovesRed = possibleMovesRed(red, green);
+            long possibleMovesGreen = possibleMovesRed(green, red);
+            return evaluate(red, green, possibleMovesRed, possibleMovesGreen);
+        }
+
+        long emptyfields = ~(red | green);
+        long changedfields = 0;
+        long coord = 0;
+        int bestvalue = alpha;
+        int value = alpha;
+        boolean nomoveavailable = true;
+        while(emptyfields != 0){
+            coord = Long.highestOneBit(emptyfields);
+            changedfields = getFlippedDiskRed(red, green, coord);
+            if(changedfields != 0){
+                value = pvsNearLeavesMin(red ^ changedfields ^ coord, green ^ changedfields, bestvalue, beta, depth - 1, false);
+                if(value > bestvalue){
+                    if(value >= beta){
+                        return beta;
+                    }
+                    bestvalue = value;
+                }
+                nomoveavailable = false;
+            }
+            emptyfields ^= coord;
+        }
+        if(nomoveavailable){
+            if(passed){
+                return Long.bitCount(red) - Long.bitCount(green);
+            }
+            return pvsNearLeavesMin(red, green, alpha, beta, depth - 1, true);
+        }
+        return bestvalue;
+    }
+
+    private final static int pvsNearLeavesMin(long red, long green, int alpha, int beta, int depth, boolean passed){
+        searchedNodes++;
+        if(returnFromSearch){
+            return alpha;
+        }
+        else if(System.nanoTime() >= localDeadline){
+            returnFromSearch = true;
+            return alpha;
+        }
+
+        // evaluate if depth == 0 reached
+        if(depth <= 0){
+            long possibleMovesGreen = possibleMovesRed(green, red);
+            long possibleMovesRed = possibleMovesRed(red, green);
+            return evaluate(red, green, possibleMovesRed, possibleMovesGreen);
+        }
+        long emptyfields = ~(red | green);
+        long changedfields = 0;
+        long coord = 0;
+        int bestvalue = beta;
+        int value = beta;
+        boolean nomoveavailable = true;
+        while(emptyfields != 0){
+            coord = Long.highestOneBit(emptyfields);
+            changedfields = getFlippedDiskRed(green, red, coord);
+            if(changedfields != 0){
+                value = pvsNearLeavesMax(red ^ changedfields, green ^ changedfields ^ coord, alpha, bestvalue, depth - 1, false);
+                if(value < bestvalue){
+                    if(value <= alpha){
+                        return alpha;
+                    }
+                    bestvalue = value;
+                }
+                nomoveavailable = false;
+            }
+            emptyfields ^= coord;
+        }
+        if(nomoveavailable){
+            if(passed){
+                return Long.bitCount(red) - Long.bitCount(green);
+            }
+            return pvsNearLeavesMax(red, green, alpha, beta, depth - 1, true);
+        }
+        return bestvalue;
+
+    }
+
     private final static long pvsSearch(long red, long green, int depth){
         long possibleMovesRed = Bitboard.possibleMovesRed(red, green);
         if(possibleMovesRed == 0){
@@ -1597,12 +1713,13 @@ public class Ben implements ITestablePlayer{
             if(index == alreadyCheckedIndex){
                 continue;
             }
-            value = pvsMin(SboardsRed[depth][index], SboardsGreen[depth][index], alpha, beta, depth - 1, Shashes[depth][index], playedStones + 1);
+            value = pvsMin(SboardsRed[depth][index], SboardsGreen[depth][index], alpha, alpha + 1, depth - 1, Shashes[depth][index], playedStones + 1);
             if(returnFromSearch){
                 resultOfSearch = alpha;
                 return bestmove;
             }
             if(value > alpha){
+                value = pvsMin(SboardsRed[depth][index], SboardsGreen[depth][index], alpha, beta, depth - 1, Shashes[depth][index], playedStones + 1);
                 alpha = value;
                 pvsFirstMoveIndex = index;
                 bestmove = Smoves[depth][index];
@@ -1654,7 +1771,7 @@ public class Ben implements ITestablePlayer{
         }
         insertionSortDesc(Svalues[depth], Sindices[depth], i);
         Ssize[depth] = i;
-        return false; // CHANGED!!!
+        return hasPVorCutNode;
     }
 
     /**
@@ -1691,7 +1808,7 @@ public class Ben implements ITestablePlayer{
         }
         insertionSortDesc(Svalues[depth], Sindices[depth], i);
         Ssize[depth] = i;
-        return false; // CHANGED!!!
+        return hasPVorCutNode;
     }
 
     private final static int TTget(long key){
@@ -1736,7 +1853,6 @@ public class Ben implements ITestablePlayer{
 
     @Override
     public Coordinates nextMove(GameBoard gb){
-        // ACHTUNG TIMELIMIT NICHT AKTIV!!!
         globalDeadline = System.nanoTime() + timeLimit * 1000000 - 20000000L;
         playedStones += 2;
         validsearch.cancel = false;
