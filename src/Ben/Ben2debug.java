@@ -8,7 +8,7 @@ import Gameboard.Bitboard;
 import Testing.ITestablePlayer;
 import evaluate.StrategicEvaluatorNoah;
 
-public class Ben implements ITestablePlayer{
+public class Ben2debug implements ITestablePlayer{
     /**
      * Bitmasks
      */
@@ -1727,8 +1727,8 @@ public class Ben implements ITestablePlayer{
 
     @Override
     public void initialize(int myColor, long timeLimit){
-        Ben.myColor = myColor;
-        Ben.timeLimit = timeLimit;
+        Ben2debug.myColor = myColor;
+        Ben2debug.timeLimit = timeLimit;
         playedStones = (myColor == GameBoard.RED) ? (byte) 2 : (byte) 3;
         generateEdgeTable();
         validsearch.evaluator = new StrategicEvaluatorNoah();

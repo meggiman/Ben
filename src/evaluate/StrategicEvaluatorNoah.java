@@ -32,50 +32,50 @@ public class StrategicEvaluatorNoah implements IEvaluator{
     // bitmasks for every line
     private static long       LINES15[]       = {
                                               // vertical 15
-            0x0101010101010101L,
-            0x0202020202020202L,
-            0x0404040404040404L,
-            0x0808080808080808L,
-            0x1010101010101010L,
-            0x2020202020202020L,
-            0x4040404040404040L,
-            0x8080808080808080L              };
+                                              0x0101010101010101L,
+                                              0x0202020202020202L,
+                                              0x0404040404040404L,
+                                              0x0808080808080808L,
+                                              0x1010101010101010L,
+                                              0x2020202020202020L,
+                                              0x4040404040404040L,
+                                              0x8080808080808080L };
     private static long       LINES37[]       = {
                                               // horizontal 37
-            0x00000000000000ffL,
-            0x000000000000ff00L,
-            0x0000000000ff0000L,
-            0x00000000ff000000L,
-            0x000000ff00000000L,
-            0x0000ff0000000000L,
-            0x00ff000000000000L,
-            0xff00000000000000L              };
+                                              0x00000000000000ffL,
+                                              0x000000000000ff00L,
+                                              0x0000000000ff0000L,
+                                              0x00000000ff000000L,
+                                              0x000000ff00000000L,
+                                              0x0000ff0000000000L,
+                                              0x00ff000000000000L,
+                                              0xff00000000000000L };
     private static long       LINES04[]       = {
                                               // diagonal 04
-            0x8040201008040201L,
-            0x0080402010080402L,
-            0x0000804020100804L,
-            0x0000008040201008L,
-            0x0000000080402010L,
-            0x0000000000804020L,
-            0x4020100804020100L,
-            0x2010080402010000L,
-            0x1008040201000000L,
-            0x0804020100000000L,
-            0x0402010000000000L              };
+                                              0x8040201008040201L,
+                                              0x0080402010080402L,
+                                              0x0000804020100804L,
+                                              0x0000008040201008L,
+                                              0x0000000080402010L,
+                                              0x0000000000804020L,
+                                              0x4020100804020100L,
+                                              0x2010080402010000L,
+                                              0x1008040201000000L,
+                                              0x0804020100000000L,
+                                              0x0402010000000000L };
     private static long       LINES26[]       = {
                                               // diagonal 26
-            0x0102040810204080L,
-            0x0001020408102040L,
-            0x0000010204081020L,
-            0x0000000102040810L,
-            0x0000000001020408L,
-            0x0000000000010204L,
-            0x0204081020408000L,
-            0x0408102040800000L,
-            0x0810204080000000L,
-            0x1020408000000000L,
-            0x2040800000000000L              };
+                                              0x0102040810204080L,
+                                              0x0001020408102040L,
+                                              0x0000010204081020L,
+                                              0x0000000102040810L,
+                                              0x0000000001020408L,
+                                              0x0000000000010204L,
+                                              0x0204081020408000L,
+                                              0x0408102040800000L,
+                                              0x0810204080000000L,
+                                              0x1020408000000000L,
+                                              0x2040800000000000L };
 
     private final static long CORNERS         = 0x8100000000000081L;
 
@@ -130,9 +130,9 @@ public class StrategicEvaluatorNoah implements IEvaluator{
 
     @Override
     public short evaluate(Bitboard gb, long possibleMovesLong, boolean player){
-        double EC = 3;
+        double EC = 4;
         double MC = 400;
-        double MC2 = 800;
+        double MC2 = 600;
         double SC = 180;
 
         // Mobility
@@ -153,9 +153,9 @@ public class StrategicEvaluatorNoah implements IEvaluator{
         // Potential mobility
         long empty = ~(gb.green | gb.red);
         int potentialMovesRed = Long.bitCount(Bitboard.fillAdjacent(empty)
-                & ~gb.green);
+                & gb.green);
         int potentialMovesEnemyGreen = Long.bitCount(Bitboard.fillAdjacent(empty)
-                & ~gb.red);
+                & gb.red);
 
         // Edge advantage
         int edgeAdvantage = (int) (stability.getEdgeValue(gb));
@@ -167,8 +167,8 @@ public class StrategicEvaluatorNoah implements IEvaluator{
         float potentialMobilityAdvantage = potentialMovesRed - 1.2f
                 * potentialMovesEnemyGreen;
 
-        int occupiedSquareAdvantage = (int) (Long.bitCount(getStableDisks(gb, player))
-                - Long.bitCount(getStableDisks(gb, !player)));
+        int occupiedSquareAdvantage = (int) (Long.bitCount(getStableDisks(gb, true))
+                - Long.bitCount(getStableDisks(gb, false)));
 
         int score = (int) (
                 EC * edgeAdvantage

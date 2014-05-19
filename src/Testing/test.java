@@ -7,13 +7,21 @@ import javax.swing.JFileChooser;
 import javax.xml.stream.FactoryConfigurationError;
 import javax.xml.stream.XMLStreamException;
 
+import reversi.GameBoard;
 import Ben.Ben;
+import Ben.Ben2debug;
 import Gameboard.Bitboard;
 
 public class test{
 
     public static void main(String[] args){
-        Bitboard gb = new Bitboard(4415562190353L, 61813844082688L);
+        Bitboard gb = new Bitboard(5644987253662720L, -42097928464496640L);
+        Ben ben = new Ben();
+        ben.initialize(GameBoard.RED, 1000);
+        ben.nextMove(gb);
+        Ben2debug ben2debug = new Ben2debug();
+        ben2debug.initialize(GameBoard.RED, 1000);
+        ben2debug.nextMove(gb);
         long ps2 = Bitboard.possibleMovesRed(8962216103846544383L, 8954353875483648L);
         long ps = Bitboard.getflippedDiskRed(103079215104L, 402653184l, 1125899906842624L);
         long test = 0;
@@ -29,7 +37,7 @@ public class test{
         // long time = System.nanoTime();
         // coords = EndgameSearch.OutcomeSearch.nextMove(gb)-gb.green;
         // System.out.println("Zeit in ms: "+(System.nanoTime()-time)+"\n"+coords);
-        TestArena testArena = new TestArena(new OtherPlayers.Xiaolong(), new Ben(), 1000);
+        TestArena testArena = new TestArena(new OtherPlayers.Xiaolong(), new Ben2debug(), 1000);
         TestArena.TestResult result = testArena.randomTimeGame(10, 50);
         JFileChooser fileChooser = new JFileChooser();
 

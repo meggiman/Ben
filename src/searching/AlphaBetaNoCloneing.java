@@ -6,8 +6,8 @@ import Gameboard.Bitboard;
 public class AlphaBetaNoCloneing extends Searchalgorithm{
     // private static TranspositionTable table = new TranspositionTable(2000000,
     // replaceStrategy);
-    private boolean cancel       = false;
-    private byte    countOfMoves = 0;
+    public boolean cancel       = false;
+    private byte   countOfMoves = 0;
 
     public long nextMove(Bitboard gb){
         countOfMoves++;
@@ -90,7 +90,7 @@ public class AlphaBetaNoCloneing extends Searchalgorithm{
         long nextMove;
         int count = Long.bitCount(possibleMoves);
         for (int i = 0; i < count; i++){
-            nextMove = Long.lowestOneBit(possibleMoves);
+            nextMove = Long.highestOneBit(possibleMoves);
             possibleMoves ^= nextMove;
             changedFields = gb.makeMove(true, nextMove);
             value = min(gb, maxValue, beta, depth - 1);
@@ -146,7 +146,7 @@ public class AlphaBetaNoCloneing extends Searchalgorithm{
         long nextMove;
         int count = Long.bitCount(possibleMoves);
         for (int i = 0; i < count; i++){
-            nextMove = Long.lowestOneBit(possibleMoves);
+            nextMove = Long.highestOneBit(possibleMoves);
             possibleMoves ^= nextMove;
             changedFields = gb.makeMove(false, nextMove);
             value = max(gb, alpha, minValue, depth - 1);
