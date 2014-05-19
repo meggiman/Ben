@@ -1880,12 +1880,14 @@ public class Ben implements ITestablePlayer{
         }
         System.out.println("-----------------Ben-----------------");
         System.out.println("Searched: " + searchedNodes + " Depth: " + depth + " Evaluationresult: " + resultOfSearch + " Move: " + bestmove);
-        validsearch.cancel = false;
-        validsearch.deadline = System.nanoTime() + timeLimit * 1000000 - 20000000L;
-        long validbestmove = validsearch.nextMove(new Bitboard(red, green));
-        System.out.println("-----------------alpha-beta--------------");
-        System.out.println("Searched: " + validsearch.searchedNodesCount + " Depth: " + validsearch.reachedDepth + " Evaluationresult: "
-                + validsearch.valueOfLastMove + " Move: " + validbestmove);
+        // validsearch.cancel = false;
+        // validsearch.deadline = System.nanoTime() + timeLimit * 1000000 -
+        // 20000000L;
+        // long validbestmove = validsearch.nextMove(new Bitboard(red, green));
+        // System.out.println("-----------------alpha-beta--------------");
+        // System.out.println("Searched: " + validsearch.searchedNodesCount +
+        // " Depth: " + validsearch.reachedDepth + " Evaluationresult: "
+        // + validsearch.valueOfLastMove + " Move: " + validbestmove);
         return longToCoordinates(bestmove);
     }
 
