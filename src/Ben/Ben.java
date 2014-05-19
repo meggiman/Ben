@@ -418,9 +418,9 @@ public class Ben implements ITestablePlayer{
 
     private static final short evaluate(long red, long green, long possibleMovesRedLong, long possibleMovesGreenLong){
         double EC = 4;
-        double MC = 400;
-        double MC2 = 600;
-        double SC = 180;
+        double MC = 80;
+        double MC2 = 100;
+        double SC = 18;
 
         // Mobility
 
@@ -438,11 +438,10 @@ public class Ben implements ITestablePlayer{
         int edgeAdvantage = (int) (getEdgeValue(red, green));
 
         // Mobility advantage
-        float mobilityAdvantage = (possibleMovesRed - 1.2f * possibleMovesGreen);
+        float mobilityAdvantage = (possibleMovesRed - possibleMovesGreen);
 
         // Potential mobility advantage
-        float potentialMobilityAdvantage = potentialMovesRed - 1.2f
-                * potentialMovesEnemyGreen;
+        float potentialMobilityAdvantage = potentialMovesRed - potentialMovesEnemyGreen;
 
         int occupiedSquareAdvantage = (int) (Long.bitCount(getStableDisks(red, green))
                 - Long.bitCount(getStableDisks(green, red)));
@@ -552,27 +551,27 @@ public class Ben implements ITestablePlayer{
             score += Integer.bitCount(maskB & semiRed) * 1;
 
             // Negative score Green
-            score -= Integer.bitCount(maskC & unstableGreen) * -0.5 * 1.2;
-            score -= Integer.bitCount(maskA & unstableGreen) * 0.2 * 1.2;
-            score -= Integer.bitCount(maskB & unstableGreen) * 0.15 * 1.2;
+            score -= Integer.bitCount(maskC & unstableGreen) * -0.5;
+            score -= Integer.bitCount(maskA & unstableGreen) * 0.2;
+            score -= Integer.bitCount(maskB & unstableGreen) * 0.15;
 
-            score -= Integer.bitCount(maskA & unanchoredGreen) * 3 * 1.2;
-            score -= Integer.bitCount(maskB & unanchoredGreen) * 2 * 1.2;
+            score -= Integer.bitCount(maskA & unanchoredGreen) * 3;
+            score -= Integer.bitCount(maskB & unanchoredGreen) * 2;
 
-            score -= Integer.bitCount(maskC & aloneGreen) * -0.75 * 1.2;
-            score -= Integer.bitCount(maskA & aloneGreen) * -0.25 * 1.2;
-            score -= Integer.bitCount(maskB & aloneGreen) * -0.5 * 1.2;
+            score -= Integer.bitCount(maskC & aloneGreen) * -0.75;
+            score -= Integer.bitCount(maskA & aloneGreen) * -0.25;
+            score -= Integer.bitCount(maskB & aloneGreen) * -0.5;
 
-            score -= Integer.bitCount(stable1Green) * 8 * 1.2;
+            score -= Integer.bitCount(stable1Green) * 8;
 
-            score -= Integer.bitCount(maskC & stable3Green) * 12 * 1.2;
-            score -= Integer.bitCount(maskA & stable3Green) * 10 * 1.2;
-            score -= Integer.bitCount(maskB & stable3Green) * 10 * 1.2;
-            score -= Integer.bitCount(0b10000001 & stable3Green) * 80 * 1.6;
+            score -= Integer.bitCount(maskC & stable3Green) * 12;
+            score -= Integer.bitCount(maskA & stable3Green) * 10;
+            score -= Integer.bitCount(maskB & stable3Green) * 10;
+            score -= Integer.bitCount(0b10000001 & stable3Green) * 80;
 
-            score -= Integer.bitCount(maskC & semiGreen) * -10.25 * 1.2;
-            score -= Integer.bitCount(maskA & semiGreen) * 1 * 1.2;
-            score -= Integer.bitCount(maskB & semiGreen) * 1 * 1.2;
+            score -= Integer.bitCount(maskC & semiGreen) * -10.25;
+            score -= Integer.bitCount(maskA & semiGreen) * 1;
+            score -= Integer.bitCount(maskB & semiGreen) * 1;
 
             edgeTable[(board[1] << 8) | board[2]] = (short) score;
             // System.out.println(k);
@@ -1874,7 +1873,7 @@ public class Ben implements ITestablePlayer{
         localDeadline = globalDeadline;
         long bestmove = 0;
         int depth = 0;
-        while(!returnFromSearch && depth < 30){
+        while(!returnFromSearch && depth < 29){
             depth++;
             bestmove = pvsSearch(red, green, depth);
         }

@@ -37,7 +37,7 @@ public class test{
         // long time = System.nanoTime();
         // coords = EndgameSearch.OutcomeSearch.nextMove(gb)-gb.green;
         // System.out.println("Zeit in ms: "+(System.nanoTime()-time)+"\n"+coords);
-        TestArena testArena = new TestArena(new OtherPlayers.Xiaolong(), new Ben2debug(), 1000);
+        TestArena testArena = new TestArena(new OtherPlayers.Xiaolong(), new Ben(), 1000);
         TestArena.TestResult result = testArena.randomTimeGame(10, 50);
         JFileChooser fileChooser = new JFileChooser();
 
