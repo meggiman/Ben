@@ -1873,14 +1873,7 @@ public class Ben implements ITestablePlayer{
         localDeadline = globalDeadline;
         long bestmove = 0;
         int depth = 0;
-<<<<<<< HEAD
         boolean tryOutcomeSearch = false;
-=======
-        while(!returnFromSearch && depth < 29){
-            depth++;
-            bestmove = pvsSearch(red, green, depth);
-        }
->>>>>>> branch 'cleanedCode' of git@github.com:meggiman/Ben.git
         System.out.println("-----------------Ben-----------------");
         if(!useOutcomeSearch){
             while(!returnFromSearch && depth < 29){
