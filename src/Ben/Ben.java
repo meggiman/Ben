@@ -1392,7 +1392,7 @@ public class Ben implements ITestablePlayer{
                 }
             }
         }
-        if(depth < 3){
+        if(depth < 2){
             return pvsNearLeavesMax(red, green, alpha, beta, depth, false);
         }
         // Check for end of game
@@ -1509,7 +1509,7 @@ public class Ben implements ITestablePlayer{
                 }
             }
         }
-        if(depth < 3){
+        if(depth < 2){
             return pvsNearLeavesMin(red, green, alpha, beta, depth, false);
         }
         // Check for end of game
@@ -1870,52 +1870,68 @@ public class Ben implements ITestablePlayer{
         pvsFirstMoveIndex = 0;
         searchedNodes = 0;
         returnFromSearch = false;
-        localDeadline = globalDeadline;
         long bestmove = 0;
         int depth = 0;
         boolean tryOutcomeSearch = false;
         System.out.println("-----------------Ben-----------------");
         if(!useOutcomeSearch){
+            if(playedStones > 40){
+                tryOutcomeSearch = true;
+                localDeadline = System.nanoTime() + timeLimit / 2;
+            }
+            else{
+                localDeadline = globalDeadline;
+            }
             while(!returnFromSearch && depth < 29){
                 depth++;
                 bestmove = pvsSearch(red, green, depth);
-                if(playedStones > 40){
-                    if((globalDeadline - System.nanoTime()) < timeLimit / 2){
-                        tryOutcomeSearch = true;
-                        break;
-                    }
-                }
             }
             System.out.println("PVS SEARCH:");
-            System.out.println("Searched: " + searchedNodes + " Depth: " + depth + " Evaluationresult: " + resultOfSearch + " Move: " + bestmove);
+            System.out.println("Searched Nodes: " + searchedNodes + " Depth: " + depth + " Evaluationresult: " + resultOfSearch + " Move: " + bestmove);
         }
-        if(!useExactSearch){
-            if(tryOutcomeSearch || useOutcomeSearch){
-                searchedNodes = 0;
-                long coord = endGameSearch(red, green, -1, 1);
-                System.out.println("OUTCOME SEARCH:");
-                if(resultOfSearch != NOTFOUND){
-                    if(resultOfSearch != -1){
-                        bestmove = coord;
-                        if(resultOfSearch == 1){
-                            System.out.println("Outcome Search finished. I'll win.");
-                        }
-                        else{
-                            System.out.println("Outcome Search finished. The least result will be draw.");
-                        }
-                        System.out.println("Searched Nodes: " + searchedNodes);
+        if(tryOutcomeSearch || useOutcomeSearch){
+            localDeadline = globalDeadline;
+            returnFromSearch = false;
+            searchedNodes = 0;
+            long coord = endGameSearch(red, green, -1, 1);
+            System.out.println("OUTCOME SEARCH:");
+            if(resultOfSearch != NOTFOUND){
+                if(resultOfSearch != -1){
+                    bestmove = coord;
+                    if(resultOfSearch == 1){
+                        useOutcomeSearch = true;
+                        System.out.println("Outcome Search finished. I'll win.");
                     }
                     else{
-                        System.out.println("Outcome Search finished. I'll probably loose.");
-                        System.out.println("Searched Nodes: " + searchedNodes);
+                        useOutcomeSearch = true;
+                        System.out.println("Outcome Search finished. The least result will be draw.");
                     }
+                    System.out.println("Searched Nodes: " + searchedNodes);
                 }
                 else{
-                    System.out.println("Outcome Search failed.");
+                    System.out.println("Outcome Search finished. I'll probably loose.");
                     System.out.println("Searched Nodes: " + searchedNodes);
                 }
             }
+            else{
+                System.out.println("Outcome Search failed.");
+                System.out.println("Searched Nodes: " + searchedNodes);
+            }
+        }
 
+        if(useExactSearch || (useOutcomeSearch && !returnFromSearch)){
+            searchedNodes = 0;
+            long coord = endGameSearch(red, green, -64, +64);
+            System.out.println("EXACT SEARCH: ");
+            if(resultOfSearch != NOTFOUND){
+                System.out.println("Tree solved. Result will be at least: " + resultOfSearch);
+                useExactSearch = true;
+                bestmove = coord;
+            }
+            else{
+                System.out.println("Exact search failed.");
+            }
+            System.out.println("Searched Nodes: " + searchedNodes);
         }
 
         return longToCoordinates(bestmove);
