@@ -29,6 +29,15 @@ public class Ben implements ITestablePlayer{
     static final byte           maskA              = 0b00100100;
     static final byte           maskB              = 0b00011000;
 
+    static final long           cornerTopLeft      = 0x8000000000000000L;
+    static final long           cornerTopRight     = 0x100000000000000L;
+    static final long           cornerBotLeft      = 128;
+    static final long           cornerBotRight     = 1;
+    static final long           xTopLeft           = 0x40000000000000L;
+    static final long           xTopRight          = 0x2000000000000L;
+    static final long           xBotLeft           = 0x4000;
+    static final long           xBotRight          = 0x200;
+
     /*
      * 012
      * 7 3
@@ -420,10 +429,14 @@ public class Ben implements ITestablePlayer{
     }
 
     private static final short evaluate(long red, long green, long possibleMovesRedLong, long possibleMovesGreenLong){
-        double EC = 4;
-        double MC = 80;
-        double MC2 = 100;
-        double SC = 18;
+        int stonesRed = countStones(red);
+        int stonesGreen = countStones(green);
+
+        int discCount = stonesRed + stonesGreen;
+        double EC = 4 * (discCount < 30 ? 1 : 2);
+        double MC = 80 * (discCount < 30 ? 2 : 1);
+        double MC2 = 100 * (discCount < 30 ? 3 : 0.5);
+        double SC = 18 * (discCount < 50 ? 1 : 3);
 
         // Mobility
         int possibleMovesRed = Long.bitCount(possibleMovesRedLong);
@@ -438,6 +451,31 @@ public class Ben implements ITestablePlayer{
 
         // Edge advantage
         int edgeAdvantage = (int) getEdgeValue(red, green);
+        if((xTopLeft & red) != 0 && (cornerTopLeft & red) == 0){
+            edgeAdvantage -= 40;
+        }
+        if((xTopRight & red) != 0 && (cornerTopRight & red) == 0){
+            edgeAdvantage -= 40;
+        }
+        if((xBotRight & red) != 0 && (cornerBotRight & red) == 0){
+            edgeAdvantage -= 40;
+        }
+        if((xBotLeft & red) != 0 && (cornerBotLeft & red) == 0){
+            edgeAdvantage -= 40;
+        }
+
+        if((xTopLeft & green) != 0 && (cornerTopLeft & green) == 0){
+            edgeAdvantage -= 40;
+        }
+        if((xTopRight & green) != 0 && (cornerTopRight & green) == 0){
+            edgeAdvantage -= 40;
+        }
+        if((xBotRight & green) != 0 && (cornerBotRight & green) == 0){
+            edgeAdvantage -= 40;
+        }
+        if((xBotLeft & green) != 0 && (cornerBotLeft & green) == 0){
+            edgeAdvantage -= 40;
+        }
 
         // Mobility advantage
         float mobilityAdvantage = possibleMovesRed - possibleMovesGreen;
