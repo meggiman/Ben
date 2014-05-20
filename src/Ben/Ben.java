@@ -1392,7 +1392,7 @@ public class Ben implements ITestablePlayer{
                 }
             }
         }
-        if(depth < 2){
+        if(depth < 6){
             return pvsNearLeavesMax(red, green, alpha, beta, depth, false);
         }
         // Check for end of game
@@ -1509,7 +1509,7 @@ public class Ben implements ITestablePlayer{
                 }
             }
         }
-        if(depth < 2){
+        if(depth < 6){
             return pvsNearLeavesMin(red, green, alpha, beta, depth, false);
         }
         // Check for end of game
@@ -1874,8 +1874,9 @@ public class Ben implements ITestablePlayer{
         int depth = 0;
         boolean tryOutcomeSearch = false;
         System.out.println("-----------------Ben-----------------");
+        System.out.println("Move Nr. " + playedStones);
         if(!useOutcomeSearch){
-            if(playedStones > 40){
+            if(playedStones > 39){
                 tryOutcomeSearch = true;
                 localDeadline = System.nanoTime() + timeLimit / 2;
             }
@@ -1933,7 +1934,7 @@ public class Ben implements ITestablePlayer{
             }
             System.out.println("Searched Nodes: " + searchedNodes);
         }
-
+        System.out.println("");
         return longToCoordinates(bestmove);
     }
 
