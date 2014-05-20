@@ -1909,11 +1909,15 @@ public class Ben implements ITestablePlayer{
         searchedNodes = 0;
         returnFromSearch = false;
         long bestmove = 0;
+        int bestvalue = 0;
         int depth = 0;
         boolean tryOutcomeSearch = false;
         System.out.println("-----------------Ben-----------------");
         System.out.println("Move Nr. " + playedStones);
-        if(!useOutcomeSearch){
+        if(playedStones > 45){
+            useOutcomeSearch = true;
+        }
+        if(!useOutcomeSearch && !useExactSearch){
             if(playedStones > 39){
                 tryOutcomeSearch = true;
                 localDeadline = System.nanoTime() + timeLimit / 2;
@@ -1921,12 +1925,15 @@ public class Ben implements ITestablePlayer{
             else{
                 localDeadline = globalDeadline;
             }
+            long tmpmove = 0;
             while(!returnFromSearch && depth < 29){
                 depth++;
-                bestmove = pvsSearch(red, green, depth);
+                bestmove = tmpmove;
+                bestvalue = resultOfSearch;
+                tmpmove = pvsSearch(red, green, depth);
             }
             System.out.println("PVS SEARCH:");
-            System.out.println("Searched Nodes: " + searchedNodes + " Depth: " + depth + " Evaluationresult: " + resultOfSearch + " Move: " + bestmove);
+            System.out.println("Searched Nodes: " + searchedNodes + " Depth: " + depth + " Evaluationresult: " + bestvalue + " Move: " + bestmove);
         }
         if(tryOutcomeSearch || useOutcomeSearch){
             localDeadline = globalDeadline;
