@@ -437,10 +437,10 @@ public class Ben implements ITestablePlayer{
                 & red);
 
         // Edge advantage
-        int edgeAdvantage = (int) (getEdgeValue(red, green));
+        int edgeAdvantage = (int) getEdgeValue(red, green);
 
         // Mobility advantage
-        float mobilityAdvantage = (possibleMovesRed - possibleMovesGreen);
+        float mobilityAdvantage = possibleMovesRed - possibleMovesGreen;
 
         // Potential mobility advantage
         float potentialMobilityAdvantage = potentialMovesRed - potentialMovesEnemyGreen;
