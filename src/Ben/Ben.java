@@ -428,87 +428,110 @@ public class Ben implements ITestablePlayer{
         return size;
     }
 
+    private final static long PMO = 0x8100000000000081L;
+    // private final static long PMC = 0x4281000000008142L;
+    // private final static long PMX = 0x0042000000004200L;
+    private final static long PME = 0x3C0081818181003CL;
+
     private static final short evaluate(long red, long green, long possibleMovesRedLong, long possibleMovesGreenLong){
-        int stonesRed = countStones(red);
-        int stonesGreen = countStones(green);
-
-        int discCount = stonesRed + stonesGreen;
-        double EC = 4 * (discCount < 30 ? 1 : 2);
-        double MC = 80 * (discCount < 30 ? 2 : 1);
-        double MC2 = 100 * (discCount < 30 ? 3 : 0.5);
-        double SC = 18 * (discCount < 50 ? 1 : 3);
-
-        // Mobility
-        int possibleMovesRed = Long.bitCount(possibleMovesRedLong);
-        int possibleMovesGreen = Long.bitCount(possibleMovesGreenLong);
-
-        // Potential mobility
-        long empty = ~(red | green);
-        int potentialMovesRed = Long.bitCount(Bitboard.fillAdjacent(empty)
-                & green);
-        int potentialMovesEnemyGreen = Long.bitCount(Bitboard.fillAdjacent(empty)
-                & red);
-
-        // Edge advantage
-        int edgeAdvantage = (int) getEdgeValue(red, green);
-        if((xTopLeft & red) != 0 && (cornerTopLeft & red) == 0){
-            edgeAdvantage -= 40;
-        }
-        if((xTopRight & red) != 0 && (cornerTopRight & red) == 0){
-            edgeAdvantage -= 40;
-        }
-        if((xBotRight & red) != 0 && (cornerBotRight & red) == 0){
-            edgeAdvantage -= 40;
-        }
-        if((xBotLeft & red) != 0 && (cornerBotLeft & red) == 0){
-            edgeAdvantage -= 40;
-        }
-
-        if((xTopLeft & green) != 0 && (cornerTopLeft & green) == 0){
-            edgeAdvantage -= 40;
-        }
-        if((xTopRight & green) != 0 && (cornerTopRight & green) == 0){
-            edgeAdvantage -= 40;
-        }
-        if((xBotRight & green) != 0 && (cornerBotRight & green) == 0){
-            edgeAdvantage -= 40;
-        }
-        if((xBotLeft & green) != 0 && (cornerBotLeft & green) == 0){
-            edgeAdvantage -= 40;
-        }
-
-        // Mobility advantage
-        float mobilityAdvantage = possibleMovesRed - possibleMovesGreen;
-
-        // Potential mobility advantage
-        float potentialMobilityAdvantage = potentialMovesRed - potentialMovesEnemyGreen;
-
-        int occupiedSquareAdvantage = (int) (Long.bitCount(getStableDisks(red, green))
-                - Long.bitCount(getStableDisks(green, red)));
-
-        int score = (int) (
-                EC * edgeAdvantage
-                        + MC * mobilityAdvantage
-                        + MC2 * potentialMobilityAdvantage
-                        + SC * occupiedSquareAdvantage
-                );
-        if(score > 32767 || score < -32768){
-            System.out.println("ALERT!SWEG!11ELF!!");
-        }
-        // gb.print();
-        // System.out.println("Evaluator Noah");
-        // System.out.println("EdgeAdvantage: " + EC * edgeAdvantage);
-        // System.out.println("MobilityAdvantage: " + (MC * mobilityAdvantage));
-        // System.out.println("PotentialMobility: "
-        // + (MC2 * potentialMobilityAdvantage));
-        // System.out.println("occupiedSquareAdvantage: "
-        // + SC * occupiedSquareAdvantage);
-        // System.out.println(score);
-        // System.out.println("------------------------");
-        // System.out.println("Evaluator Xiaolon");
-        // System.out.println(testXiaolong.evaluate(gb.red, gb.green));
-        return (short) score;
+        long p1 = red, p2 = green;
+        long empty = ~(p1 | p2);
+        return (short) ((((p1 | p2) & PMO) == 0 ? (getDiscCount(red, green) - Long.bitCount(p2) < 2 ? -30
+                : 0)
+                : 38 * Long.bitCount(getStableDisks(p1, p2))
+                        - 38 * Long.bitCount(getStableDisks(p2, p1)))
+                + 10 * (Long.bitCount(Long.bitCount(fillAdjacent(empty) & p2)))
+                - 10 * (Long.bitCount(fillAdjacent(empty) & p1))
+                + 5 * (Long.bitCount(possibleMovesRedLong))
+                - 5 * (Long.bitCount(possibleMovesGreenLong))
+                + 1 * (Long.bitCount(p1 & PME) - Long.bitCount(p2 & PME))
+                + 24 * (Long.bitCount(p1 & (PMO)) - Long.bitCount(p2 & PMO)));
     }
+
+    // private static final short evaluate(long red, long green, long
+    // possibleMovesRedLong, long possibleMovesGreenLong){
+    // int stonesRed = countStones(red);
+    // int stonesGreen = countStones(green);
+    //
+    // int discCount = stonesRed + stonesGreen;
+    // double EC = 6; // * (discCount < 30 ? 1 : 3);
+    // double MC = 8; // * (discCount < 30 ? 2 : 1);
+    // double MC2 = 10; // * (discCount < 30 ? 6 : 0.5);
+    // double SC = 1.8; // * (discCount < 50 ? 1 : 3);
+    //
+    // // Mobility
+    // int possibleMovesRed = Long.bitCount(possibleMovesRedLong);
+    // int possibleMovesGreen = Long.bitCount(possibleMovesGreenLong);
+    //
+    // // Potential mobility
+    // long empty = ~(red | green);
+    // int potentialMovesRed = Long.bitCount(Bitboard.fillAdjacent(empty)
+    // & green);
+    // int potentialMovesEnemyGreen = Long.bitCount(Bitboard.fillAdjacent(empty)
+    // & red);
+    //
+    // // Edge advantage
+    // int edgeAdvantage = (int) getEdgeValue(red, green);
+    // if((xTopLeft & red) != 0 && (cornerTopLeft & red) == 0){
+    // edgeAdvantage -= 40;
+    // }
+    // if((xTopRight & red) != 0 && (cornerTopRight & red) == 0){
+    // edgeAdvantage -= 40;
+    // }
+    // if((xBotRight & red) != 0 && (cornerBotRight & red) == 0){
+    // edgeAdvantage -= 40;
+    // }
+    // if((xBotLeft & red) != 0 && (cornerBotLeft & red) == 0){
+    // edgeAdvantage -= 40;
+    // }
+    //
+    // if((xTopLeft & green) != 0 && (cornerTopLeft & green) == 0){
+    // edgeAdvantage -= 40;
+    // }
+    // if((xTopRight & green) != 0 && (cornerTopRight & green) == 0){
+    // edgeAdvantage -= 40;
+    // }
+    // if((xBotRight & green) != 0 && (cornerBotRight & green) == 0){
+    // edgeAdvantage -= 40;
+    // }
+    // if((xBotLeft & green) != 0 && (cornerBotLeft & green) == 0){
+    // edgeAdvantage -= 40;
+    // }
+    //
+    // // Mobility advantage
+    // float mobilityAdvantage = possibleMovesRed - possibleMovesGreen;
+    //
+    // // Potential mobility advantage
+    // float potentialMobilityAdvantage = potentialMovesRed -
+    // potentialMovesEnemyGreen;
+    //
+    // int occupiedSquareAdvantage = (int) (Long.bitCount(getStableDisks(red,
+    // green))
+    // - Long.bitCount(getStableDisks(green, red)));
+    //
+    // int score = (int) (
+    // EC * edgeAdvantage
+    // + MC * mobilityAdvantage
+    // + MC2 * potentialMobilityAdvantage
+    // + SC * occupiedSquareAdvantage
+    // );
+    // if(score > 32767 || score < -32768){
+    // System.out.println("ALERT!SWEG!11ELF!!");
+    // }
+    // // gb.print();
+    // // System.out.println("Evaluator Noah");
+    // // System.out.println("EdgeAdvantage: " + EC * edgeAdvantage);
+    // // System.out.println("MobilityAdvantage: " + (MC * mobilityAdvantage));
+    // // System.out.println("PotentialMobility: "
+    // // + (MC2 * potentialMobilityAdvantage));
+    // // System.out.println("occupiedSquareAdvantage: "
+    // // + SC * occupiedSquareAdvantage);
+    // // System.out.println(score);
+    // // System.out.println("------------------------");
+    // // System.out.println("Evaluator Xiaolon");
+    // // System.out.println(testXiaolong.evaluate(gb.red, gb.green));
+    // return (short) score;
+    // }
 
     /**
      * Masks all the adjacent fields of all set bits in the bitboard
@@ -584,7 +607,7 @@ public class Ben implements ITestablePlayer{
             score += Integer.bitCount(maskC & stable3Red) * 12;
             score += Integer.bitCount(maskA & stable3Red) * 10;
             score += Integer.bitCount(maskB & stable3Red) * 10;
-            score += Integer.bitCount(0b10000001 & stable3Red) * 80;
+            score += Integer.bitCount(0b10000001 & stable3Red) * 160;
 
             score += Integer.bitCount(maskC & semiRed) * -1.25;
             score += Integer.bitCount(maskA & semiRed) * 1;
@@ -607,7 +630,7 @@ public class Ben implements ITestablePlayer{
             score -= Integer.bitCount(maskC & stable3Green) * 12;
             score -= Integer.bitCount(maskA & stable3Green) * 10;
             score -= Integer.bitCount(maskB & stable3Green) * 10;
-            score -= Integer.bitCount(0b10000001 & stable3Green) * 80;
+            score -= Integer.bitCount(0b10000001 & stable3Green) * 160;
 
             score -= Integer.bitCount(maskC & semiGreen) * -10.25;
             score -= Integer.bitCount(maskA & semiGreen) * 1;
@@ -1422,14 +1445,17 @@ public class Ben implements ITestablePlayer{
                     return TTvalues[TTindex];
                 }
                 short TTvalue = TTvalues[TTindex];
-                if(TTvalue >= beta && TTtype == CUTNODE){
-                    return beta;
-                }
-                if(TTvalue <= alpha){
-                    return alpha;
+                if(TTtype == CUTNODE){
+                    if(TTvalue >= beta){
+                        return TTvalue;
+                    }
+                    else{
+                        alpha = TTvalue;
+                    }
                 }
             }
         }
+
         if(depth < 6){
             return pvsNearLeavesMax(red, green, alpha, beta, depth, false);
         }
@@ -1490,7 +1516,7 @@ public class Ben implements ITestablePlayer{
                     alpha = value;
                     if(alpha >= beta){
                         TTput(hash, (short) alpha, (byte) depth, CUTNODE, (byte) stonesOnBoard);
-                        return beta;
+                        return alpha;
                     }
                     TTnodeType = PVNODE;
                 }
@@ -1509,7 +1535,7 @@ public class Ben implements ITestablePlayer{
                 if(value > bestvalue){
                     if(value >= beta){
                         TTput(hash, (short) value, (byte) depth, CUTNODE, (byte) stonesOnBoard);
-                        return beta;
+                        return value;
                     }
                     TTnodeType = PVNODE;
                     bestvalue = value;
@@ -1539,14 +1565,17 @@ public class Ben implements ITestablePlayer{
                     return TTvalues[TTindex];
                 }
                 short TTvalue = TTvalues[TTindex];
-                if(TTvalue <= alpha && TTtype == CUTNODE){
-                    return alpha;
-                }
-                if(TTvalue >= beta){
-                    return beta;
+                if(TTtype == CUTNODE){
+                    if(TTvalue <= alpha){
+                        return TTvalue;
+                    }
+                    else{
+                        beta = TTvalue;
+                    }
                 }
             }
         }
+
         if(depth < 6){
             return pvsNearLeavesMin(red, green, alpha, beta, depth, false);
         }
@@ -1589,7 +1618,7 @@ public class Ben implements ITestablePlayer{
                 beta = value;
                 if(beta <= alpha){
                     TTput(hash, (short) beta, (byte) depth, CUTNODE, (byte) stonesOnBoard);
-                    return alpha;
+                    return beta;
                 }
                 TTnodeType = PVNODE;
             }
@@ -1607,7 +1636,7 @@ public class Ben implements ITestablePlayer{
                     beta = value;
                     if(beta <= alpha){
                         TTput(hash, (short) beta, (byte) depth, CUTNODE, (byte) stonesOnBoard);
-                        return alpha;
+                        return beta;
                     }
                     TTnodeType = PVNODE;
                 }
