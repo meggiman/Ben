@@ -135,6 +135,9 @@ public class Ben implements ITestablePlayer{
      * from recursion.
      */
     private static boolean      returnFromSearch;
+
+    private static boolean      useOutcomeSearch;
+    private static boolean      useExactSearch;
     /**
      * Deadline for current Search Algorithm.
      */
@@ -289,7 +292,7 @@ public class Ben implements ITestablePlayer{
             return endGameFewRemainingMax(red, green, alpha, beta, false);
         }
         if(possibleMoves == 0){
-            if(Bitboard.possibleMovesRed(green, red) == 0){
+            if(possibleMovesRed(green, red) == 0){
                 return Long.bitCount(red) - Long.bitCount(green);
             }
             return endGameMin(red, green, alpha, beta, remainingStones - 1, Bitboard.possibleMovesRed(green, red));
@@ -322,7 +325,7 @@ public class Ben implements ITestablePlayer{
             return endGameFewRemainingMin(red, green, alpha, beta, false);
         }
         if(possibleMoves == 0){
-            if(Bitboard.possibleMovesRed(red, green) == 0){
+            if(possibleMovesRed(red, green) == 0){
                 return Long.bitCount(red) - Long.bitCount(green);
             }
             return endGameMax(red, green, alpha, beta, remainingStonestones - 1, Bitboard.possibleMovesRed(red, green));
@@ -352,9 +355,9 @@ public class Ben implements ITestablePlayer{
         searchedNodes = 0;
         returnFromSearch = false;
         int remainingStones = 64 - Long.bitCount(red) - Long.bitCount(green);
-        long possibleMoves = Bitboard.possibleMovesRed(red, green);
+        long possibleMoves = possibleMovesRed(red, green);
         if(possibleMoves == 0){
-            long possibleMovesEnemy = Bitboard.possibleMovesRed(green, red);
+            long possibleMovesEnemy = possibleMovesRed(green, red);
             if(possibleMovesEnemy != 0){
                 resultOfSearch = endGameMin(red, green, alpha, beta, remainingStones, Bitboard.possibleMovesRed(green, red));
             }
@@ -392,12 +395,12 @@ public class Ben implements ITestablePlayer{
             Sindices[remainingStones][i] = i;
             long coord = Long.highestOneBit(possibleMoves);
             Smoves[remainingStones][i] = coord;
-            long flipeddisk = Bitboard.getflippedDiskRed(red, green, coord);
+            long flipeddisk = getFlippedDiskRed(red, green, coord);
             long newred = red ^ flipeddisk ^ coord;
             long newgreen = green ^ flipeddisk;
             SboardsRed[remainingStones][i] = newred;
             SboardsGreen[remainingStones][i] = newgreen;
-            long newpossiblemoves = Bitboard.possibleMovesRed(newgreen, newred);
+            long newpossiblemoves = possibleMovesRed(newgreen, newred);
             SpossibleMoves[remainingStones][i] = newpossiblemoves;
             long occupiedCorners = newred & CORNERS;
             long cornerstability = occupiedCorners;
@@ -423,7 +426,6 @@ public class Ben implements ITestablePlayer{
         double SC = 18;
 
         // Mobility
-
         int possibleMovesRed = Long.bitCount(possibleMovesRedLong);
         int possibleMovesGreen = Long.bitCount(possibleMovesGreenLong);
 
@@ -1390,7 +1392,7 @@ public class Ben implements ITestablePlayer{
                 }
             }
         }
-        if(depth < 5){
+        if(depth < 3){
             return pvsNearLeavesMax(red, green, alpha, beta, depth, false);
         }
         // Check for end of game
@@ -1507,7 +1509,7 @@ public class Ben implements ITestablePlayer{
                 }
             }
         }
-        if(depth < 5){
+        if(depth < 3){
             return pvsNearLeavesMin(red, green, alpha, beta, depth, false);
         }
         // Check for end of game
@@ -1844,7 +1846,7 @@ public class Ben implements ITestablePlayer{
     @Override
     public void initialize(int myColor, long timeLimit){
         Ben.myColor = myColor;
-        Ben.timeLimit = timeLimit;
+        Ben.timeLimit = timeLimit * 1000000;
         playedStones = (myColor == GameBoard.RED) ? (byte) 2 : (byte) 3;
         generateEdgeTable();
         validsearch.evaluator = new StrategicEvaluatorNoah();
@@ -1852,10 +1854,8 @@ public class Ben implements ITestablePlayer{
 
     @Override
     public Coordinates nextMove(GameBoard gb){
-        globalDeadline = System.nanoTime() + timeLimit * 1000000 - 20000000L;
+        globalDeadline = System.nanoTime() + timeLimit - 20000000L;
         playedStones += 2;
-        validsearch.cancel = false;
-        validsearch.deadline = globalDeadline;
         long[] bitboard = convertToBitboard(gb);
         long red;
         long green;
@@ -1873,20 +1873,51 @@ public class Ben implements ITestablePlayer{
         localDeadline = globalDeadline;
         long bestmove = 0;
         int depth = 0;
-        while(!returnFromSearch && depth < 29){
-            depth++;
-            bestmove = pvsSearch(red, green, depth);
-        }
+        boolean tryOutcomeSearch = false;
         System.out.println("-----------------Ben-----------------");
-        System.out.println("Searched: " + searchedNodes + " Depth: " + depth + " Evaluationresult: " + resultOfSearch + " Move: " + bestmove);
-        // validsearch.cancel = false;
-        // validsearch.deadline = System.nanoTime() + timeLimit * 1000000 -
-        // 20000000L;
-        // long validbestmove = validsearch.nextMove(new Bitboard(red, green));
-        // System.out.println("-----------------alpha-beta--------------");
-        // System.out.println("Searched: " + validsearch.searchedNodesCount +
-        // " Depth: " + validsearch.reachedDepth + " Evaluationresult: "
-        // + validsearch.valueOfLastMove + " Move: " + validbestmove);
+        if(!useOutcomeSearch){
+            while(!returnFromSearch && depth < 29){
+                depth++;
+                bestmove = pvsSearch(red, green, depth);
+                if(playedStones > 40){
+                    if((globalDeadline - System.nanoTime()) < timeLimit / 2){
+                        tryOutcomeSearch = true;
+                        break;
+                    }
+                }
+            }
+            System.out.println("PVS SEARCH:");
+            System.out.println("Searched: " + searchedNodes + " Depth: " + depth + " Evaluationresult: " + resultOfSearch + " Move: " + bestmove);
+        }
+        if(!useExactSearch){
+            if(tryOutcomeSearch || useOutcomeSearch){
+                searchedNodes = 0;
+                long coord = endGameSearch(red, green, -1, 1);
+                System.out.println("OUTCOME SEARCH:");
+                if(resultOfSearch != NOTFOUND){
+                    if(resultOfSearch != -1){
+                        bestmove = coord;
+                        if(resultOfSearch == 1){
+                            System.out.println("Outcome Search finished. I'll win.");
+                        }
+                        else{
+                            System.out.println("Outcome Search finished. The least result will be draw.");
+                        }
+                        System.out.println("Searched Nodes: " + searchedNodes);
+                    }
+                    else{
+                        System.out.println("Outcome Search finished. I'll probably loose.");
+                        System.out.println("Searched Nodes: " + searchedNodes);
+                    }
+                }
+                else{
+                    System.out.println("Outcome Search failed.");
+                    System.out.println("Searched Nodes: " + searchedNodes);
+                }
+            }
+
+        }
+
         return longToCoordinates(bestmove);
     }
 
