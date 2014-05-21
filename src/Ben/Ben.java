@@ -433,10 +433,11 @@ public class Ben implements ITestablePlayer{
     // private final static long PMX = 0x0042000000004200L;
     private final static long PME = 0x3C0081818181003CL;
 
-    private static final short evaluate(long red, long green, long possibleMovesRedLong, long possibleMovesGreenLong){
+    private static final short evaluate(long red, long green, long possibleMovesRedLong, long possibleMovesGreenLong, boolean bloeb){
         long p1 = red, p2 = green;
         long empty = ~(p1 | p2);
-        return (short) ((((p1 | p2) & PMO) == 0 ? (getDiscCount(red, green) - Long.bitCount(p2) < 2 ? -30
+        return (short) ((((p1 | p2) & PMO) == 0 ? (getDiscCount(red, green) -
+                Long.bitCount(p2) < 2 ? -30
                 : 0)
                 : 38 * Long.bitCount(getStableDisks(p1, p2))
                         - 38 * Long.bitCount(getStableDisks(p2, p1)))
@@ -448,90 +449,97 @@ public class Ben implements ITestablePlayer{
                 + 24 * (Long.bitCount(p1 & (PMO)) - Long.bitCount(p2 & PMO)));
     }
 
-    // private static final short evaluate(long red, long green, long
-    // possibleMovesRedLong, long possibleMovesGreenLong){
-    // int stonesRed = countStones(red);
-    // int stonesGreen = countStones(green);
-    //
-    // int discCount = stonesRed + stonesGreen;
-    // double EC = 6; // * (discCount < 30 ? 1 : 3);
-    // double MC = 8; // * (discCount < 30 ? 2 : 1);
-    // double MC2 = 10; // * (discCount < 30 ? 6 : 0.5);
-    // double SC = 1.8; // * (discCount < 50 ? 1 : 3);
-    //
-    // // Mobility
-    // int possibleMovesRed = Long.bitCount(possibleMovesRedLong);
-    // int possibleMovesGreen = Long.bitCount(possibleMovesGreenLong);
-    //
-    // // Potential mobility
-    // long empty = ~(red | green);
-    // int potentialMovesRed = Long.bitCount(Bitboard.fillAdjacent(empty)
-    // & green);
-    // int potentialMovesEnemyGreen = Long.bitCount(Bitboard.fillAdjacent(empty)
-    // & red);
-    //
-    // // Edge advantage
-    // int edgeAdvantage = (int) getEdgeValue(red, green);
-    // if((xTopLeft & red) != 0 && (cornerTopLeft & red) == 0){
-    // edgeAdvantage -= 40;
-    // }
-    // if((xTopRight & red) != 0 && (cornerTopRight & red) == 0){
-    // edgeAdvantage -= 40;
-    // }
-    // if((xBotRight & red) != 0 && (cornerBotRight & red) == 0){
-    // edgeAdvantage -= 40;
-    // }
-    // if((xBotLeft & red) != 0 && (cornerBotLeft & red) == 0){
-    // edgeAdvantage -= 40;
-    // }
-    //
-    // if((xTopLeft & green) != 0 && (cornerTopLeft & green) == 0){
-    // edgeAdvantage -= 40;
-    // }
-    // if((xTopRight & green) != 0 && (cornerTopRight & green) == 0){
-    // edgeAdvantage -= 40;
-    // }
-    // if((xBotRight & green) != 0 && (cornerBotRight & green) == 0){
-    // edgeAdvantage -= 40;
-    // }
-    // if((xBotLeft & green) != 0 && (cornerBotLeft & green) == 0){
-    // edgeAdvantage -= 40;
-    // }
-    //
-    // // Mobility advantage
-    // float mobilityAdvantage = possibleMovesRed - possibleMovesGreen;
-    //
-    // // Potential mobility advantage
-    // float potentialMobilityAdvantage = potentialMovesRed -
-    // potentialMovesEnemyGreen;
-    //
-    // int occupiedSquareAdvantage = (int) (Long.bitCount(getStableDisks(red,
-    // green))
-    // - Long.bitCount(getStableDisks(green, red)));
-    //
-    // int score = (int) (
-    // EC * edgeAdvantage
-    // + MC * mobilityAdvantage
-    // + MC2 * potentialMobilityAdvantage
-    // + SC * occupiedSquareAdvantage
-    // );
-    // if(score > 32767 || score < -32768){
-    // System.out.println("ALERT!SWEG!11ELF!!");
-    // }
-    // // gb.print();
-    // // System.out.println("Evaluator Noah");
-    // // System.out.println("EdgeAdvantage: " + EC * edgeAdvantage);
-    // // System.out.println("MobilityAdvantage: " + (MC * mobilityAdvantage));
-    // // System.out.println("PotentialMobility: "
-    // // + (MC2 * potentialMobilityAdvantage));
-    // // System.out.println("occupiedSquareAdvantage: "
-    // // + SC * occupiedSquareAdvantage);
-    // // System.out.println(score);
-    // // System.out.println("------------------------");
-    // // System.out.println("Evaluator Xiaolon");
-    // // System.out.println(testXiaolong.evaluate(gb.red, gb.green));
-    // return (short) score;
-    // }
+    private static final short evaluate(long red, long green, long possibleMovesRedLong, long possibleMovesGreenLong){
+        int stonesRed = countStones(red);
+        int stonesGreen = countStones(green);
+
+        int discCount = stonesRed + stonesGreen;
+        double EC = 6; // * (discCount < 30 ? 1 : 3);
+        double MC = 8; // * (discCount < 30 ? 2 : 1);
+        double MC2 = 10; // * (discCount < 30 ? 6 : 0.5);
+        double SC = 1.8; // * (discCount < 50 ? 1 : 3);
+
+        // Mobility
+        int possibleMovesRed = Long.bitCount(possibleMovesRedLong & 0xbd3cffffffff3cbdL);
+        int possibleMovesGreen = Long.bitCount(possibleMovesGreenLong & 0xbd3cffffffff3cbdL);
+
+        // Potential mobility
+        long empty = ~(red | green);
+        int potentialMovesRed = Long.bitCount(Bitboard.fillAdjacent(empty)
+                & green);
+        int potentialMovesEnemyGreen = Long.bitCount(Bitboard.fillAdjacent(empty)
+                & red);
+
+        int parity = 0;
+        if((stonesRed + stonesGreen) % 2 == 1){
+            parity += 50;
+        }
+        else{
+            parity -= 50;
+        }
+
+        // Edge advantage
+        int edgeAdvantage = (int) getEdgeValue(red, green);
+        if((xTopLeft & red) != 0 && (cornerTopLeft & red) == 0){
+            edgeAdvantage -= 40;
+        }
+        if((xTopRight & red) != 0 && (cornerTopRight & red) == 0){
+            edgeAdvantage -= 40;
+        }
+        if((xBotRight & red) != 0 && (cornerBotRight & red) == 0){
+            edgeAdvantage -= 40;
+        }
+        if((xBotLeft & red) != 0 && (cornerBotLeft & red) == 0){
+            edgeAdvantage -= 40;
+        }
+
+        if((xTopLeft & green) != 0 && (cornerTopLeft & green) == 0){
+            edgeAdvantage -= 40;
+        }
+        if((xTopRight & green) != 0 && (cornerTopRight & green) == 0){
+            edgeAdvantage -= 40;
+        }
+        if((xBotRight & green) != 0 && (cornerBotRight & green) == 0){
+            edgeAdvantage -= 40;
+        }
+        if((xBotLeft & green) != 0 && (cornerBotLeft & green) == 0){
+            edgeAdvantage -= 40;
+        }
+
+        // Mobility advantage
+        float mobilityAdvantage = possibleMovesRed - possibleMovesGreen;
+
+        // Potential mobility advantage
+        float potentialMobilityAdvantage = potentialMovesRed -
+                potentialMovesEnemyGreen;
+
+        int occupiedSquareAdvantage = (int) (Long.bitCount(getStableDisks(red,
+                green))
+                - Long.bitCount(getStableDisks(green, red)));
+
+        int score = (int) (
+                EC * edgeAdvantage
+                        + MC * mobilityAdvantage
+                        + MC2 * potentialMobilityAdvantage
+                        + SC * occupiedSquareAdvantage
+                );
+        if(score > 32767 || score < -32768){
+            System.out.println("ALERT!SWEG!11ELF!!");
+        }
+        // gb.print();
+        // System.out.println("Evaluator Noah");
+        // System.out.println("EdgeAdvantage: " + EC * edgeAdvantage);
+        // System.out.println("MobilityAdvantage: " + (MC * mobilityAdvantage));
+        // System.out.println("PotentialMobility: "
+        // + (MC2 * potentialMobilityAdvantage));
+        // System.out.println("occupiedSquareAdvantage: "
+        // + SC * occupiedSquareAdvantage);
+        // System.out.println(score);
+        // System.out.println("------------------------");
+        // System.out.println("Evaluator Xiaolon");
+        // System.out.println(testXiaolong.evaluate(gb.red, gb.green));
+        return (short) score;
+    }
 
     /**
      * Masks all the adjacent fields of all set bits in the bitboard
