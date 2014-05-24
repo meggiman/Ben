@@ -428,36 +428,47 @@ public class Ben implements ITestablePlayer{
         return size;
     }
 
-    private final static long PMO = 0x8100000000000081L;
+    private final static long PMO            = 0x8100000000000081L;
     // private final static long PMC = 0x4281000000008142L;
     // private final static long PMX = 0x0042000000004200L;
-    private final static long PME = 0x3C0081818181003CL;
+    private final static long PME            = 0x3C0081818181003CL;
 
-    private static final short evaluate(long red, long green, long possibleMovesRedLong, long possibleMovesGreenLong, boolean bloeb){
+    private static long[]     scoreBoardFast = { 0x8100000000000081L, 0x4281000000008142L, 0x0024000000002400L, 0x3c0081818181003cL, 0x003c5a7e7e5a3c00L };
+    public static int[]       s              = { 90, -3, -5, 2, -2 };
+
+    private static final short evaluate(long red, long green, long possibleMovesRedLong, long possibleMovesGreenLong){
         long p1 = red, p2 = green;
         long empty = ~(p1 | p2);
+
+        int score = 0;
+        for (int i = 0; i < s.length; i++)
+        {
+            score += s[i] * (Long.bitCount(red & scoreBoardFast[i]) - Long.bitCount(green & scoreBoardFast[i]));
+        }
+
         return (short) ((((p1 | p2) & PMO) == 0 ? (getDiscCount(red, green) -
                 Long.bitCount(p2) < 2 ? -30
                 : 0)
-                : 38 * Long.bitCount(getStableDisks(p1, p2))
-                        - 38 * Long.bitCount(getStableDisks(p2, p1)))
-                + 10 * (Long.bitCount(Long.bitCount(fillAdjacent(empty) & p2)))
+                : 12 * Long.bitCount(getStableDisks(p1, p2))
+                        - 12 * Long.bitCount(getStableDisks(p2, p1)))
+                + 10 * (Long.bitCount(fillAdjacent(empty) & p2))
                 - 10 * (Long.bitCount(fillAdjacent(empty) & p1))
-                + 5 * (Long.bitCount(possibleMovesRedLong))
-                - 5 * (Long.bitCount(possibleMovesGreenLong))
+                + 5 * (Long.bitCount(possibleMovesRedLong & 0xbd3cffffffff3cbdL))
+                - 5 * (Long.bitCount(possibleMovesGreenLong & 0xbd3cffffffff3cbdL))
                 + 1 * (Long.bitCount(p1 & PME) - Long.bitCount(p2 & PME))
-                + 24 * (Long.bitCount(p1 & (PMO)) - Long.bitCount(p2 & PMO)));
+                + 24 * (Long.bitCount(p1 & PMO) - Long.bitCount(p2 & PMO))
+                + score);
     }
 
-    private static final short evaluate(long red, long green, long possibleMovesRedLong, long possibleMovesGreenLong){
+    private static final short evaluate(long red, long green, long possibleMovesRedLong, long possibleMovesGreenLong, boolean bloeb){
         int stonesRed = countStones(red);
         int stonesGreen = countStones(green);
 
         int discCount = stonesRed + stonesGreen;
-        double EC = 6; // * (discCount < 30 ? 1 : 3);
-        double MC = 8; // * (discCount < 30 ? 2 : 1);
-        double MC2 = 10; // * (discCount < 30 ? 6 : 0.5);
-        double SC = 1.8; // * (discCount < 50 ? 1 : 3);
+        double EC = 4 * (discCount < 50 ? 1 : 4);
+        double MC = 8 * (discCount < 30 ? 3 : 2);
+        double MC2 = 10 * (discCount < 30 ? 6 : 0.5);
+        double SC = 1.8 * (discCount < 30 ? 1 : 4);
 
         // Mobility
         int possibleMovesRed = Long.bitCount(possibleMovesRedLong & 0xbd3cffffffff3cbdL);
@@ -471,7 +482,7 @@ public class Ben implements ITestablePlayer{
                 & red);
 
         int parity = 0;
-        if((stonesRed + stonesGreen) % 2 == 1){
+        if(discCount % 2 == 1){
             parity += 50;
         }
         else{
@@ -599,7 +610,7 @@ public class Ben implements ITestablePlayer{
             float score = 0;
 
             // Score red
-            score += Integer.bitCount(maskC & unstableRed) * -0.5;
+            score += Integer.bitCount(maskC & unstableRed) * -30;
             score += Integer.bitCount(maskA & unstableRed) * 0.2;
             score += Integer.bitCount(maskB & unstableRed) * 0.15;
 
@@ -615,14 +626,14 @@ public class Ben implements ITestablePlayer{
             score += Integer.bitCount(maskC & stable3Red) * 12;
             score += Integer.bitCount(maskA & stable3Red) * 10;
             score += Integer.bitCount(maskB & stable3Red) * 10;
-            score += Integer.bitCount(0b10000001 & stable3Red) * 160;
+            score += Integer.bitCount(0b10000001 & stable3Red) * 80;
 
-            score += Integer.bitCount(maskC & semiRed) * -1.25;
+            score += Integer.bitCount(maskC & semiRed) * -20;
             score += Integer.bitCount(maskA & semiRed) * 1;
             score += Integer.bitCount(maskB & semiRed) * 1;
 
             // Negative score Green
-            score -= Integer.bitCount(maskC & unstableGreen) * -0.5;
+            score -= Integer.bitCount(maskC & unstableGreen) * -30;
             score -= Integer.bitCount(maskA & unstableGreen) * 0.2;
             score -= Integer.bitCount(maskB & unstableGreen) * 0.15;
 
@@ -638,9 +649,9 @@ public class Ben implements ITestablePlayer{
             score -= Integer.bitCount(maskC & stable3Green) * 12;
             score -= Integer.bitCount(maskA & stable3Green) * 10;
             score -= Integer.bitCount(maskB & stable3Green) * 10;
-            score -= Integer.bitCount(0b10000001 & stable3Green) * 160;
+            score -= Integer.bitCount(0b10000001 & stable3Green) * 80;
 
-            score -= Integer.bitCount(maskC & semiGreen) * -10.25;
+            score -= Integer.bitCount(maskC & semiGreen) * -20;
             score -= Integer.bitCount(maskA & semiGreen) * 1;
             score -= Integer.bitCount(maskB & semiGreen) * 1;
 
