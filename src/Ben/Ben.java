@@ -428,36 +428,34 @@ public class Ben implements ITestablePlayer{
         return size;
     }
 
-    private final static long PMO            = 0x8100000000000081L;
+    private final static long PMO               = 0x8100000000000081L;
     // private final static long PMC = 0x4281000000008142L;
     // private final static long PMX = 0x0042000000004200L;
-    private final static long PME            = 0x3C0081818181003CL;
+    private final static long PME               = 0x3C0081818181003CL;
 
-    private static long[]     scoreBoardFast = { 0x8100000000000081L, 0x4281000000008142L, 0x0024000000002400L, 0x3c0081818181003cL, 0x003c5a7e7e5a3c00L };
-    public static int[]       s              = { 90, -3, -5, 2, -2 };
+    // Corners, C pieces, weird peices, edges without corner or c, all other
+    // fields
+    private static long[]     scoreCategories   = { 0x8100000000000081L, 0x4281000000008142L, 0x0024000000002400L, 0x3c0081818181003cL, 0x003c5a7e7e5a3c00L };
+    public static int[]       squareScoreWeight = { 90, -3, -5, 2, -2 };
 
     private static final short evaluate(long red, long green, long possibleMovesRedLong, long possibleMovesGreenLong){
-        long p1 = red, p2 = green;
-        long empty = ~(p1 | p2);
+        long empty = ~(red | green);
 
-        int score = 0;
-        for (int i = 0; i < s.length; i++)
+        int squareScore = 0;
+        for (int i = 0; i < 5; i++)
         {
-            score += s[i] * (Long.bitCount(red & scoreBoardFast[i]) - Long.bitCount(green & scoreBoardFast[i]));
+            squareScore += squareScoreWeight[i] * (Long.bitCount(red & scoreCategories[i]) - Long.bitCount(green & scoreCategories[i]));
         }
 
-        return (short) ((((p1 | p2) & PMO) == 0 ? (getDiscCount(red, green) -
-                Long.bitCount(p2) < 2 ? -30
-                : 0)
-                : 12 * Long.bitCount(getStableDisks(p1, p2))
-                        - 12 * Long.bitCount(getStableDisks(p2, p1)))
-                + 10 * (Long.bitCount(fillAdjacent(empty) & p2))
-                - 10 * (Long.bitCount(fillAdjacent(empty) & p1))
-                + 5 * (Long.bitCount(possibleMovesRedLong & 0xbd3cffffffff3cbdL))
-                - 5 * (Long.bitCount(possibleMovesGreenLong & 0xbd3cffffffff3cbdL))
-                + 1 * (Long.bitCount(p1 & PME) - Long.bitCount(p2 & PME))
-                + 24 * (Long.bitCount(p1 & PMO) - Long.bitCount(p2 & PMO))
-                + score);
+        return (short) ((((red | green) & PMO) == 0
+                ? (Long.bitCount(red) < 2 ? -30 : 0)
+                : 12 * (Long.bitCount(getStableDisks(red, green)) - Long.bitCount(getStableDisks(green, red))))
+                + 10 * (Long.bitCount(fillAdjacent(empty) & green) - Long.bitCount(fillAdjacent(empty) & red))
+                + 5 * (Long.bitCount(possibleMovesRedLong & 0xbd3cffffffff3cbdL) - Long.bitCount(possibleMovesGreenLong & 0xbd3cffffffff3cbdL))
+                + 1 * (Long.bitCount(red & PME) - Long.bitCount(green & PME))
+                + 24 * (Long.bitCount(red & PMO) - Long.bitCount(green & PMO))
+                + (Long.bitCount(empty) % 2 == 1 ? 50 : -50)
+                + squareScore);
     }
 
     private static final short evaluate(long red, long green, long possibleMovesRedLong, long possibleMovesGreenLong, boolean bloeb){
